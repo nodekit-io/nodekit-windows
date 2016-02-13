@@ -13,6 +13,7 @@ See [nodekit-io/nodekit-android](https://github.com/nodekit-io/nodekit-android) 
 
 # {NK} nodekit-windows
 
+[![Build status](https://ci.appveyor.com/api/projects/status/7p4p704rm43go0a4?svg=true)](https://ci.appveyor.com/project/guycreate/nodekit-windows)
 [![{NK} Roadmap](https://img.shields.io/badge/OpenSource-roadmap-4DA6FD.svg?style=flat-square)](http://roadmap.nodekit.io)
 [![Join the chat at https://gitter.im/nodekit-io/nodekit](https://img.shields.io/badge/Chat-on_gitter-46BC99.svg?style=flat)](https://gitter.im/nodekit-io/nodekit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![NuGet compatible](https://img.shields.io/badge/NuGet-coming_soon-55acee.svg?style=flat)](https://www.nuget.org/)
