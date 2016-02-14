@@ -35,12 +35,13 @@ namespace io.nodekit.NKScripting
 
         internal NKScriptInvocation(object obj, TaskScheduler queue)
         {
-            this.target = obj;
+            target = obj;
             this.queue = queue;
             targetClass = obj.GetType();
             if (targetClass == typeof(Type))
             {
-                targetClass = (Type)obj;
+                targetClass = obj as Type;
+                target =null;
             }
         }
 

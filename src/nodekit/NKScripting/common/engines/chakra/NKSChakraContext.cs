@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace io.nodekit.NKScripting.Engines.Chakra
 {
-    public class NKSChakraContext : NKScriptContextSyncBase
+    public class NKSChakraContext : NKScriptContextSyncBase, NKScriptContentController
     {
        
         private static JavaScriptSourceContext currentSourceContext = JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
@@ -48,9 +48,8 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             Native.ThrowIfError(Native.JsSetPromiseContinuationCallback(promiseContinuationCallback, IntPtr.Zero));
 
             Native.ThrowIfError(Native.JsProjectWinRTNamespace("Windows"));
-     //     Native.ThrowIfError(Native.JsProjectWinRTNamespace("io.nodekit"));
-
-    //        if (options.ContainsKey("nk.ScriptingDebug") && ((bool)options["nk.ScriptingDebug"] == true))
+   
+            // if (options.ContainsKey("nk.ScriptingDebug") && ((bool)options["nk.ScriptingDebug"] == true))
                 Native.ThrowIfError(Native.JsStartDebugging());
         }
 
@@ -61,6 +60,24 @@ namespace io.nodekit.NKScripting.Engines.Chakra
                 JavaScriptContext.Current = _context;
                 currentContext = _context;
             }
+        }
+
+        async override protected Task PrepareEnvironment()
+        {
+            var global = JavaScriptValue.GlobalObject;
+            var NKScripting = global.GetProperty(JavaScriptPropertyId.FromString("NKScripting"));
+         
+            IntPtr dataCallBack = IntPtr.Zero;
+            var logFunction = JavaScriptValue.CreateFunction(log, dataCallBack);
+            NKScripting.SetProperty(JavaScriptPropertyId.FromString("log"), logFunction, true);
+
+            // var source = await NKStorage.getResourceAsync(typeof(NKScriptContext), "promise.js", "lib");
+            // var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/promise.js", "Promise", null);
+            // await script.inject(this);
+
+            var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "init_chakra.js", "lib");
+            var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/init_chakra.js");
+            await script2.inject(this);
         }
 
         protected override NKScriptValueProtocol getJavaScriptValue(string key)
@@ -107,7 +124,9 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             return Marshal.PtrToStringUni(returnValue);
         }
 
-         protected override void LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options)
+        protected List<string> _projectedNamespaces = new List<string>();
+
+        protected override async Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options)
         {
             bool mainThread = (bool)options["MainThread"];
             NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
@@ -117,39 +136,42 @@ namespace io.nodekit.NKScripting.Engines.Chakra
                 case NKScriptExportType.JSExport:
                     throw new NotSupportedException("JSExport option is for darwin platforms only");
                 case NKScriptExportType.WinRT:
-
-
-                     switchContextifNeeded();
-                    Native.ThrowIfError(Native.JsProjectWinRTNamespace(ns));
-
                     if (plugin == null)
                     {
-                        NKLogging.log("+Windows Unversal Component Plugin loaded at " + ns);
+                        switchContextifNeeded();
+                        if (!_projectedNamespaces.Contains(ns))
+                        {
+                            Native.ThrowIfError(Native.JsProjectWinRTNamespace(ns));
+                            _projectedNamespaces.Add(ns);
+                            NKLogging.log("+Windows Unversal Component namespace loaded at " + ns);
+                        }
                     }
                     else if (typeof(T) != typeof(Type))
                         throw new ArgumentException("Windows Universal Components can only be provided as a type");
                     else
                     {
-                        var name = (plugin as Type).Name;
+                        var t = (plugin as Type);
+                        var projectionNamespace = t.Namespace;
+                        var projectionName = t.Name;
+                        var projectionFullName = projectionNamespace + "." + projectionName;
+                        var targetNamespace = ns;
+
+                        switchContextifNeeded();
+                        if (!_projectedNamespaces.Contains(projectionNamespace))
+                        {
+                            Native.ThrowIfError(Native.JsProjectWinRTNamespace(projectionNamespace));
+                            _projectedNamespaces.Add(projectionNamespace);
+                        }
 
                         var cs = new NKScriptExportProxy<T>(plugin);
-                        var appjs = cs.rewriteGeneratedStub("", ".global");
-                        if (appjs != "")
-                        {
-                            var script = new NKScriptSource(appjs, ns + "/plugin/" + name + ".js");
-                            NKLogging.log(script.source);
-                            script.inject(this).ContinueWith((t) =>
-                            {
-                                cs.initializeForContext(this);
+                        var localstub = cs.rewriteGeneratedStub("", ".local");
+                        var globalstubber = "(function(exports) {\n" + localstub + "})(NKScripting.createProjection('" + targetNamespace + "', " + projectionFullName + "));\n";
+                        var globalstub = cs.rewriteGeneratedStub(globalstubber, ".global");
 
-                                NKLogging.log("+Windows Unversal Component Plugin with script loaded at " + ns + "." + name);
-                            });
-                        }
-                        else
-                        {
-                            cs.initializeForContext(this);
-                            NKLogging.log("+Windows Unversal Component Plugin loaded at " + ns + "." + name);
-                        }
+                        var script = new NKScriptSource(globalstub, targetNamespace + "/plugin/" + projectionName + ".js");
+                         await script.inject(this);
+                        await cs.initializeForContext(this);
+                        NKLogging.log("+Windows Unversal Component Plugin with script loaded at " + targetNamespace);
                     }
                     break;
                 default:
@@ -160,7 +182,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
         private Dictionary<IntPtr, string> callBacktoScriptMessageHandlerName = new Dictionary<IntPtr, string>();
         private Dictionary<IntPtr, NKScriptMessageHandler> callBacktoScriptMessageHandler = new Dictionary<IntPtr, NKScriptMessageHandler>();
      
-        public override void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name)
+        public void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name)
         {
   
             ensureOnEngineThread(() =>
@@ -194,13 +216,20 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             });
         }   
 
-        public override void NKremoveScriptMessageHandlerForName(string name)
+        public void NKremoveScriptMessageHandlerForName(string name)
         {
             ensureOnEngineThread(() =>
             {
                 var cleanup = "delete NKScripting.messageHandlers." + name;
                 NKevaluateJavaScript(cleanup, "");
             });
+        }
+
+        private JavaScriptValue log(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)
+        {
+            var arg = arguments[1].ToString();
+            NKLogging.log(arg);
+            return JavaScriptValue.Null;
         }
 
         private JavaScriptValue postMessage(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)

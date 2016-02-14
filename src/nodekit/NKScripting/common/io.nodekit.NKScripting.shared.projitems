@@ -59,4 +59,7 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\nkscripting.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\promise.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\init_chakra.js" />
+  </ItemGroup>
 </Project>

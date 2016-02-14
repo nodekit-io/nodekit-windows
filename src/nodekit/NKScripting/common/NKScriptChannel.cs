@@ -62,41 +62,9 @@ namespace io.nodekit.NKScripting
             return _currentContext;
         }
 
-        private static bool preparationComplete = false;
-        async private Task prepareForPlugin()
-        {
-            if (preparationComplete) return;
-            try
-            {
-                context.setNKScriptChannel(this);
-                var source = await NKStorage.getResourceAsync(typeof(NKScriptChannel), "nkscripting.js", "lib");
-                if (source == null)
-                    throw new FileNotFoundException("Could not find file nkscripting.js");
-
-                var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/nkscripting.js", "NKScripting", null);
-                await script.inject(context);
-                          
-                preparationComplete = true;
-            }
-            catch 
-            {
-                 preparationComplete = false;
-            }
-
-            var source2 = await NKStorage.getResourceAsync(typeof(NKScriptChannel), "promise.js", "lib");
-            var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/promise.js", "Promise", null);
-            await script2.inject(context);
-
-            if (preparationComplete)
-              NKLogging.log(String.Format("+E{0} JavaScript Engine is ready for loading plugins", context.NKid));
-            else
-                NKLogging.log(String.Format("+E{0} JavaScript Engine could not load NKScripting.js", context.NKid));
-
-        }
-
         public async Task<NKScriptValue> bindPlugin<T>(T obj, string ns)
         {
-            await this.prepareForPlugin();
+            context.setNKScriptChannel(this);
             if ((this.id != null) || (context == null) ) return null;
             if (this.userContentController == null) return null;
 
@@ -126,9 +94,8 @@ namespace io.nodekit.NKScripting
             this.instances[0] = _principal;
 
             var script = new NKScriptSource(_generateStubs(name), ns + "/plugin/" + name + ".js");
-            NKLogging.log(script.source);
             await script.inject(context);
-            NKScriptExport export = principal.plugin as NKScriptExport;
+            var export = new NKScriptExportProxy<T>(obj);
             await export.initializeForContext(context);
             return _principal;
         }

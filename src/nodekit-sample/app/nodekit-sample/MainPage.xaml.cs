@@ -40,12 +40,11 @@ namespace io.nodekit.Samples.nodekit_sample
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private void onJavaScriptEngineReady()
+        private async Task onJavaScriptEngineReady()
         {
+            await host.NKloadPlugin(new io.nodekit.Samples.Plugin.MyPlugin(), "io.nodekit.Samples.Plugin.MyPlugin");
+            await io.nodekit.NKElectro.Main.addElectro(host);
             io.nodekit.NKLogging.log("JS Engine Ready");
-            //       host.NKloadPlugin(null, "io.nodekit.Samples.Plugin");
-                  host.NKloadPlugin(new io.nodekit.Samples.Plugin.MyPlugin(), "io.nodekit.Samples.Plugin.MyPlugin");
-              var task = io.nodekit.NKElectro.Main.addElectro(host);
         }
     }
 

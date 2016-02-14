@@ -118,6 +118,18 @@ var NKScripting = (function NKScriptingRunOnce(exports) {
         return NKScripting.createNamespace(namespace, base);
     }
 
+    NKScripting.createProjection = function (namespace, base) {
+        var properties = function () { return base.apply(this, arguments); };
+        for (var key in base) {
+              properties[key] = base[key];
+        }
+        var plugin = Object.create(Object.getPrototypeOf(base), properties);
+
+        // initialization here instead of .call()
+        plugin.events = {}
+        return NKScripting.createNamespace(namespace, plugin);
+    }
+
     NKScripting.createConstructor = function(channelName, namespace, type) {
         var ctor = function() {
             // Instance must can be accessed by native object in global context.

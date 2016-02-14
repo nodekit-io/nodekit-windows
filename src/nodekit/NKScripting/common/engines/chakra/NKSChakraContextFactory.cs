@@ -33,7 +33,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             item["JSVirtualMachine"] = runtime;  // if future non-shared runtimes required;
             item["context"] = context;
 
-            return Task<NKScriptContext>.FromResult<NKScriptContext>(context);
+            return context.completeInitialization();
         }
     }
 }
