@@ -16,6 +16,11 @@
  * limitations under the License.
  */
 
+this.process = this.process || {}
+var process = this.process;
+
+process.platform = process.platform || "win32"
+
 this.console = this.console || function () { };
 console.log = console.log || NKScripting.log;
 console.log("+Chakra JavaScript Engine Initialized");

@@ -37,7 +37,7 @@ namespace io.nodekit.NKElectro
             {
                 ["PluginBridge"] = NKScriptExportType.WinRT
             };
-            await context.NKloadPlugin(typeof(NKEApp), null, options);
+            await context.NKloadPlugin(typeof(NKEApp), "io.nodekit.electro.app", options);
 
              // NKE_BrowserWindow.attachTo(context);
             // NKE_WebContentsBase.attachTo(context);

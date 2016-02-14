@@ -16,12 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 debugger;
 
-
-io.nodekit.electro = io.nodekit.electro || {};
-
-io.nodekit.electro.app = NKElectro.NKEApp.clone();
 var app = io.nodekit.electro.app;
 var bindings = app;
 

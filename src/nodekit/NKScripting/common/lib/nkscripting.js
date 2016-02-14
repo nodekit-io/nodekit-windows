@@ -120,9 +120,15 @@ var NKScripting = (function NKScriptingRunOnce(exports) {
 
     NKScripting.createProjection = function (namespace, base) {
         var properties = function () { return base.apply(this, arguments); };
-        for (var key in base) {
-              properties[key] = base[key];
-        }
+
+        Object.getOwnPropertyNames(base).forEach(function (p) {
+            properties[p] = Object.getOwnPropertyDescriptor(this, p);
+        }, base);
+
+        Object.getOwnPropertyNames(NKScripting.prototype).forEach(function (p) {
+            properties[p] = Object.getOwnPropertyDescriptor(this, p);
+        }, NKScripting.prototype);
+
         var plugin = Object.create(Object.getPrototypeOf(base), properties);
 
         // initialization here instead of .call()
