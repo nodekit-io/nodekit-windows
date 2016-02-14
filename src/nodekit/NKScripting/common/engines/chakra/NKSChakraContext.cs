@@ -86,7 +86,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             var global = JavaScriptValue.GlobalObject;
             var NKScripting = global.GetProperty(JavaScriptPropertyId.FromString(key));
             var item = key.Split('.').Aggregate(JavaScriptValue.GlobalObject, (prod, next) => prod.GetProperty(JavaScriptPropertyId.FromString(next)));
-            return new NKChakraContextValue(this, item);
+            return new NKChakraContextValue(this, key, item);
         }
 
         protected override object RunScript(string javaScriptString, string filename)
@@ -126,7 +126,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
 
         protected List<string> _projectedNamespaces = new List<string>();
 
-        protected override async Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options)
+        protected override async Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options) 
         {
             bool mainThread = (bool)options["MainThread"];
             NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
@@ -155,7 +155,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
                         var projectionName = t.Name;
                         var projectionFullName = projectionNamespace + "." + projectionName;
                         var targetNamespace = ns;
-
+                    
                         switchContextifNeeded();
                         if (!_projectedNamespaces.Contains(projectionNamespace))
                         {
@@ -171,7 +171,9 @@ namespace io.nodekit.NKScripting.Engines.Chakra
                         var script = new NKScriptSource(globalstub, targetNamespace + "/plugin/" + projectionName + ".js");
                          await script.inject(this);
                         await cs.initializeForContext(this);
-                        NKLogging.log("+Windows Unversal Component Plugin with script loaded at " + targetNamespace);
+                        plugin.setNKScriptValue(this.getJavaScriptValue(targetNamespace));
+
+                       NKLogging.log("+Windows Unversal Component Plugin with script loaded at " + targetNamespace);
                     }
                     break;
                 default:

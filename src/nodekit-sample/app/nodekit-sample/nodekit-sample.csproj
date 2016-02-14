@@ -127,9 +127,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\nodekit\NKElectro\platform-universal\universal-loader\NKElectro-platform-universal-loader.csproj">
-      <Project>{cf172884-aa5b-4fa0-9b46-04c06e981b0b}</Project>
-      <Name>NKElectro-platform-universal-loader</Name>
+    <ProjectReference Include="..\..\..\nodekit\NKElectro\platform-universal\NKElectro-platform-universal.csproj">
+      <Project>{67d51785-f307-4fe5-96fa-b8d660800d7e}</Project>
+      <Name>NKElectro-platform-universal</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\nodekit\NKScripting\platform-universal\NKScripting-platform-universal.csproj">
       <Project>{594c5df0-10b2-4afd-b378-5e07901655c9}</Project>

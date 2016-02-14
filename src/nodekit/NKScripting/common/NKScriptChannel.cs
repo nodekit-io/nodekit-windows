@@ -62,7 +62,7 @@ namespace io.nodekit.NKScripting
             return _currentContext;
         }
 
-        public async Task<NKScriptValue> bindPlugin<T>(T obj, string ns)
+        public async Task<NKScriptValue> bindPlugin<T>(T obj, string ns) where T : class
         {
             context.setNKScriptChannel(this);
             if ((this.id != null) || (context == null) ) return null;
@@ -93,9 +93,10 @@ namespace io.nodekit.NKScripting
             _principal = new NKScriptValueNative(ns, this, obj);
             this.instances[0] = _principal;
 
-            var script = new NKScriptSource(_generateStubs(name), ns + "/plugin/" + name + ".js");
-            await script.inject(context);
             var export = new NKScriptExportProxy<T>(obj);
+
+            var script = new NKScriptSource(_generateStubs(export, name), ns + "/plugin/" + name + ".js");
+            await script.inject(context);
             await export.initializeForContext(context);
             return _principal;
         }
@@ -286,16 +287,8 @@ namespace io.nodekit.NKScripting
             string stub = String.Format("NKScripting.invokeNative.bind({0}, '{1}')", item, key);
             return prebind ? String.Format("{0};", stub) : String.Format("function(){return {0}.apply(null, arguments);", stub);
         }
-
-        private string _rewriteStub(string stub, string forKey)
-        {
-            NKScriptExport export = principal.plugin as NKScriptExport;
-            if (export != null)
-                return export.rewriteGeneratedStub(stub, forKey);
-            else
-                return stub;
-        }
-        private string _generateStubs(string name)
+        
+        private string _generateStubs<T>(NKScriptExportProxy<T> export, string name) where T : class
         {
             bool prebind = !typeInfo.ContainsMethod("");
             var stubs = "";
@@ -322,7 +315,7 @@ namespace io.nodekit.NKScripting
                 else
                     continue;
 
-                stubs += _rewriteStub(stub, member.name) + "\n";
+                stubs += export.rewriteGeneratedStub(stub, member.name) + "\n";
             }
 
             string basestub;
@@ -332,22 +325,18 @@ namespace io.nodekit.NKScripting
                 if (!constructor.isConstructor())
                     throw new NotSupportedException(string.Format("Default initializer for plugin {0} is not a constructor;  valid on Swift not C#", typeInfo.pluginType.Name));
                 // basestub = generateMethod("\(member.type)", this: "arguments.callee", prebind: false)
-                basestub = _rewriteStub(string.Format("'{0}'", constructor.NKScriptingjsType), ".base");
+                basestub = export.rewriteGeneratedStub(string.Format("'{0}'", constructor.NKScriptingjsType), ".base");
             } else
             {
-                basestub = _rewriteStub("null", ".base");
+                basestub = export.rewriteGeneratedStub("null", ".base");
             }
 
-            var localstub = _rewriteStub(stubs, ".local");
+            var localstub = export.rewriteGeneratedStub(stubs, ".local");
             var globalstubber = "(function(exports) {\n" + localstub + "})(NKScripting.createPlugin('" + id + "', '" + principal.ns + "', " + basestub + "));\n";
 
-            return _rewriteStub(globalstubber, ".global");
+            return export.rewriteGeneratedStub( globalstubber, ".global");
         }
-
-        private string _generateStubsLight(string name)
-        {
-            return _rewriteStub("", ".global");
-        }
+     
     }
 
     internal static class objectNKScriptChannelExtension

@@ -10,12 +10,16 @@ namespace io.nodekit.NKScripting.Engines.Chakra
     {
         private JavaScriptValue value;
         private NKSChakraContext context;
+        private string ns;
 
-        internal NKChakraContextValue(NKSChakraContext context, JavaScriptValue value)
+        internal NKChakraContextValue(NKSChakraContext context, string ns, JavaScriptValue value)
         {
             this.value = value;
+            this.ns = ns;
             this.context = context;
         }
+
+        string NKScriptValueProtocol.ns { get { return this.ns; } }
 
         public Task invokeMethod(string method, object[] args)
         {

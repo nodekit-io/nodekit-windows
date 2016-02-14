@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 
-namespace NKElectro
+namespace io.nodekit.NKElectro
 {
     internal static class NKEAppDirectory
     {

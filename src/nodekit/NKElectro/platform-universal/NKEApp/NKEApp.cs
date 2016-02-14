@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using io.nodekit;
-using Windows.ApplicationModel.Core;
-using io.nodekit.NKScripting;
 using System.Threading.Tasks;
+using io.nodekit;
+using io.nodekit.NKScripting;
 
-namespace NKElectro
+namespace io.nodekit.NKElectro
 {
     public sealed class NKEApp 
     {
         private NKEventEmitter events = NKEventEmitter.global;
 
         #region NKScriptExport
+        private static string defaultNamespace { get { return "io.nodekit.electro.app";  } }
+
         private static string rewriteGeneratedStub(string stub, string forKey)
         {
             switch (forKey)
@@ -24,39 +25,40 @@ namespace NKElectro
             }
         }
 
-        private static async Task initializeForContext(NKScriptContext context)
+        private static Task initializeForContext(NKScriptContext context)
         {
-            var jsEvents = await context.NKgetJavaScriptValue("io.nodekit.events");
+            var jsValue = typeof(NKEApp).getNKScriptValue();
             var events = NKEventEmitter.global;
 
             // Event: 'ready'
             events.once<string>("nk.jsApplicationReady", (data) =>
             {
-                jsEvents.invokeMethod("emit", new[] { "ready" });
+                jsValue.invokeMethod("emit", new[] { "ready" });
             });
 
             events.once<string>("nk.ApplicationDidFinishLaunching", (data) =>
             {
-                jsEvents.invokeMethod("emit", new[] { "will-finish-launching" });
+                jsValue.invokeMethod("emit", new[] { "will-finish-launching" });
             });
-
 
             events.once<string>("nk.ApplicationWillTerminate", (data) =>
             {
-                jsEvents.invokeMethod("emit", new[] { "will-quit" });
-                jsEvents.invokeMethod("emit", new[] { "quit" });
+                jsValue.invokeMethod("emit", new[] { "will-quit" });
+                jsValue.invokeMethod("emit", new[] { "quit" });
             });
+
+            return Task.FromResult<object>(null);
           }
         #endregion
 
         public static void quit()
         {
-            CoreApplication.Exit();
+            Windows.ApplicationModel.Core.CoreApplication.Exit();
         }
 
         public static void exit(int exitCode)
         {
-            CoreApplication.Exit();
+            Windows.ApplicationModel.Core.CoreApplication.Exit();
         }
 
         public static string getAppPath()

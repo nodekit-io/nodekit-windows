@@ -104,9 +104,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <None Include="NKEApp\NKEApp.swift" />
-    <None Include="NKEApp\NKEAppDirectory.swift" />
-    <None Include="NKEApp\NKEAppProtocol.swift" />
     <None Include="NKEBrowser\NKE_BrowserConstants.swift" />
     <None Include="NKEBrowser\NKE_BrowserWindow.swift" />
     <None Include="NKEBrowser\NKE_BrowserWindowProtocol.swift" />
@@ -135,16 +132,23 @@
     <None Include="NKEProtocol\NKE_Protocol.swift" />
     <None Include="NKEProtocol\NKE_ProtocolFileDecode.swift" />
     <None Include="NKEProtocol\NKE_ProtocolLocalFile.swift" />
-    <None Include="NKE_Boot\NKE_BootElectroMain.swift" />
-    <None Include="NKE_Boot\NKE_BootElectroRenderer.swift" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NKEApp\NKEApp.cs" />
+    <Compile Include="NKEApp\NKEAppDirectory.cs" />
+    <Compile Include="NKE_Boot\Main.cs" />
+    <Compile Include="NKE_Boot\Renderer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\io.nodekit.NKElectro.rd.xml" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="..\..\common\io.nodekit.NKElectro.shared.projitems" Label="Shared" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\NKScripting\platform-universal\NKScripting-platform-universal.csproj">
+      <Project>{594c5df0-10b2-4afd-b378-5e07901655c9}</Project>
+      <Name>NKScripting-platform-universal</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\common\io.nodekit.NKElectro.shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

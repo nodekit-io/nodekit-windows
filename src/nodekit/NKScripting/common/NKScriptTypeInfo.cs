@@ -31,7 +31,7 @@ namespace io.nodekit.NKScripting
         Type pluginType { get; }
     }
 
-    internal class NKScriptTypeInfo<T> : List<NKScriptTypeInfoMemberInfo>, INKScriptTypeInfo
+    internal class NKScriptTypeInfo<T> : List<NKScriptTypeInfoMemberInfo>, INKScriptTypeInfo where T : class
     {
         private Type _pluginType;
         private bool _hasSettableProperties;
@@ -78,7 +78,7 @@ namespace io.nodekit.NKScripting
 
             enumerateExcluding(exclusion, (name, member) =>
             {
-                NKScriptExportProxy<T> cls = new NKScriptExportProxy<T>(instance);
+                NKScriptExportProxy<T> cls = new NKScriptExportProxy<T>(plugin);
 
                 switch (member.memberType)
                 {
@@ -144,10 +144,10 @@ namespace io.nodekit.NKScripting
                 string name = p.Name;
 
                 MethodInfo getter = p.GetMethod;
-                if (!getter.IsPublic) getter = null;
+                if (getter !=null && !getter.IsPublic) getter = null;
 
                 MethodInfo setter = p.SetMethod;
-                if (!setter.IsPublic) setter = null;
+                if (setter != null && !setter.IsPublic) setter = null;
 
                 if ((getter != null) || (setter != null))
                 {

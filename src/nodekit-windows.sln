@@ -31,15 +31,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKScripting-platform-univer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKScripting-platform-win32", "nodekit\NKScripting\platform-win32\NKScripting-platform-win32.csproj", "{2F65CD64-B8AE-4257-93DB-87334EA341F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKElectro-platform-universal-lib", "nodekit\NKElectro\platform-universal\universal-lib\NKElectro-platform-universal-lib.csproj", "{67D51785-F307-4FE5-96FA-B8D660800D7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKElectro-platform-universal", "nodekit\NKElectro\platform-universal\NKElectro-platform-universal.csproj", "{67D51785-F307-4FE5-96FA-B8D660800D7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKElectro-platform-win32", "nodekit\NKElectro\platform-win32\NKElectro-platform-win32.csproj", "{3EDA8D90-C03F-4781-905A-E38F49E423E9}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NKElectro-common", "nodekit\NKElectro\common\NKElectro-common.shproj", "{5C60B8BC-84D4-433B-901D-4BB7749418C5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKElectro-platform-universal-winmd", "nodekit\NKElectro\platform-universal\universal-winmd\NKElectro-platform-universal-winmd.csproj", "{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKElectro-platform-universal-loader", "nodekit\NKElectro\platform-universal\universal-loader\NKElectro-platform-universal-loader.csproj", "{CF172884-AA5B-4FA0-9B46-04C06E981B0B}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -49,7 +45,6 @@ Global
 		nodekit\NKElectro\common\io.nodekit.NKElectro.shared.projitems*{3eda8d90-c03f-4781-905a-e38f49e423e9}*SharedItemsImports = 4
 		nodekit\NKScripting\common\io.nodekit.NKScripting.shared.projitems*{9ce711af-7ef7-40b6-87f9-c0b70a908358}*SharedItemsImports = 13
 		nodekit\NKElectro\common\io.nodekit.NKElectro.shared.projitems*{67d51785-f307-4fe5-96fa-b8d660800d7e}*SharedItemsImports = 4
-		nodekit\NKElectro\common\io.nodekit.NKElectro.shared.projitems*{d74d5253-23df-41a1-9d50-a8d0ae2b26d5}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -164,38 +159,6 @@ Global
 		{3EDA8D90-C03F-4781-905A-E38F49E423E9}.Release|x64.Build.0 = Release|Any CPU
 		{3EDA8D90-C03F-4781-905A-E38F49E423E9}.Release|x86.ActiveCfg = Release|Any CPU
 		{3EDA8D90-C03F-4781-905A-E38F49E423E9}.Release|x86.Build.0 = Release|Any CPU
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Debug|ARM.ActiveCfg = Debug|ARM
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Debug|ARM.Build.0 = Debug|ARM
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Debug|x64.ActiveCfg = Debug|x64
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Debug|x64.Build.0 = Debug|x64
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Debug|x86.ActiveCfg = Debug|x86
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Debug|x86.Build.0 = Debug|x86
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Release|ARM.ActiveCfg = Release|ARM
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Release|ARM.Build.0 = Release|ARM
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Release|x64.ActiveCfg = Release|x64
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Release|x64.Build.0 = Release|x64
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Release|x86.ActiveCfg = Release|x86
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5}.Release|x86.Build.0 = Release|x86
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Debug|ARM.ActiveCfg = Debug|ARM
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Debug|ARM.Build.0 = Debug|ARM
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Debug|x64.ActiveCfg = Debug|x64
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Debug|x64.Build.0 = Debug|x64
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Debug|x86.ActiveCfg = Debug|x86
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Debug|x86.Build.0 = Debug|x86
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Release|ARM.ActiveCfg = Release|ARM
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Release|ARM.Build.0 = Release|ARM
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Release|x64.ActiveCfg = Release|x64
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Release|x64.Build.0 = Release|x64
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Release|x86.ActiveCfg = Release|x86
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -216,7 +179,5 @@ Global
 		{67D51785-F307-4FE5-96FA-B8D660800D7E} = {16D59ACC-9DAA-4487-8052-08C9815E9E1B}
 		{3EDA8D90-C03F-4781-905A-E38F49E423E9} = {16D59ACC-9DAA-4487-8052-08C9815E9E1B}
 		{5C60B8BC-84D4-433B-901D-4BB7749418C5} = {16D59ACC-9DAA-4487-8052-08C9815E9E1B}
-		{D74D5253-23DF-41A1-9D50-A8D0AE2B26D5} = {16D59ACC-9DAA-4487-8052-08C9815E9E1B}
-		{CF172884-AA5B-4FA0-9B46-04C06E981B0B} = {16D59ACC-9DAA-4487-8052-08C9815E9E1B}
 	EndGlobalSection
 EndGlobal

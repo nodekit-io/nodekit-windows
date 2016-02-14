@@ -19,15 +19,14 @@
 
 using System.Threading.Tasks;
 using io.nodekit.NKScripting;
-using NKElectro;
 
-namespace io.nodekit.electro
+namespace io.nodekit.NKElectro
 {
     public sealed class Renderer
     {
         public async static Task addElectro(NKScriptContext context)
         {
-            var appjs = await NKStorage.getResourceAsync(typeof(NKEApp), "_nke_renderer.js", "lib_electro");
+            var appjs = await NKStorage.getResourceAsync(typeof(Renderer), "_nke_renderer.js", "lib_electro");
             var script = "function loadbootstrap(){\n" + appjs + "\n}\n" + "loadbootstrap();" + "\n";
             var scriptsource = new NKScriptSource(script, "io.nodekit.electro/lib-electro/_nke_renderer.js", "io.nodekit.electro.renderer");
             await scriptsource.inject(context);

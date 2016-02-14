@@ -27,11 +27,13 @@ namespace io.nodekit.NKScripting
     public interface NKScriptValueProtocol
     {
         Task invokeMethod(string method, object[] args);
+        string ns { get; }
     }
 
     public class NKScriptValue : IDisposable, NKScriptValueProtocol
     {
         public string ns;
+        string NKScriptValueProtocol.ns {  get  {  return this.ns; } }
 
         protected WeakReference<NKScriptChannel> _channel;
         public NKScriptChannel channel { get { NKScriptChannel c; _channel.TryGetTarget(out c); return c; } }
@@ -291,5 +293,7 @@ namespace io.nodekit.NKScripting
                 return new NKScriptValue("document", this.channel, this.origin);
             }
         }
+
+      
     }
 }

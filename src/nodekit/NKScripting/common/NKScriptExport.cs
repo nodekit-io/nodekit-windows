@@ -39,27 +39,37 @@ namespace io.nodekit.NKScripting
         public virtual Task initializeForContext(NKScriptContext context) { return Task.FromResult<object>(null); }
     }
 
-    internal class NKScriptExportProxy<T>
+    internal class NKScriptExportProxy<T> where T : class
     {
         private T instance;
         private MethodInfo _rewriteGeneratedStub;
         private MethodInfo _rewritescriptNameForKey;
         private MethodInfo _isExcludedFromScript;
         private MethodInfo _initializeForContext;
+        private MethodInfo _defaultNamespace;
+        private Type t;
 
         internal NKScriptExportProxy(T plugin)
         {
-           Type t = typeof(T);
+            t = typeof(T);
             if (t == typeof(Type))
+            {
                 t = (plugin as Type);
-   
+                instance = null;
+            }
+            else
+                instance = plugin;
+
             var ti = t.GetTypeInfo();
             _rewriteGeneratedStub = ti.GetDeclaredMethod("rewriteGeneratedStub");
             _rewritescriptNameForKey = ti.GetDeclaredMethod("rewritescriptNameForKey");
             _isExcludedFromScript = ti.GetDeclaredMethod("isExcludedFromScript");
             _initializeForContext = ti.GetDeclaredMethod("initializeForContext");
-
-            instance = plugin;
+            var prop = ti.GetDeclaredProperty("defaultNamespace");
+            if (prop != null)
+                _defaultNamespace = prop.GetMethod;
+            else
+                _defaultNamespace = null;          
         }
 
         internal string rewriteGeneratedStub(string stub, string forKey)
@@ -92,6 +102,17 @@ namespace io.nodekit.NKScripting
                 return (Task)_initializeForContext.Invoke(instance, new[] { context });
             else
                 return Task.FromResult<object>(null);
+        }
+
+        internal string defaultNamespace
+        {
+            get
+            {
+                if (_defaultNamespace != null)
+                    return (string)_defaultNamespace.Invoke(instance, null);
+                else
+                    return t.Namespace + "." + t.Name;
+            }
         }
 
     }

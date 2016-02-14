@@ -327,14 +327,14 @@ namespace io.nodekit.NKScripting
 
     public static class objectNKScriptValueExtension
     {
-        private static Dictionary<object, NKScriptValue> dictionary = new Dictionary<object, NKScriptValue>();
+        private static Dictionary<object, NKScriptValueProtocol> dictionary = new Dictionary<object, NKScriptValueProtocol>();
 
-        public static NKScriptValue getNKScriptValue(this object obj)
+        public static NKScriptValueProtocol getNKScriptValue(this object obj)
         {
             return dictionary[obj];
         }
 
-        internal static void setNKScriptValue(this object obj, NKScriptValue value)
+        internal static void setNKScriptValue(this object obj, NKScriptValueProtocol value)
         {
             if (value != null)
                 dictionary[obj] = value;

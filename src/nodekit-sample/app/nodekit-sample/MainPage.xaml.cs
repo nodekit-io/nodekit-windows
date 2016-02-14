@@ -27,7 +27,7 @@ namespace io.nodekit.Samples.nodekit_sample
         public MainPage()
         {
             this.InitializeComponent();
-            NKSChakraContextFactory.createContext(new Dictionary<string, object>()).ContinueWith(task => { host = task.Result; onJavaScriptEngineReady(); });
+            NKSChakraContextFactory.createContext(new Dictionary<string, object>()).ContinueWith(async task => { host = task.Result; await onJavaScriptEngineReady(); });
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

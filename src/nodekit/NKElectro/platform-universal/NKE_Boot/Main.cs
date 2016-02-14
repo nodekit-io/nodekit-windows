@@ -20,7 +20,6 @@
 using System.Threading.Tasks;
 using io.nodekit.NKScripting;
 using System.Collections.Generic;
-using NKElectro;
 
 namespace io.nodekit.NKElectro
 {
@@ -28,18 +27,19 @@ namespace io.nodekit.NKElectro
     {
         public async static Task addElectro(NKScriptContext context)
         {
-            var appjs = await NKStorage.getResourceAsync(typeof(NKEApp), "_nke_main.js", "lib_electro");
+            var appjs = await NKStorage.getResourceAsync(typeof(Main), "_nke_main.js", "lib_electro");
             var script = "function loadbootstrap(){\n" + appjs + "\n}\n" + "loadbootstrap();" + "\n";
             var scriptsource = new NKScriptSource(script, "io.nodekit.electro/lib-electro/_nke_main.js", "io.nodekit.electro.main");
             await scriptsource.inject(context);
 
             var options = new Dictionary<string, object>
             {
-                ["PluginBridge"] = NKScriptExportType.WinRT
+                ["PluginBridge"] = NKScriptExportType.NKScriptExport
             };
-            await context.NKloadPlugin(typeof(NKEApp), "io.nodekit.electro.app", options);
+            await context.NKloadPlugin(typeof(NKEApp), null, options);
+       //     await context.NKloadPlugin(typeof(NKEDialog), "io.nodekit.electro.dialog", options);
 
-             // NKE_BrowserWindow.attachTo(context);
+              // NKE_BrowserWindow.attachTo(context);
             // NKE_WebContentsBase.attachTo(context);
             // NKE_Dialog.attachTo(context);
             // NKE_IpcMain.attachTo(context);

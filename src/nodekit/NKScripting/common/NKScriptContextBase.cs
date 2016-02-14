@@ -110,14 +110,12 @@ namespace io.nodekit.NKScripting
         }
 
         protected List<NKScriptValue> _injectedPlugins = new List<NKScriptValue>();
-        protected virtual bool baseCanHandle<T>(T plugin, ref string ns, ref Dictionary<string, object> options)
+        protected virtual bool baseCanHandle<T>(T plugin, ref string ns, ref Dictionary<string, object> options) where T : class
         {
             if (ns == null)
             {
-                if (typeof(T) == typeof(Type))
-                    ns = (plugin as Type).Namespace;
-                else
-                    ns = (typeof(T)).Namespace;
+                var export = new NKScriptExportProxy<T>(plugin);
+                ns = export.defaultNamespace;
             }
 
             if (options == null)
@@ -155,7 +153,7 @@ namespace io.nodekit.NKScripting
             }
         }
 
-        protected async Task LoadPluginBase<T>(T plugin, string ns, Dictionary<string, object> options)
+        protected async Task LoadPluginBase<T>(T plugin, string ns, Dictionary<string, object> options) where T : class
         {
             bool mainThread = (bool)options["MainThread"];
             NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
@@ -179,7 +177,7 @@ namespace io.nodekit.NKScripting
             }
         }
 
-        public Task NKloadPlugin<T>(T plugin, string ns, Dictionary<string, object> options = null)
+        public Task NKloadPlugin<T>(T plugin, string ns, Dictionary<string, object> options = null) where T : class
         {
             return ensureOnEngineThread(async () =>
             {
@@ -230,7 +228,7 @@ namespace io.nodekit.NKScripting
         }
 
         // Abstract Must Inherit Items, All Called Thread Safe on Main JS Thread (whatever thread with which the context instance is created )
-        protected abstract Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options);
+        protected abstract Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options) where T : class;
         protected abstract Task PrepareEnvironment();
 
         // NKContext abstract methods implemented in Async of Sync version of base
