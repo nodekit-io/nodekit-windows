@@ -45,6 +45,7 @@ namespace io.nodekit.Samples.nodekit_sample
             io.nodekit.NKLogging.log("JS Engine Ready");
             //       host.NKloadPlugin(null, "io.nodekit.Samples.Plugin");
                   host.NKloadPlugin(new io.nodekit.Samples.Plugin.MyPlugin(), "io.nodekit.Samples.Plugin.MyPlugin");
+              var task = io.nodekit.NKElectro.Main.addElectro(host);
         }
     }
 

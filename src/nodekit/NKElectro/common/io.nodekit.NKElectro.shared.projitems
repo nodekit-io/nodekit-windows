@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>5c60b8bc-84d4-433b-901d-4bb7749418c5</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>io.nodekit.NKElectro</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\app.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\browser-window.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipc-main.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipc-renderer.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\menu-item.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\menu.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\protocol.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\web-contents.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\_nke_main.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\_nke_renderer.js" />
+  </ItemGroup>
+</Project>

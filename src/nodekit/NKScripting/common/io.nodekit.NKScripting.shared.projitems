@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>9ce711af-7ef7-40b6-87f9-c0b70a908358</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>io.nodekit.NKScripting</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptBackgroundWorkItemCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptBeforeCollectCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptEngineException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptErrorCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptFatalException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptMemoryAllocationCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptMemoryEventType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptNativeFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptObjectBeforeCollectCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptObjectFinalizeCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptProjectionEnqueueCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptPromiseContinuationCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptPropertyId.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptPropertyIdType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptRuntime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptRuntimeAttributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptRuntimeVersion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptScriptException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptSerializedScriptLoadSourceCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptSerializedScriptUnloadCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptSourceContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptThreadServiceCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptTypedArrayType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptUsageException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptValueType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\Native.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEventEmitter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKLogging.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptChannel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptContextBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptContextFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptExport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptInvocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptTypeInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptValueNative.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\nkscripting.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\promise.js" />
+  </ItemGroup>
+</Project>
