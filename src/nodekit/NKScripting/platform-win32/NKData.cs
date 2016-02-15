@@ -6,7 +6,7 @@ using System.Text;
 
 namespace io.nodekit.NKScripting
 {
-    class NKData
+    public class NKData
     {
         public static string jsonSerialize(Dictionary<string, object> instance)
         {

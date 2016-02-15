@@ -17,9 +17,16 @@
 * limitations under the License.
 */
 
-import Foundation
-import WebKit
+using System;
+using System.Collections.Generic;
+using io.nodekit.NKScripting;
 
+namespace io.nodekit.NKElectro
+{
+    public partial class NKE_WebContentsBase : NKScriptExport
+    {
+
+/*
 // MUST INHERIT
 class NKE_WebContentsBase: NSObject {
     internal weak var _window: NKE_BrowserWindow!
@@ -91,5 +98,9 @@ extension NKE_WebContentsBase {
         self._window?._events.on("nk.IPCReplytoMain") { (item: NKE_IPC_Event) -> Void in
             self.NKscriptObject?.invokeMethod("emit", withArguments: ["nk.IPCReplytoMain", item.sender, item.channel, item.replyId, item.arg[0]], completionHandler: nil)
         }
+    }
+}
+*/
+
     }
 }

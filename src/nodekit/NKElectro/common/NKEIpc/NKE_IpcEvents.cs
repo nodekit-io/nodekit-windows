@@ -1,4 +1,4 @@
-/*
+﻿/*
 * nodekit.io
 *
 * Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
@@ -17,18 +17,23 @@
 * limitations under the License.
 */
 
-import Foundation
+namespace io.nodekit.NKElectro
+{
 
-internal struct NKE_IPC_Event {
-    var sender: Int
-    var channel: String
-    var replyId: String
-    var arg: [AnyObject]
+    internal struct NKE_IPC_Event
+    {
+        public int sender;
+        public string channel;
+        public string replyId;
+        public object[] arg;
 
-    init(sender: Int, channel: String, replyId: String, arg: [AnyObject]) {
-        self.sender = sender
-        self.channel = channel
-        self.replyId = replyId
-        self.arg = arg
+        public NKE_IPC_Event(int sender, string channel, string replyId, object[] arg)
+        {
+            this.sender = sender;
+            this.channel = channel;
+            this.replyId = replyId;
+            this.arg = arg;
+        }
     }
 }
+

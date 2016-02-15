@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace io.nodekit
 {
-    class NKStorage
+    public class NKStorage
     {
         public static string getResource(System.Type t, string name, string folder)
         {

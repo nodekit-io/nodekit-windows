@@ -30,13 +30,13 @@ namespace io.nodekit.NKScripting
          WinRT  // Universal Windows Component Projection directly to Chakra or ChakraCore scripting engines
     }
 
-    public abstract class NKScriptExport: INotifyPropertyChanged
+    public interface NKScriptExport
     {
-        public abstract event PropertyChangedEventHandler PropertyChanged;
-        public virtual string rewriteGeneratedStub(string stub, string forKey) { return stub; }
-        public virtual string rewritescriptNameForKey(string key) { return key; }
-        public virtual bool isExcludedFromScript(string key) { return false; }
-        public virtual Task initializeForContext(NKScriptContext context) { return Task.FromResult<object>(null); }
+     //   public abstract event PropertyChangedEventHandler PropertyChanged;
+     //   public virtual string rewriteGeneratedStub(string stub, string forKey) { return stub; }
+     //   public virtual string rewritescriptNameForKey(string key) { return key; }
+     //   public virtual bool isExcludedFromScript(string key) { return false; }
+     //   public virtual Task initializeForContext(NKScriptContext context) { return Task.FromResult<object>(null); }
     }
 
     internal class NKScriptExportProxy<T> where T : class

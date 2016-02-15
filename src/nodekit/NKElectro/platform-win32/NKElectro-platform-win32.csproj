@@ -35,8 +35,14 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\..\NKScripting\platform-win32\NKScripting-platform-win32.csproj">
+      <Project>{2f65cd64-b8ae-4257-93db-87334ea341f3}</Project>
+      <Name>NKScripting-platform-win32</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NKEBrowser\NKE_BrowserWindow_win32.cs" />
+    <Compile Include="NKEBrowser\NKE_WebContents_win32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="..\common\io.nodekit.NKElectro.shared.projitems" Label="Shared" />

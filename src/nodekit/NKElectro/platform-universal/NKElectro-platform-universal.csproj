@@ -104,11 +104,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <None Include="NKEBrowser\NKE_BrowserConstants.swift" />
-    <None Include="NKEBrowser\NKE_BrowserWindow.swift" />
-    <None Include="NKEBrowser\NKE_BrowserWindowProtocol.swift" />
-    <None Include="NKEBrowser\NKE_WebContentsBase.swift" />
-    <None Include="NKEBrowser\NKE_WebContentsProtocol.swift" />
     <None Include="NKEBrowser\platform-ios\NKE_BrowserWindow_IOS.swift" />
     <None Include="NKEBrowser\platform-ios\NKE_BrowserWindow_UI_IOS.swift" />
     <None Include="NKEBrowser\platform-ios\NKE_BrowserWindow_WK_IOS.swift" />
@@ -121,11 +116,6 @@
     <None Include="NKEBrowser\platform-osx\NKE_WebContentsWK_OSX.swift" />
     <None Include="NKEDialog\NKEDialog-ios.swift" />
     <None Include="NKEDialog\NKEDialog-osx.swift" />
-    <None Include="NKEDialog\NKEDialogProtocol.swift" />
-    <None Include="NKEIpc\NKE_IpcEvents.swift" />
-    <None Include="NKEIpc\NKE_IpcMain.swift" />
-    <None Include="NKEIpc\NKE_IpcProtocol.swift" />
-    <None Include="NKEIpc\NKE_IpcRenderer.swift" />
     <None Include="NKEMenu\NKEMenu-ios.swift" />
     <None Include="NKEMenu\NKEMenu-osx.swift" />
     <None Include="NKEMenu\NKEMenuProtocol.swift" />
@@ -137,8 +127,9 @@
   <ItemGroup>
     <Compile Include="NKEApp\NKEApp.cs" />
     <Compile Include="NKEApp\NKEAppDirectory.cs" />
-    <Compile Include="NKE_Boot\Main.cs" />
-    <Compile Include="NKE_Boot\Renderer.cs" />
+    <Compile Include="NKEBrowser\NKE_BrowserWindow_universal.cs" />
+    <Compile Include="NKEBrowser\NKE_WebContents_universal.cs" />
+    <Compile Include="NKEDialog\NKEDialog-universal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\io.nodekit.NKElectro.rd.xml" />
   </ItemGroup>
@@ -148,6 +139,7 @@
       <Name>NKScripting-platform-universal</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\common\io.nodekit.NKElectro.shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
