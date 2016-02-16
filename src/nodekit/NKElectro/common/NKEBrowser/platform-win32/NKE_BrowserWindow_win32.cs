@@ -1,4 +1,5 @@
-﻿/*
+﻿#if WINDOWS_WPF
+/*
 * nodekit.io
 *
 * Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
@@ -20,69 +21,172 @@
 using System;
 using System.Collections.Generic;
 using io.nodekit.NKScripting;
+using System.Threading.Tasks;
 
 namespace io.nodekit.NKElectro
 {
-    public class NKE_WebContents : NKE_WebContentsBase
+    public partial class NKE_BrowserWindow
     {
+        private int _thread_id;
+    
+       internal Task<NKE_Window> createWindow(Dictionary<string, object> options)
+        {
+            _thread_id = Environment.CurrentManagedThreadId;
+            var tcs = new TaskCompletionSource<NKE_Window>();      
+            return tcs.Task;
+        }
 
-        public NKE_WebContents(NKE_BrowserWindow parent) { }
-
-
-        // Event:  'did-fail-load'
-        // Event:  'did-finish-load'
-
-        public bool canGoBack()
+        public void blurWebView()
         {
             throw new NotImplementedException();
         }
 
-        public bool canGoForward()
+        public void capturePage(Dictionary<string, object> rect, NKScriptValue callback)
         {
             throw new NotImplementedException();
         }
 
-        public void executeJavaScript(string code, string userGesture)
+        public void center()
         {
             throw new NotImplementedException();
         }
 
-        public string getTitle()
+        public void close()
         {
             throw new NotImplementedException();
         }
 
-        public string getURL()
+        public void destroy()
         {
             throw new NotImplementedException();
         }
 
-        public string getUserAgent()
+        public void flashFrame(bool flag)
         {
             throw new NotImplementedException();
         }
 
-        public void goBack()
+        public void focus()
         {
             throw new NotImplementedException();
         }
 
-        public void goForward()
+        public void focusOnWebView()
         {
             throw new NotImplementedException();
         }
 
-        public void ipcReply(int dest, string channel, string replyId, object result)
+        public Dictionary<string, object> getBounds()
         {
             throw new NotImplementedException();
         }
 
-        public void ipcSend(string channel, string replyId, object[] arg)
+        public int[] getContentSize()
         {
             throw new NotImplementedException();
         }
 
-        public bool isLoading()
+        public int[] getMaximumSize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int[] getMinimumSize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int[] getPosition()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string getRepresentedFilename()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<string, object> getSize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void getTitle()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void hide()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void hookWindowMessage(int message, NKScriptValue callback)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isAlwaysOnTop()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isDocumentEdited()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isFocused()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isFullScreen()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isKiosk()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isMaximized()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isMenuBarAutoHide()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isMenuBarVisible()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isMinimized()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isResizable()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isVisible()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool isVisibleOnAllWorkspaces()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void isWindowMessageHooked(int message)
         {
             throw new NotImplementedException();
         }
@@ -92,168 +196,12 @@ namespace io.nodekit.NKElectro
             throw new NotImplementedException();
         }
 
-        public void reload()
+        public void maximize()
         {
-            throw new NotImplementedException();
+             throw new NotImplementedException();
         }
 
-        public void reloadIgnoringCache()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void setUserAgent(string userAgent)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void stop()
-        {
-            throw new NotImplementedException();
-        }
-
-
-
-
-
-        /* ****************************************************************** *
-         *               REMAINDER OF ELECTRO API NOT IMPLEMENTED             *
-         * ****************************************************************** */
-
-        public NKScriptValue session
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public void addWorkSpace(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void beginFrameSubscription(NKScriptValue callback)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void canGoToOffset(int offset)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void clearHistory()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void closeDevTools()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void copyclipboard()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void cut()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void delete()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void disableDeviceEmulation()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void downloadURL(string url)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void enableDeviceEmulation(Dictionary<string, object> parameters)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void endFrameSubscription()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void goToIndex(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void goToOffset(int offset)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void hasServiceWorker(NKScriptValue callback)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void insertCSS(string css)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void inspectElement(int x, int y)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void inspectServiceWorker()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool isAudioMuted()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void isCrashed()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void isDevToolsFocused()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void isDevToolsOpened()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool isWaitingForResponse()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void openDevTools(Dictionary<string, object> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void paste()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void pasteAndMatchStyle()
+        public void minimize()
         {
             throw new NotImplementedException();
         }
@@ -268,84 +216,146 @@ namespace io.nodekit.NKElectro
             throw new NotImplementedException();
         }
 
-        public void redo()
+        public void reload()
         {
             throw new NotImplementedException();
         }
 
-        public void removeWorkSpace(string path)
+        public void setAlwaysOnTop(bool flag)
         {
             throw new NotImplementedException();
         }
 
-        public void replace(string text)
+        public void setAspectRatio(double aspectRatio, int[] extraSize)
         {
             throw new NotImplementedException();
         }
 
-        public void replaceMisspelling(string text)
+        public void setAutoHideMenuBar(bool hide)
         {
             throw new NotImplementedException();
         }
 
-        public void savePage(string fullstring, string saveType, NKScriptValue callback)
+        public void setBounds(Dictionary<string, object> options)
         {
             throw new NotImplementedException();
         }
 
-        public void selectAll()
+        public void setContentSize(int width, int height)
         {
             throw new NotImplementedException();
         }
 
-        public void sendInputEvent(Dictionary<string, object> e)
+        public void setDocumentEdited(bool edited)
         {
             throw new NotImplementedException();
         }
 
-        public void setAudioMuted(bool muted)
+        public void setFullScreen(bool flag)
         {
             throw new NotImplementedException();
         }
 
-        public void toggleDevTools()
+        public void setIgnoreMouseEvents(bool ignore)
         {
             throw new NotImplementedException();
         }
 
-        public void undo()
+        public void setKiosk(bool flag)
         {
             throw new NotImplementedException();
         }
 
-        public void unregisterServiceWorker(NKScriptValue callback)
+        public void setMaximumSize(int width, int height)
         {
             throw new NotImplementedException();
         }
 
-        public void unselect()
+        public void setMenuBarVisibility(bool visible)
         {
             throw new NotImplementedException();
-        } 
+        }
 
-        // Event:  'certificate-error'
-        // Event:  'crashed'
-        // Event:  'destroyed'
-        // Event:  'devtools-closed'
-        // Event:  'devtools-focused'
-        // Event:  'devtools-opened'
-        // Event:  'did-frame-finish-load'
-        // Event:  'did-get-redirect-request'
-        // Event:  'did-get-response-details'
-        // Event:  'did-start-loading'
-        // Event:  'did-stop-loading'
-        // Event:  'dom-ready'
-        // Event:  'login'
-        // Event:  'new-window'
-        // Event:  'page-favicon-updated'
-        // Event:  'plugin-crashed'
-        // Event:  'select-client-certificate'
-        // Event:  'will-navigate'
-        
+        public void setMinimumSize(int width, int height)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setPosition(int x, int u)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setProgressBar(double progress)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setRepresentedFilename(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setResizable(bool resizable)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setSize(int width, int height)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setSkipTaskbar(bool skip)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setTitle(string title)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void setVisibleOnAllWorkspaces(bool visible)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void show()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void showDefinitionForSelection()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void showInactive()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void unhookAllWindowMessages()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void unhookWindowMessage(int message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void unmaximize()
+        {
+            throw new NotImplementedException();
+        }
+
+        // void setMenu(menu); //LINUX WINDOWS
+        // void setOverlayIcon(overlay, description); //WINDOWS 7+
+        // void setThumbarButtons(buttons); //WINDOWS 7+
+
+
     }
 }
+#endif

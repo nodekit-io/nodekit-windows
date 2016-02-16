@@ -86,6 +86,7 @@ namespace io.nodekit.NKScripting
 
             _principal = new NKScriptValueNative(ns, this, obj);
             this.instances[0] = _principal;
+            obj.setNKScriptValue(_principal);
 
             var export = new NKScriptExportProxy<T>(obj);
 
@@ -125,7 +126,7 @@ namespace io.nodekit.NKScripting
             if (body != null && body.ContainsKey("$opcode"))
             {
                 string opcode = body["$opcode"] as String;
-                int target = Convert.ToInt32(body["$target"] as String);
+                int target = Int32.Parse(body["$target"].ToString());
                 if (instances.ContainsKey(target))
                 {
                     var obj = instances[target];
@@ -162,9 +163,9 @@ namespace io.nodekit.NKScripting
                 else if (opcode == "+")
                 {
                     // Create instance
-                    var args = body["$operand"] as Array;
+                    var args = body["$operand"] as object[];
                     var ns = String.Format("{0}[{1}]", principal.ns, target);
-                    instances[target] = new NKScriptValueNative(ns, this, args);
+                    instances[target] = new NKScriptValueNative(ns, this, args, true);
                 }
                 else
                 {
@@ -204,7 +205,7 @@ namespace io.nodekit.NKScripting
             if (body != null && body.ContainsKey("$opcode"))
             {
                 string opcode = body["$opcode"] as String;
-                int target = Convert.ToInt32(body["$target"] as String);
+                int target = Int32.Parse(body["$target"].ToString());
                 if (instances.ContainsKey(target))
                 {
                     var obj = instances[target];
@@ -246,9 +247,9 @@ namespace io.nodekit.NKScripting
                 else if (opcode == "+")
                 {
                     // Create instance
-                    var args = body["$operand"] as Array;
+                    var args = body["$operand"] as object[];
                     var ns = String.Format("{0}[{1}]", principal.ns, target);
-                    instances[target] = new NKScriptValueNative(ns, this, args);
+                    instances[target] = new NKScriptValueNative(ns, this, args, true);
                     result = true;
                 }
                 else
@@ -281,31 +282,31 @@ namespace io.nodekit.NKScripting
         private string _generateMethod(string key, string item, bool prebind)
         {
             string stub = String.Format("NKScripting.invokeNative.bind({0}, '{1}')", item, key);
-            return prebind ? String.Format("{0};", stub) : String.Format("function(){return {0}.apply(null, arguments);", stub);
+            return prebind ? String.Format("{0};", stub) : "function(){return " + stub + ".apply(null, arguments);}";
         }
         
         private string _generateStubs<T>(NKScriptExportProxy<T> export, string name) where T : class
         {
-            bool prebind = !typeInfo.ContainsMethod("");
+            bool prebind = !typeInfo.ContainsConstructor("");
             var stubs = "";
             foreach (var member in typeInfo)
             {
                 string stub;
                 if ((member.isMethod()) && (member.name != ""))
                 {
-                    var methodStr = _generateMethod(String.Format("{0}{1}", member.name, member.NKScriptingjsType), prebind ? "exports" : "this", prebind);
+                    var methodStr = _generateMethod(String.Format("{0}{1}", member.key, member.NKScriptingjsType), prebind ? "exports" : "this", prebind);
                     stub = string.Format("exports.{0} = {1}", member.name, methodStr);
                 }
                 else if (member.isProperty())
                 {
                     if (isFactory)
                     {
-                        stub = string.Format("NKScripting.defineProperty(exports, '{0}', null, {1});", member.name, (bool)(member.setter != null));
+                        stub = string.Format("NKScripting.defineProperty(exports, '{0}', null, {1});", member.name, (member.setter != null).ToString().ToLower());
                     }
                     else
                     {
                         var value = context.NKserialize(principal.valueForPropertyNative(member.name));
-                        stub = string.Format("NKScripting.defineProperty(exports, '{0}', {1}, {1});", member.name, value, (bool)(member.setter != null));
+                        stub = string.Format("NKScripting.defineProperty(exports, '{0}', {1}, {1});", member.name, value, (member.setter != null).ToString().ToLower());
                     }
                 }
                 else
@@ -315,11 +316,9 @@ namespace io.nodekit.NKScripting
             }
 
             string basestub;
-            if (typeInfo.ContainsMethod(""))
+            if (typeInfo.ContainsConstructor(""))
             {
-                var constructor = typeInfo.Item("");
-                if (!constructor.isConstructor())
-                    throw new NotSupportedException(string.Format("Default initializer for plugin {0} is not a constructor;  valid on Swift not C#", typeInfo.pluginType.Name));
+                var constructor = typeInfo.DefaultConstructor();
                 // basestub = generateMethod("\(member.type)", this: "arguments.callee", prebind: false)
                 basestub = export.rewriteGeneratedStub(string.Format("'{0}'", constructor.NKScriptingjsType), ".base");
             } else

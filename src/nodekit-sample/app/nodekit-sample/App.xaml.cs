@@ -1,8 +1,10 @@
-﻿using System;
+﻿using io.nodekit.NKScripting;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -60,8 +62,21 @@ namespace io.nodekit.Samples.nodekit_sample
                 Window.Current.Content = rootFrame;
             }
 
-            var bw = new io.nodekit.NKElectro.NKE_BrowserWindow(null);
-          
+            var ignoreTask = startNodeKit();
+               
+        }
+
+        private async Task startNodeKit(Dictionary<string, object> options = null)
+        {
+            var context = await NKScripting.NKScriptContextFactory.createContext(options);
+            await NKElectro.Main.addElectro(context);
+
+            var appjs = await NKStorage.getResourceAsync(typeof(App), "index.js", "app");
+            var script = "function loadapp(){\n" + appjs + "\n}\n" + "loadapp();" + "\n";
+            await context.NKevaluateJavaScript(script, "io.nodekit.electro.main");
+     
+            NKEventEmitter.global.emit<string>("nk.jsApplicationReady");
+      //      var bw = new io.nodekit.NKElectro.NKE_BrowserWindow(null);
         }
 
         /// <summary>

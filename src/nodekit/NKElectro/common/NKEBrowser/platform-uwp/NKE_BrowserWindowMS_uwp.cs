@@ -1,4 +1,5 @@
-﻿/*
+﻿#if WINDOWS_UWP
+/*
 * nodekit.io
 *
 * Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
@@ -31,29 +32,36 @@ namespace io.nodekit.NKElectro
 {
     public partial class NKE_BrowserWindow
     {
-
         private static NKEventEmitter globalEvents = NKEventEmitter.global;
         private NKE_Window _window;
 
         internal async Task createWebView(Dictionary<string, object> options)
-        {
-          
+        {   
             _window = await createWindow(options);
 
             string url;
             if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
                 url = (string)options[NKEBrowserOptions.kPreloadURL];
             else
-                url = "https://google.com";
+                url = NKEBrowserDefaults.kPreloadURL;
 
             WebView webView = new WebView(WebViewExecutionMode.SeparateThread);
-            this._webView = webView;
+            this.webView = webView;
 
             _window.controls.Add(webView);
-            this.context = new NKSMSWebViewContext(_id, webView, options);
-           
             webView.Navigate(new Uri(url));
+            context = await NKSMSWebViewContext.getScriptContext(_id, webView, options);
+            webView.NavigationCompleted += WebView_NavigationCompleted;
+            events.emit("did-finish-load", _id);
         }
 
+        private void WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        {
+            if (args.IsSuccess)
+                events.emit("did-finish-load", _id);
+            else
+                events.emit("did-fail-loading", new Tuple<int, string>(_id, args.WebErrorStatus.ToString()));
+        }
     }
 }
+#endif

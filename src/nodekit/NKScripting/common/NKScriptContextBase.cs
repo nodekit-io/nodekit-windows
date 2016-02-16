@@ -86,7 +86,7 @@ namespace io.nodekit.NKScripting
                 if (scriptValueObject != null)
                     return scriptValueObject.ns;
                 var newScriptValueObject = new NKScriptValueNative(obj, (NKScriptContext)this);
-                obj.setNKScriptValue(newScriptValueObject);
+           //     obj.setNKScriptValue(newScriptValueObject);
                 return newScriptValueObject.ns;
             }
 
@@ -181,6 +181,7 @@ namespace io.nodekit.NKScripting
                     var ns1 = ns;
                     var scriptValue = await channel.bindPlugin<T>(plugin, ns);
                     _injectedPlugins.Add(scriptValue);
+
                     NKLogging.log("+NKScripting Plugin loaded at " + ns1);
                     break;
                 default:

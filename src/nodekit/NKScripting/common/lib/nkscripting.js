@@ -156,7 +156,7 @@ var NKScripting = (function NKScriptingRunOnce(exports) {
         ctor = ctor.bind(null, '+' + (type || '#p'));
         proto.constructor = ctor;
         ctor.prototype = proto;  // comment this line to hide prototype object
-        ctor.$lastInstID = 1;
+        ctor.$lastInstID = 0;
         ctor.dispose = function() {
             Object.keys(this).forEach(function(i) {
                 if (this[i] instanceof NKScripting)

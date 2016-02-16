@@ -72,7 +72,7 @@ namespace io.nodekit
                 subscriptions.Clear();
         }
 
-        public virtual void emit<T>(string eventType, T data)
+        public virtual void emit<T>(string eventType, T data = default(T))
         {
             if (subscriptions.ContainsKey(eventType)) {
                 var eventSubscriptions = subscriptions[eventType].Values.ToArray<NKEventSubscription>();

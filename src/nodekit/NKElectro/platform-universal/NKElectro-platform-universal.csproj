@@ -104,39 +104,16 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <None Include="NKEBrowser\platform-ios\NKE_BrowserWindow_IOS.swift" />
-    <None Include="NKEBrowser\platform-ios\NKE_BrowserWindow_UI_IOS.swift" />
-    <None Include="NKEBrowser\platform-ios\NKE_BrowserWindow_WK_IOS.swift" />
-    <None Include="NKEBrowser\platform-ios\NKE_WebContentsUI_IOS.swift" />
-    <None Include="NKEBrowser\platform-ios\NKE_WebContentsWK_IOS.swift" />
-    <None Include="NKEBrowser\platform-osx\NKEBrowserWindow_OSX.swift" />
-    <None Include="NKEBrowser\platform-osx\NKE_BrowserWindow_UI_OSX.swift" />
-    <None Include="NKEBrowser\platform-osx\NKE_BrowserWindow_WK_OSX.swift" />
-    <None Include="NKEBrowser\platform-osx\NKE_WebContentsUI_OSX.swift" />
-    <None Include="NKEBrowser\platform-osx\NKE_WebContentsWK_OSX.swift" />
-    <None Include="NKEDialog\NKEDialog-ios.swift" />
-    <None Include="NKEDialog\NKEDialog-osx.swift" />
-    <None Include="NKEMenu\NKEMenu-ios.swift" />
-    <None Include="NKEMenu\NKEMenu-osx.swift" />
-    <None Include="NKEMenu\NKEMenuProtocol.swift" />
-    <None Include="NKEProtocol\NKE_Protocol.swift" />
-    <None Include="NKEProtocol\NKE_ProtocolFileDecode.swift" />
-    <None Include="NKEProtocol\NKE_ProtocolLocalFile.swift" />
+    <Page Include="NKE_Window.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NKEApp\NKEApp.cs" />
-    <Compile Include="NKEApp\NKEAppDirectory.cs" />
-    <Compile Include="NKEBrowser\NKE_BrowserConstants.cs" />
-    <Compile Include="NKEBrowser\NKE_BrowserWindow.cs" />
-    <Compile Include="NKEBrowser\platform-uwp\NKE_BrowserWindow_uwp.cs" />
-    <Compile Include="NKEBrowser\platform-uwp\NKE_BrowserWindow_uwp_MSWebView.cs" />
-    <Compile Include="NKEBrowser\NKE_WebContentsBase.cs" />
-    <Compile Include="NKEBrowser\platform-uwp\NKE_WebContents_uwp.cs" />
-    <Compile Include="NKEBrowser\platform-uwp\NKE_Window_uwp.xaml.cs">
-      <DependentUpon>NKE_Window_uwp.xaml</DependentUpon>
+    <Compile Include="NKE_Window.xaml.cs">
+      <DependentUpon>NKE_Window.xaml</DependentUpon>
     </Compile>
-    <Compile Include="NKEDialog\NKEDialog-universal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\io.nodekit.NKElectro.rd.xml" />
   </ItemGroup>
@@ -145,12 +122,6 @@
       <Project>{594c5df0-10b2-4afd-b378-5e07901655c9}</Project>
       <Name>NKScripting-platform-universal</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="NKEBrowser\platform-uwp\NKE_Window_uwp.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <Import Project="..\common\io.nodekit.NKElectro.shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

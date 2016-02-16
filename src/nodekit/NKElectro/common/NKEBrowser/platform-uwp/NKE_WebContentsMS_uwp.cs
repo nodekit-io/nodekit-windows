@@ -1,4 +1,5 @@
-﻿/*
+﻿#if WINDOWS_UWP
+/*
 * nodekit.io
 *
 * Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
@@ -20,84 +21,148 @@
 using System;
 using System.Collections.Generic;
 using io.nodekit.NKScripting;
+using Windows.UI.Xaml.Controls;
 
 namespace io.nodekit.NKElectro
 {
-    public class NKE_WebContents : NKE_WebContentsBase
+    public class NKE_WebContentsMS : NKE_WebContentsBase
     {
-        public NKE_WebContents(NKE_BrowserWindow parent) { }
-
-        // Event:  'did-fail-load'
-        // Event:  'did-finish-load'
-        
-        public bool canGoBack()
+        internal WebView webView;
+        private bool _isLoading;
+    
+        public NKE_WebContentsMS(NKE_BrowserWindow browserWindow)
         {
-            throw new NotImplementedException();
+            this._browserWindow = browserWindow;
+            this._id = browserWindow.id;
+
+            // Event:  'did-fail-load'
+            // Event:  'did-finish-load'
+
+            browserWindow.events.on<int>("did-finish-load", (id) =>
+            {
+                this.getNKScriptValue().invokeMethod("emit", new[] { "did-finish-load" });
+            });
+   
+            browserWindow.events.on<Tuple<int, string>>("did-fail-loading", (item) =>
+            {
+                this.getNKScriptValue().invokeMethod("emit", new[] { "did-fail-loading", item.Item2 });
+            });
+
+            webView = (WebView)_browserWindow.webView;
+            webView.NavigationStarting += WebView_NavigationStarting;
+            webView.NavigationCompleted += WebView_NavigationCompleted;
+
+            this.init_IPC();
         }
 
-        public bool canGoForward()
+        private void WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
-            throw new NotImplementedException();
+            _isLoading = false;
         }
 
-        public void executeJavaScript(string code, string userGesture)
+        private void WebView_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {
-            throw new NotImplementedException();
+            _isLoading = true;
         }
 
-        public string getTitle()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string getURL()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string getUserAgent()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void goBack()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void goForward()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ipcReply(int dest, string channel, string replyId, object result)
-        {
-            throw new NotImplementedException();
-        }
-
+        // Messages to renderer are sent to the window events queue for that renderer
         public void ipcSend(string channel, string replyId, object[] arg)
         {
+            var payload = new NKE_IPC_Event(0, channel, replyId, arg);
+            _browserWindow.events.emit("nk.IPCtoRenderer", payload);
+
             throw new NotImplementedException();
         }
 
-        public bool isLoading()
+        // Replies to renderer to the window events queue for that renderer
+        public void ipcReply(int dest, string channel, string replyId, object result)
         {
-            throw new NotImplementedException();
+            var payload = new NKE_IPC_Event(0, channel, replyId, new[] { result });
+            _browserWindow.events.emit("nk.IPCReplytoRenderer", payload);
         }
 
         public void loadURL(string url, Dictionary<string, object> options)
         {
-            throw new NotImplementedException();
+            var httpReferrer = options.itemOrDefault<string>("httpReferrer");
+            var userAgent = options.itemOrDefault<string>("userAgent");
+            var extraHeaders = options.itemOrDefault<Dictionary<string, object>>("extraHeaders");
+            var uri = new Uri(url);
+
+            var request = new Windows.Web.Http.HttpRequestMessage(Windows.Web.Http.HttpMethod.Get, uri);
+            if ((userAgent) != null)
+                  request.Headers["User-Agent"] = userAgent;
+
+            if ((httpReferrer) != null)
+                request.Headers["Referrer"] = httpReferrer;
+
+            if ((extraHeaders) != null)
+            {
+                foreach (var item in extraHeaders)
+                {
+                    request.Headers[item.Key] = item.Value as string;
+                }
+            }
+
+            webView.NavigateWithHttpRequestMessage(request);
+        }
+        /*
+        
+    func isLoading()  -> Bool { return self.webView?.loading ?? false }
+*/
+
+        public string getURL()
+        {
+            return webView.Source.AbsoluteUri;
         }
 
-        public void reload()
+        public string getTitle()
         {
-            throw new NotImplementedException();
+            return webView.DocumentTitle;
+        }
+
+        public bool isLoading()
+        {
+            return _isLoading;
+        }
+
+        public bool canGoBack()
+        {
+            return webView.CanGoBack;
+        }
+
+        public bool canGoForward()
+        {
+            return webView.CanGoForward;
+        }
+
+        public void executeJavaScript(string code, string userGesture)
+        {
+            _browserWindow.context.NKevaluateJavaScript(code);
+        }
+   
+        public string getUserAgent()
+        {
+            return webView.InvokeScript("eval", new[] { "navigator.userAgent" });
+        }
+
+        public void goBack()
+        {
+            webView.GoBack();
+        }
+
+        public void goForward()
+        {
+            webView.GoForward();
+        }
+
+         public void reload()
+        {
+            webView.Refresh();
         }
 
         public void reloadIgnoringCache()
         {
-            throw new NotImplementedException();
+            webView.Navigate(webView.Source);
         }
 
         public void setUserAgent(string userAgent)
@@ -107,12 +172,8 @@ namespace io.nodekit.NKElectro
 
         public void stop()
         {
-            throw new NotImplementedException();
+            webView.Stop();
         }
-
-
-
-
 
         /* ****************************************************************** *
          *               REMAINDER OF ELECTRO API NOT IMPLEMENTED             *
@@ -347,3 +408,4 @@ namespace io.nodekit.NKElectro
         
     }
 }
+#endif

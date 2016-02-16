@@ -10,28 +10,35 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\app.js" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\browser-window.js" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipc-main.js" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipc-renderer.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\browserwindow.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipcMain.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipcRenderer.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\menu-item.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\menu.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\protocol.js" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\web-contents.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\webcontents.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\_nke_main.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\_nke_renderer.js" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)NKEApp\NKEApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEApp\NKEAppDirectory_win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEApp\NKEAppDirectory_uwp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\NKE_BrowserConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\NKE_BrowserWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\NKE_WebContentsBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-uwp\NKE_BrowserWindowMS_uwp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-uwp\NKE_BrowserWindow_uwp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-uwp\NKE_WebContentsMS_uwp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-win32\NKE_BrowserWindowMS_win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-win32\NKE_BrowserWindow_win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-win32\NKE_WebContentsMS_win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEDialog\NKEDialog_win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEDialog\NKEDialog_uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEIpc\NKE_IpcEvents.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEIpc\NKE_IpcMain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEIpc\NKE_IpcRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKE_Boot\Main.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKE_Boot\Renderer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)NKEApp\" />
-    <Folder Include="$(MSBuildThisFileDirectory)NKEBrowser\" />
-    <Folder Include="$(MSBuildThisFileDirectory)NKEDialog\" />
-    <Folder Include="$(MSBuildThisFileDirectory)NKEMenu\" />
-    <Folder Include="$(MSBuildThisFileDirectory)NKEProtocol\" />
   </ItemGroup>
 </Project>

@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using io.nodekit.NKScripting;
+using System.Threading.Tasks;
 
 namespace io.nodekit.NKElectro
 {
@@ -29,13 +30,11 @@ namespace io.nodekit.NKElectro
         private static Dictionary<int, NKE_BrowserWindow> windowArray = new Dictionary<int, NKE_BrowserWindow>();
     
         internal NKScriptContext context;
-        private object _webView;
+        internal object webView;
         internal NKEBrowserType browserType;
 
         private int _id = 0;
         private string _type = "";
-        private Dictionary<string, object> _options = new Dictionary<string, object>();
-        private object _nke_renderer;
         private NKE_WebContentsBase _webContents;
 
         public NKE_BrowserWindow() { }
@@ -47,12 +46,14 @@ namespace io.nodekit.NKElectro
             if (options == null)
                 options = new Dictionary<string, object>();
 
-            // PARSE & STORE OPTIONS
-            if (options.ContainsKey("nk.InstallElectro"))
-                _options["nk.InstallElectro"] = options["nk.InstallElectro"];
-            else
-                _options["nk.InstallElectro"] = true;
+            windowArray[_id] = this;
 
+            var ignoreTask = createBrowserWindow(options);
+        }
+
+        private async Task createBrowserWindow(Dictionary<string, object> options)
+        {
+            // PARSE & STORE OPTIONS
             if (options.ContainsKey(NKEBrowserOptions.nkBrowserType))
                 browserType = (NKEBrowserType)Enum.Parse(typeof(NKEBrowserType), (options[NKEBrowserOptions.nkBrowserType]) as string);
             else
@@ -64,26 +65,26 @@ namespace io.nodekit.NKElectro
                     throw new PlatformNotSupportedException();
                 case NKEBrowserType.UIWebView:
                     throw new PlatformNotSupportedException();
-                case NKEBrowserType.Edge:
+                case NKEBrowserType.MSWebView:
                     NKLogging.log("+creating Edge Renderer");
-                   var ignore = this.createWebView(options);
-                    _type = NKEBrowserType.Edge.ToString();
-                    NKE_WebContents webContents = new NKE_WebContents(this);
-                    _webContents = webContents;
+                    await createWebView(options);
+                    _type = NKEBrowserType.MSWebView.ToString();
+                    _webContents = new NKE_WebContentsMS(this);
+                    if (options.itemOrDefault<bool>("nk.InstallElectro", true))
+                        await Renderer.addElectro(context);
+                     NKLogging.log(string.Format("+E{0} Renderer Ready", _id));        
                     break;
                 default:
                     break;
             }
-
-            windowArray[_id] = this;
         }
 
         // class/helper functions (for C# use only, equivalent functions exist in .js helper )
-        public static NKE_BrowserWindow fromId(int id) { return windowArray[id]; }
+        internal static NKE_BrowserWindow fromId(int id) { return windowArray[id]; }
 
-        public int id { get { return _id; } }
-        public string type { get { return _type; } }
-        public NKE_WebContentsBase webContents { get { return _webContents; } }
+        internal int id { get { return _id; } }
+        internal string type { get { return _type; } }
+        internal NKE_WebContentsBase webContents { get { return _webContents; } }
 
         #region NKScriptExport
         private static string defaultNamespace { get { return "io.nodekit.electro.BrowserWindow"; } }
@@ -93,49 +94,18 @@ namespace io.nodekit.NKElectro
             switch (forKey)
             {
                 case ".global":
-                    var appjs = NKStorage.getResource(typeof(NKE_BrowserWindow), "browser-window.js", "lib_electro");
+                    var appjs = NKStorage.getResource(typeof(NKE_BrowserWindow), "browserWindow.js", "lib_electro");
                     return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
                 default:
                     return stub;
             }
         }
         
-/*     private static bool isExcludedFromScript(string key)
-       {
-               return key.StartsWith("webView") ||
-                  key.StartsWith("NKScriptEngineLoaded") ||
-                   key.StartsWith("NKApplicationReady"); 
-       }                                              */
-
-        private static string rewritescriptNameForKey(string key)
+        private static string rewritescriptNameForKey(string key, string name)
         {
-            return key == ".ctor" ? "" : key;
+            return key == ".ctor:options" ? "" : name;
         }
         #endregion
 
     }
 }
-
-       
-
-         /*
-        internal func NKScriptEngineDidLoad(context: NKScriptContext) -> Void {
-        log("+E\(context.NKid) Renderer Loaded")
-
-        if (!(self._options["nk.InstallElectro"] as! Bool)) { return;}
-        self._context = context
-
-        // INSTALL JAVASCRIPT ENVIRONMENT ON RENDERER CONTEXT
-        NKE_BootElectroRenderer.bootTo(context)
-    }
-
-    internal func NKScriptEngineReady(context: NKScriptContext) -> Void {
-        switch self._browserType {
-        case .WKWebView:
-            WKScriptEnvironmentReady()
-         case .UIWebView:
-            UIScriptEnvironmentReady()
-        }
-        log("+E\(id) Renderer Ready")
-        
-    } */

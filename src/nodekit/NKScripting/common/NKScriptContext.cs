@@ -32,12 +32,6 @@ namespace io.nodekit.NKScripting
         NKScriptValue NKgetScriptValue(string key);
     }
 
-    public interface NKScriptContextHost
-    {
-        int NKid { get; }
-        Task<NKScriptContext> NKgetScriptContext(int id, Dictionary<string, object> options);
-    }
-
     public interface NKScriptContentController
     {
         void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name);

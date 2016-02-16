@@ -82,8 +82,8 @@ namespace io.nodekit.NKElectro
             }
         }
 
-        private static string rewritescriptNameForKey(string key) {
-            return key == ".ctor" ? "" : key;
+        private static string rewritescriptNameForKey(string key, string name) {
+            return key == ".ctor:id" ? "" : name;
         }
   
        #endregion

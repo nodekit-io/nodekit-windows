@@ -17,8 +17,6 @@
  * limitations under the License.
  */
 
-debugger;
-
 var app = io.nodekit.electro.app;
 var bindings = app;
 

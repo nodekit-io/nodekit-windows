@@ -62,7 +62,7 @@ namespace io.nodekit.NKScripting
             exclusion = methods;
         }
 
-        private delegate bool inclusionDelegate(string name, NKScriptTypeInfoMemberInfo member);
+        private delegate bool inclusionDelegate(NKScriptTypeInfoMemberInfo member);
 
         public NKScriptTypeInfo(T plugin) : base()
         {
@@ -76,8 +76,11 @@ namespace io.nodekit.NKScripting
             else
                 instance = plugin;
 
-            enumerateExcluding(exclusion, (name, member) =>
+            enumerateExcluding(exclusion, (member) =>
             {
+                var key = member.key;
+                var name = member.name;
+
                 NKScriptExportProxy<T> cls = new NKScriptExportProxy<T>(plugin);
 
                 switch (member.memberType)
@@ -85,21 +88,21 @@ namespace io.nodekit.NKScripting
                     case MemberType.Method:
                         if (name.Substring(0, 1) == "_")
                             return true;
-                        if (cls.isExcludedFromScript(name))
+                        if (cls.isExcludedFromScript(key))
                             return true;
-                        member.name = cls.rewritescriptNameForKey(name);
+                        member.name = cls.rewritescriptNameForKey(key, name);
                         return false;
                     case MemberType.Property:
                         if (name.Substring(0, 1) == "_")
                             return true;
-                        if (cls.isExcludedFromScript(name))
+                        if (cls.isExcludedFromScript(key))
                             return true;
-                        member.name = cls.rewritescriptNameForKey(name);
+                        member.name = cls.rewritescriptNameForKey(key, name);
                         return false;
                     case MemberType.Constructor:
-                        if (cls.isExcludedFromScript(name))
+                        if (cls.isExcludedFromScript(key))
                             return true;
-                        member.name = cls.rewritescriptNameForKey(name);
+                        member.name = cls.rewritescriptNameForKey(key, name);
                         return false;
                     default:
                         return false;
@@ -117,9 +120,8 @@ namespace io.nodekit.NKScripting
             {
                 if (m.IsPublic && !m.IsStatic)
                 {
-                    string name = m.Name;
                     NKScriptTypeInfoMemberInfo member = new NKScriptTypeInfoMemberInfo(m);
-                    if (!known.Contains(name) && !callback(name, member))
+                    if (!known.Contains(member.name) && !callback(member))
                     {
                         this.Add(member);
                     }
@@ -130,9 +132,8 @@ namespace io.nodekit.NKScripting
             {
                 if (m.IsPublic && !m.IsSpecialName)
                 {
-                    string name = m.Name;
-                    NKScriptTypeInfoMemberInfo member = new NKScriptTypeInfoMemberInfo(m);
-                    if (!known.Contains(name) && !callback(name, member))
+                     NKScriptTypeInfoMemberInfo member = new NKScriptTypeInfoMemberInfo(m);
+                    if (!known.Contains(member.name) && !callback(member))
                     {
                         this.Add(member);
                     }
@@ -141,18 +142,10 @@ namespace io.nodekit.NKScripting
 
             foreach (PropertyInfo p in t.DeclaredProperties)
             {
-                string name = p.Name;
-
-                MethodInfo getter = p.GetMethod;
-                if (getter !=null && !getter.IsPublic) getter = null;
-
-                MethodInfo setter = p.SetMethod;
-                if (setter != null && !setter.IsPublic) setter = null;
-
-                if ((getter != null) || (setter != null))
+                NKScriptTypeInfoMemberInfo member = new NKScriptTypeInfoMemberInfo(p);
+                if ((member.getter != null) || (member.setter != null))
                 {
-                    NKScriptTypeInfoMemberInfo member = new NKScriptTypeInfoMemberInfo(getter, setter);
-                    if (!known.Contains(name) && !callback(name, member))
+                    if (!known.Contains(member.name) && !callback(member))
                     {
                         this.Add(member);
                         this._hasSettableProperties = (member.setter != null);
@@ -189,6 +182,9 @@ namespace io.nodekit.NKScripting
         internal NKScriptTypeInfoMemberInfo(ConstructorInfo constructor)
         {
             _method = constructor;
+            name = constructor.Name;
+            var param = constructor.GetParameters();
+            key = param.Select(o => o.Name).Aggregate(name, (prod, next) => prod + ":" + next);
             arity = constructor.GetParameters().Length;
             _getter = null;
             _setter = null;
@@ -197,17 +193,25 @@ namespace io.nodekit.NKScripting
 
         internal NKScriptTypeInfoMemberInfo(MethodInfo method)
         {
+            name = method.Name;
+            var param = method.GetParameters();
+            key = param.Select(o => o.Name).Aggregate(name, (prod, next) => prod + ":" + next);
             _method = method;
-            arity = method.GetParameters().Length;
+            arity = param.Length;
             _getter = null;
             _setter = null;
             memberType = MemberType.Method;
         }
 
-        internal NKScriptTypeInfoMemberInfo(MethodInfo getter, MethodInfo setter)
+        internal NKScriptTypeInfoMemberInfo(PropertyInfo prop )
         {
-            _getter = getter;
-            _setter = setter;
+            name = prop.Name;
+            key = name;
+            _getter = prop.GetMethod;
+            if (_getter != null && !_getter.IsPublic) _getter = null;
+
+            _setter = prop.SetMethod;
+            if (_setter != null && !_setter.IsPublic) _setter = null;
             _method = null;
             arity = 0;
             memberType = MemberType.Property;
@@ -219,6 +223,7 @@ namespace io.nodekit.NKScripting
         private MethodInfo _setter;
         internal Int32 arity;
         internal string name;
+        internal string key;
 
         internal bool isMethod() { return (memberType == MemberType.Method); }
         internal bool isProperty() { return (memberType == MemberType.Property); }
@@ -237,7 +242,7 @@ namespace io.nodekit.NKScripting
                 switch (this.memberType)
                 {
                     case MemberType.Method:
-                        promise = _method.Name.EndsWith("promiseObject");
+                        promise = _method.Name.EndsWith(":promiseObject");
                         _arity = this.arity;
                         break;
                     case MemberType.Constructor:
@@ -266,7 +271,12 @@ namespace io.nodekit.NKScripting
     {
         public static NKScriptTypeInfoMemberInfo Item(this IList<NKScriptTypeInfoMemberInfo> list, string item)
         {
-            return (list.Where(p => { return ((p.name == item)); }).FirstOrDefault());
+            return (list.Where(p => { return ((p.key == item)); }).FirstOrDefault());
+        }
+
+        public static NKScriptTypeInfoMemberInfo DefaultConstructor(this IList<NKScriptTypeInfoMemberInfo> list)
+        {
+            return (list.Where(p => { return ((p.isConstructor()) && (p.name == "")); }).FirstOrDefault());
         }
 
         public static bool ContainsProperty(this IList<NKScriptTypeInfoMemberInfo> list, string item)
@@ -277,6 +287,11 @@ namespace io.nodekit.NKScripting
         public static bool ContainsMethod(this IList<NKScriptTypeInfoMemberInfo> list, string item)
         {
             return (list.Where(p => { return ((p.isMethod()) && (p.name == item)); }).Count() > 0);
+        }
+
+        public static bool ContainsConstructor(this IList<NKScriptTypeInfoMemberInfo> list, string item)
+        {
+            return (list.Where(p => { return ((p.isConstructor()) && (p.name == item)); }).Count() > 0);
         }
     }
 }

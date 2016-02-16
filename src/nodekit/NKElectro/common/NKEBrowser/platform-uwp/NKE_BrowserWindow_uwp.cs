@@ -1,4 +1,5 @@
-﻿/*
+﻿#if WINDOWS_UWP
+/*
 * nodekit.io
 *
 * Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
@@ -20,17 +21,61 @@
 using System;
 using System.Collections.Generic;
 using io.nodekit.NKScripting;
+using System.Threading.Tasks;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace io.nodekit.NKElectro
 {
     public partial class NKE_BrowserWindow
     {
+        private int _thread_id;
+        private Windows.UI.Core.CoreDispatcher _dispatcher;
 
-        internal int createWebView(Dictionary<string, object> options)
+        internal async Task ensureOnUIThread(Action t)
         {
-            return 0;
+            if (_thread_id != Environment.CurrentManagedThreadId)
+                await _dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => t.Invoke());
+            else
+            {
+                t.Invoke();
+            }
         }
 
+        internal Task<NKE_Window> createWindow(Dictionary<string, object> options)
+        {
+            _thread_id = Environment.CurrentManagedThreadId;
+            _dispatcher = Windows.UI.Core.CoreWindow.GetForCurrentThread().Dispatcher;
+
+            var tcs = new TaskCompletionSource<NKE_Window>();
+            
+            Frame rootFrame = Window.Current.Content as Frame;
+            if (rootFrame == null)
+            {
+                rootFrame = new Frame();
+                rootFrame.NavigationFailed += OnNavigationFailed;
+                Window.Current.Content = rootFrame;
+            }
+
+            globalEvents.once<NKE_Window>("nk.window." + this._id, (window) =>
+            {
+            //     this._window = window;
+                 tcs.TrySetResult(window);
+            });
+
+            if (rootFrame.Content == null)
+            {
+                rootFrame.Navigate(typeof(NKE_Window), this._id);
+            }
+            Window.Current.Activate();
+            return tcs.Task;
+        }
+
+        private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
         public void blurWebView()
         {
@@ -49,6 +94,10 @@ namespace io.nodekit.NKElectro
 
         public void close()
         {
+             _window = null;
+            windowArray.Remove(_id) ;
+            context = null;
+            webView = null;
             throw new NotImplementedException();
         }
 
@@ -194,7 +243,7 @@ namespace io.nodekit.NKElectro
 
         public void maximize()
         {
-            throw new NotImplementedException();
+             throw new NotImplementedException();
         }
 
         public void minimize()
@@ -354,3 +403,4 @@ namespace io.nodekit.NKElectro
 
     }
 }
+#endif

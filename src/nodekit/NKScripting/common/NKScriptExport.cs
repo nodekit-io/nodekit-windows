@@ -34,7 +34,7 @@ namespace io.nodekit.NKScripting
     {
      //   public abstract event PropertyChangedEventHandler PropertyChanged;
      //   public virtual string rewriteGeneratedStub(string stub, string forKey) { return stub; }
-     //   public virtual string rewritescriptNameForKey(string key) { return key; }
+     //   public virtual string rewritescriptNameForKey(string key, string name) { return name; }
      //   public virtual bool isExcludedFromScript(string key) { return false; }
      //   public virtual Task initializeForContext(NKScriptContext context) { return Task.FromResult<object>(null); }
     }
@@ -80,17 +80,17 @@ namespace io.nodekit.NKScripting
                 return stub; 
         }
 
-        internal string rewritescriptNameForKey(string key)
+        internal string rewritescriptNameForKey(string key, string name)
         {
             if (_rewritescriptNameForKey != null)
-                return (string)_rewritescriptNameForKey.Invoke(instance, new[] { key });
+                return (string)_rewritescriptNameForKey.Invoke(instance, new[] { key, name });
             else
-                return key;
+                return name;
         }
 
         internal bool isExcludedFromScript(string key)
         {
-            if (_rewritescriptNameForKey != null)
+            if (_isExcludedFromScript != null)
                 return (bool)_isExcludedFromScript.Invoke(instance, new[] { key });
             else
                 return false;

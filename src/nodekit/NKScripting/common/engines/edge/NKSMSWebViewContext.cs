@@ -40,13 +40,21 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
 
         private bool _isLoaded;
         private bool _isFirstLoaded;
+        private TaskCompletionSource<NKScriptContext> tcs;
 
-        public NKSMSWebViewContext(int id, WebView webView, Dictionary<string, object> options) : base(id)
+        public static Task<NKScriptContext> getScriptContext(int id, WebView webView, Dictionary<string, object> options)
+        {
+            var context = new NKSMSWebViewContext(id, webView, options);
+            return context.tcs.Task;
+        }
+
+        private NKSMSWebViewContext(int id, WebView webView, Dictionary<string, object> options) : base(id)
         {
             this._isLoaded = false;
             this._isFirstLoaded = false;
             this._webView = webView;
             this._id = id;
+            this.tcs = new TaskCompletionSource<NKScriptContext>();
             _webViewScriptDelegate = new NKSMSWebViewScriptDelegate(this);
             _webViewCallbackBridge = new NKSMSWebViewCallback(_webViewScriptDelegate);
             _webView.NavigationStarting += _webView_NavigationStarting;
@@ -85,7 +93,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
                 var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "init_mswebview_uwp.js", "lib");
                 var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/init_mswebview_uwp.js");
                 await this.NKinjectScript(script2);
-                _isFirstLoaded = true;
+                 
             }
 
             _isLoaded = true;
@@ -93,6 +101,12 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
             foreach (var item in _injectedScripts)
             {
                 await this.NKevaluateJavaScript(item.source, item.filename);
+            }
+
+            if (!_isFirstLoaded)
+            {
+                _isFirstLoaded = true;
+                this.tcs.SetResult(this);
             }
         }
 

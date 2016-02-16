@@ -23,16 +23,16 @@ namespace io.nodekit.NKElectro
     {
         WKWebView,
         UIWebView,
-        Edge
+        MSWebView
     }
 
     public struct NKEBrowserDefaults
     {
-        public const NKEBrowserType nkBrowserType = NKEBrowserType.Edge;
+        public const NKEBrowserType nkBrowserType = NKEBrowserType.MSWebView;
         public const string kTitle = "NodeKit App";
         public const int kWidth = 800;
         public const int kHeight = 600;
-        public const string kPreloadUR = "https://google.com";
+        public const string kPreloadURL = "about:blank";
     }
 
     public struct NKEBrowserOptions

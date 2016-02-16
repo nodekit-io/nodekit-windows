@@ -44,6 +44,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewScriptDelegate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEventEmitter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKLogging.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptContextBase.cs" />

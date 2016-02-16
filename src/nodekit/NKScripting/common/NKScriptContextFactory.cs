@@ -42,7 +42,7 @@ namespace io.nodekit.NKScripting
         public static int sequenceNumber = 1;
 
 
-        public Task<NKScriptContext> createContext(Dictionary<string, object> options)
+        public static Task<NKScriptContext> createContext(Dictionary<string, object> options)
         {
             if (options == null)
             {

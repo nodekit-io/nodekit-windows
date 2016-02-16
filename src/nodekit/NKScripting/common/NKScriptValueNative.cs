@@ -68,12 +68,15 @@ namespace io.nodekit.NKScripting
 
  
         // Create new instance of plugin for given channel
-        internal NKScriptValueNative(string ns, NKScriptChannel channel, object[] args) : base(ns, channel.context, null)
+        internal NKScriptValueNative(string ns, NKScriptChannel channel, object[] args, bool create) : base(ns, channel.context, null)
         {
+            if (create != true)
+                throw new ArgumentException();
+
             this._channel = new WeakReference<NKScriptChannel>(channel);
 
             Type cls = channel.typeInfo.pluginType;
-            var constructor = channel.typeInfo.Item("");
+            var constructor = channel.typeInfo.DefaultConstructor();
             if (constructor == null || !constructor.isConstructor())
             {
                 throw new ArgumentException(String.Format("!Plugin class {0} is not a constructor"), cls.Name);

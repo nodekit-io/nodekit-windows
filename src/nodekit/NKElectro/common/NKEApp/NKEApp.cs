@@ -24,7 +24,7 @@ using io.nodekit.NKScripting;
 
 namespace io.nodekit.NKElectro
 {
-    public sealed class NKEApp 
+    public sealed class NKE_App 
     {
         private NKEventEmitter events = NKEventEmitter.global;
 
@@ -36,7 +36,7 @@ namespace io.nodekit.NKElectro
             switch (forKey)
             {
                 case ".global":
-                    var appjs = NKStorage.getResource(typeof(NKEApp), "app.js", "lib_electro");
+                    var appjs = NKStorage.getResource(typeof(NKE_App), "app.js", "lib_electro");
                     return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
                 default:
                     return stub;
@@ -45,7 +45,7 @@ namespace io.nodekit.NKElectro
 
         private static Task initializeForContext(NKScriptContext context)
         {
-            var jsValue = typeof(NKEApp).getNKScriptValue();
+            var jsValue = typeof(NKE_App).getNKScriptValue();
             var events = NKEventEmitter.global;
 
             // Event: 'ready'
@@ -71,32 +71,42 @@ namespace io.nodekit.NKElectro
 
         public static void quit()
         {
+#if WINDOWS_UWP
             Windows.ApplicationModel.Core.CoreApplication.Exit();
+#endif
+#if WINDOWS_WPF
+            System.Windows.Application.Current.Shutdown();
+#endif
         }
 
         public static void exit(int exitCode)
         {
+#if WINDOWS_UWP
             Windows.ApplicationModel.Core.CoreApplication.Exit();
+#endif
+#if WINDOWS_WPF
+            System.Windows.Application.Current.Shutdown(exitCode);
+#endif
         }
 
         public static string getAppPath()
         {
-            return NKEAppDirectory.getPath("exe");
+            return NKE_AppDirectory.getPath("exe");
         }
 
         public static string getPath(string name)
         {
-            return NKEAppDirectory.getPath(name);
+            return NKE_AppDirectory.getPath(name);
         }
 
         public static string getVersion()
         {
-            return NKEAppDirectory.getVersion();
+            return NKE_AppDirectory.getVersion();
         }
 
         public static string getName()
         {
-            return NKEAppDirectory.getName();
+            return NKE_AppDirectory.getName();
         }
 
 

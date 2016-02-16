@@ -1,4 +1,5 @@
-﻿/*
+﻿#if WINDOWS_UWP
+/*
 * nodekit.io
 *
 * Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
@@ -19,7 +20,7 @@
 
 namespace io.nodekit.NKElectro
 {
-    internal static class NKEAppDirectory
+    internal static class NKE_AppDirectory
     {
         internal static string getPath(string name)
         {
@@ -65,3 +66,4 @@ namespace io.nodekit.NKElectro
         }
     }
 }
+#endif

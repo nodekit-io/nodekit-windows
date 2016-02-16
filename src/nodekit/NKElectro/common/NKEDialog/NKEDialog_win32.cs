@@ -1,4 +1,5 @@
-﻿/*
+﻿#if WINDOWS_WPF
+/*
 * nodekit.io
 *
 * Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
@@ -25,13 +26,13 @@ using io.nodekit.NKScripting;
 
 namespace io.nodekit.NKElectro
 {
-    public sealed class NKEDialog
+    public sealed class NKE_Dialog
     {
         private NKEventEmitter events = NKEventEmitter.global;
 
-        #region NKScriptExport
+#region NKScriptExport
         private static string defaultNamespace { get { return "io.nodekit.electro.dialog"; } }
-        #endregion
+#endregion
 
         void showOpenDialog(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
         {
@@ -57,3 +58,4 @@ namespace io.nodekit.NKElectro
 
 
 
+#endif

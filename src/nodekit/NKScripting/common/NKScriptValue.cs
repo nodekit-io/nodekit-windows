@@ -168,17 +168,15 @@ namespace io.nodekit.NKScripting
             {
                 return String.Format("{0}['']", ns);
             }
-            else {
+            else
+            {
+                int idx;
+                bool isNumeric = int.TryParse(name, out idx);
 
-                try
-                {
-                    var idx = Convert.ToInt32(name);
+                if (isNumeric)
                     return String.Format("{0}[{$1}]", ns, idx);
-                }
-                catch (Exception)
-                {
+                else
                     return String.Format("{0}.{1}", ns, name);
-                }
             }
         }
 
