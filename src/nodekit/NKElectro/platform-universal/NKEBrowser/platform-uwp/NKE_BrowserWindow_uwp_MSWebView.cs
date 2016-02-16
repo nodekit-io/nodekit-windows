@@ -50,12 +50,9 @@ namespace io.nodekit.NKElectro
             this._webView = webView;
 
             _window.controls.Add(webView);
-            this.context = new NKSMSWebViewContext(id, webView, options);
-            //    webView.NKgetScriptContext(id, options: [String: AnyObject](), delegate: self)
-            //   window.rootViewController?.view.backgroundColor = UIColor(netHex: 0x2690F6)
-
+            this.context = new NKSMSWebViewContext(_id, webView, options);
+           
             webView.Navigate(new Uri(url));
-
         }
 
     }

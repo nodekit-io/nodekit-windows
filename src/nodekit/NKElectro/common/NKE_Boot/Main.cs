@@ -30,7 +30,7 @@ namespace io.nodekit.NKElectro
             var appjs = await NKStorage.getResourceAsync(typeof(Main), "_nke_main.js", "lib_electro");
             var script = "function loadbootstrap(){\n" + appjs + "\n}\n" + "loadbootstrap();" + "\n";
             var scriptsource = new NKScriptSource(script, "io.nodekit.electro/lib-electro/_nke_main.js", "io.nodekit.electro.main");
-            await scriptsource.inject(context);
+            await context.NKinjectScript(scriptsource);
 
             var options = new Dictionary<string, object>
             {

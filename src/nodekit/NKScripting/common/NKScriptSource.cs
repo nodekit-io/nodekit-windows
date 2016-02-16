@@ -31,8 +31,7 @@ namespace io.nodekit.NKScripting
         private bool injected;
 
         private WeakReference<NKScriptContext> _context;
-        private static List<NKScriptSource> _injectedScripts = new List<NKScriptSource>();
-
+    
         public NKScriptSource(string source, string asFilename, string ns = null, string cleanup = null)
         {
             injected = false;
@@ -65,26 +64,16 @@ namespace io.nodekit.NKScripting
 
         }
 
-        public Task inject(NKScriptContext context)
+        internal void registerInject(NKScriptContext context)
         {
-            if (injected)
-                throw new InvalidOperationException("Script has already been injected to a context;  create separate NKSCriptSource for each instance");
-            injected = true;
-
-            _injectedScripts.Add(this);
-
-            _context = new WeakReference<NKScriptContext>(context);
-             NKLogging.log(string.Format("+E{0} Injected {1}", context.NKid, filename));
-
-            return context.NKevaluateJavaScript(source, "file:///" + filename);
+            this.injected = true;
+            this._context = new WeakReference<NKScriptContext>(context);
         }
 
         public void eject()
         {
             if (!injected)
                return;
-
-            _injectedScripts.Remove(this);
 
             NKScriptContext context;
             if (_context.TryGetTarget(out context)) return;

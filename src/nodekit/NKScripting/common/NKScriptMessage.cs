@@ -35,4 +35,6 @@ namespace io.nodekit.NKScripting
         void didReceiveScriptMessage(NKScriptMessage message);
         object didReceiveScriptMessageSync(NKScriptMessage message);
     }
+
+
 }

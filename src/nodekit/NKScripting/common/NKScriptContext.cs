@@ -21,14 +21,15 @@ using System.Threading.Tasks;
 
 namespace io.nodekit.NKScripting
 {
-    public interface NKScriptContext
+    public interface NKScriptContext: NKScriptContentController
     {
         int NKid { get; }
         Task NKloadPlugin<T>(T plugin, string ns = null, Dictionary<string, object> options = null) where T : class;
         Task<object> NKevaluateJavaScript(string javaScriptString, string filename = null);
+        Task NKinjectScript(NKScriptSource source);
         string NKserialize(object obj);
-        object NKDeserialize(string json);
-        Task<NKScriptValueProtocol> NKgetJavaScriptValue(string key);
+        object NKdeserialize(string json);
+        NKScriptValue NKgetScriptValue(string key);
     }
 
     public interface NKScriptContextHost

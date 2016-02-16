@@ -30,12 +30,6 @@ namespace io.nodekit.NKScripting
         private int sequenceNumber = 0;
         internal int nativeFirstSequence = Int32.MaxValue;
 
-        private WeakReference<NKScriptContentController> _userContentController = null;
-        internal NKScriptContentController userContentController {
-            get { NKScriptContentController o; _userContentController.TryGetTarget(out o); return o; }
-            set { _userContentController = new WeakReference<NKScriptContentController>(value);  }
-        }
-      
         private WeakReference<NKScriptContext> _context = null;
         internal NKScriptContext context { get { NKScriptContext o; _context.TryGetTarget(out o); return o; } }
 
@@ -64,13 +58,13 @@ namespace io.nodekit.NKScripting
 
         public async Task<NKScriptValue> bindPlugin<T>(T obj, string ns) where T : class
         {
+            var context = this.context;
             context.setNKScriptChannel(this);
             if ((this.id != null) || (context == null) ) return null;
-            if (this.userContentController == null) return null;
-
+      
             this.id = (this.sequenceNumber++).ToString();
          
-            this.userContentController.NKaddScriptMessageHandler(this, id);
+           context.NKaddScriptMessageHandler(this, id);
 
             string name;
             if (typeof(T) == typeof(Type))
@@ -96,25 +90,27 @@ namespace io.nodekit.NKScripting
             var export = new NKScriptExportProxy<T>(obj);
 
             var script = new NKScriptSource(_generateStubs(export, name), ns + "/plugin/" + name + ".js");
-            await script.inject(context);
+            await context.NKinjectScript(script);
             await export.initializeForContext(context);
             return _principal;
         }
 
         internal void unbind()
         {
+            var context = this.context;
+
             if (id == null) return;
             id = null;
             instances.Clear();
             if (isFactory)
              _principal.nativeObject.setNKScriptChannel(null);
             _principal = null;
-            userContentController.NKremoveScriptMessageHandlerForName(id);
-            _userContentController.SetTarget(null);
+            context.NKremoveScriptMessageHandlerForName(id);
             _context.SetTarget(null);
             typeInfo = null;
             queue = null;
             instances = null;
+            context = null;
         }
    
      public void didReceiveScriptMessage(NKScriptMessage message)

@@ -29,10 +29,10 @@ namespace io.nodekit.NKElectro
             var appjs = await NKStorage.getResourceAsync(typeof(Renderer), "_nke_renderer.js", "lib_electro");
             var script = "function loadbootstrap(){\n" + appjs + "\n}\n" + "loadbootstrap();" + "\n";
             var scriptsource = new NKScriptSource(script, "io.nodekit.electro/lib-electro/_nke_renderer.js", "io.nodekit.electro.renderer");
-            await scriptsource.inject(context);
-            
+            await context.NKinjectScript(scriptsource);
+
             // NKE_IpcRenderer.attachTo(context);
-         }
+        }
     }
 }
 

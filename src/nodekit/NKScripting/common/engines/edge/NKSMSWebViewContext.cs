@@ -38,8 +38,13 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
         private NKSMSWebViewCallback _webViewCallbackBridge;
         private NKSMSWebViewScriptDelegate _webViewScriptDelegate;
 
+        private bool _isLoaded;
+        private bool _isFirstLoaded;
+
         public NKSMSWebViewContext(int id, WebView webView, Dictionary<string, object> options) : base(id)
         {
+            this._isLoaded = false;
+            this._isFirstLoaded = false;
             this._webView = webView;
             this._id = id;
             _webViewScriptDelegate = new NKSMSWebViewScriptDelegate(this);
@@ -54,25 +59,41 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
             var ignore = this.completeInitialization();
         }
 
+        protected override Task InjectScript(NKScriptSource script)
+        {
+            if (_isLoaded)
+              return this.NKevaluateJavaScript(script.source, script.filename);
+
+            // otherwise will be injected in completeInitialization;
+            return Task.FromResult<object>(null);
+        }
+
         private void _webView_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {
+            this._isLoaded = false;
             _webView.AddWebAllowedObject("NKScriptingBridge", _webViewCallbackBridge);
         }
 
         async override protected Task PrepareEnvironment()
         {
-            // var source = await NKStorage.getResourceAsync(typeof(NKScriptContext), "promise.js", "lib");
-            // var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/promise.js", "Promise", null);
-            // await script.inject(this);
+            if (!_isFirstLoaded)
+            {
+                // var source = await NKStorage.getResourceAsync(typeof(NKScriptContext), "promise.js", "lib");
+                // var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/promise.js", "Promise", null);
+                // this.NKinjectScript(script);
 
-            var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "init_mswebview_uwp.js", "lib");
-            var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/init_mswebview_uwp.js");
-            await script2.inject(this);
-        }
+                var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "init_mswebview_uwp.js", "lib");
+                var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/init_mswebview_uwp.js");
+                await this.NKinjectScript(script2);
+                _isFirstLoaded = true;
+            }
 
-        protected override Task<NKScriptValueProtocol> getJavaScriptValue(string key)
-        {
-            throw new NotImplementedException();
+            _isLoaded = true;
+
+            foreach (var item in _injectedScripts)
+            {
+                await this.NKevaluateJavaScript(item.source, item.filename);
+            }
         }
 
         protected override async Task<object> RunScript(string javaScriptString, string filename)
@@ -123,9 +144,9 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
                         var globalstub = cs.rewriteGeneratedStub(globalstubber, ".global");
 
                         var script = new NKScriptSource(globalstub, targetNamespace + "/plugin/" + projectionName + ".js");
-                        await script.inject(this);
+                        await this.NKinjectScript(script);
                         await cs.initializeForContext(this);
-                        plugin.setNKScriptValue(await this.getJavaScriptValue(targetNamespace));
+                        plugin.setNKScriptValue(this.NKgetScriptValue(targetNamespace));
 
                        NKLogging.log("+Windows Unversal Component Plugin with script loaded at " + targetNamespace);
                     }
@@ -135,17 +156,16 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
             }
         }
 
-        public void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name)
+        public override void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name)
         {
             ((NKScriptContentController)_webViewScriptDelegate).NKaddScriptMessageHandler(scriptMessageHandler, name);
         }
 
-        public void NKremoveScriptMessageHandlerForName(string name)
+        public override void NKremoveScriptMessageHandlerForName(string name)
         {
             ((NKScriptContentController)_webViewScriptDelegate).NKremoveScriptMessageHandlerForName(name);
         }
     }
 }
-
 #endif
       

@@ -32,6 +32,18 @@ namespace io.nodekit.NKScripting
         protected int _thread_id;
         protected TaskScheduler _async_queue;
 
+        // Abstract Must Inherit Items, All Called Thread Safe on Main JS Thread (whatever thread with which the context instance is created )
+        protected abstract Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options) where T : class;
+        protected abstract Task InjectScript(NKScriptSource source);
+        protected abstract Task PrepareEnvironment();
+
+        // Abstract Must Inherit Script Handlers
+        public abstract void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name);
+        public abstract void NKremoveScriptMessageHandlerForName(string name);
+
+        // NKContext abstract methods implemented in Async of Sync version of base
+        public abstract Task<object> NKevaluateJavaScript(string javaScriptString, string filename = null);
+
         protected NKScriptContextBase(int id)
         {
             _id = id;
@@ -89,7 +101,7 @@ namespace io.nodekit.NKScripting
 
             if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(ti))
                 return "[" + ((IEnumerable<dynamic>)obj).Select(o => NKserialize(o)).Aggregate("", (prod, next) => prod + ", " + next) + "]";
-           
+
 
             if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(ti))
             {
@@ -104,7 +116,7 @@ namespace io.nodekit.NKScripting
             return Convert.ToString(obj, System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        public virtual object NKDeserialize(string json)
+        public virtual object NKdeserialize(string json)
         {
             return NKData.jsonDeserialize(json);
         }
@@ -166,12 +178,11 @@ namespace io.nodekit.NKScripting
                         channel = new NKScriptChannel((NKScriptContext)this, TaskScheduler.FromCurrentSynchronizationContext());
                     else
                         channel = new NKScriptChannel((NKScriptContext)this);
-                    channel.userContentController = (NKScriptContentController)this;
                     var ns1 = ns;
                     var scriptValue = await channel.bindPlugin<T>(plugin, ns);
                     _injectedPlugins.Add(scriptValue);
                     NKLogging.log("+NKScripting Plugin loaded at " + ns1);
-                   break;
+                    break;
                 default:
                     throw new InvalidOperationException("Load Plugin Base called for non-handled bridge type");
             }
@@ -203,7 +214,7 @@ namespace io.nodekit.NKScripting
                     throw new FileNotFoundException("Could not find file nkscripting.js");
 
                 var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/nkscripting.js", "NKScripting", null);
-                await script.inject(this);
+                await this.NKinjectScript(script);
 
                 await PrepareEnvironment();
 
@@ -213,7 +224,7 @@ namespace io.nodekit.NKScripting
             {
                 preparationComplete = false;
             }
-        
+
             if (preparationComplete)
                 NKLogging.log(String.Format("+E{0} JavaScript Engine is ready for loading plugins", this.NKid));
             else
@@ -223,21 +234,22 @@ namespace io.nodekit.NKScripting
 
         }
 
-        // Abstract Must Inherit Items, All Called Thread Safe on Main JS Thread (whatever thread with which the context instance is created )
-        protected abstract Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options) where T : class;
-        protected abstract Task PrepareEnvironment();
-
-        // NKContext abstract methods implemented in Async of Sync version of base
-        public abstract Task<object> NKevaluateJavaScript(string javaScriptString, string filename = null);
-        public abstract Task<NKScriptValueProtocol> NKgetJavaScriptValue(string key);
-
-         public Task<Task<NKScriptValueProtocol>> ensureOnEngineThread(Func<Task<NKScriptValueProtocol>> t)
+        protected List<NKScriptSource> _injectedScripts = new List<NKScriptSource>();
+        public async Task NKinjectScript(NKScriptSource source)
         {
-            if (_thread_id != Environment.CurrentManagedThreadId)
-                return Task.Factory.StartNew(t,
-                         System.Threading.CancellationToken.None, TaskCreationOptions.DenyChildAttach, _async_queue);
-            else
-                return Task.FromResult<Task<NKScriptValueProtocol>>(t.Invoke());
+            if (_injectedScripts.Contains(source))
+                throw new InvalidOperationException("Script has already been injected to a context;  create separate NKSCriptSource for each instance");
+       
+            _injectedScripts.Add(source);
+            source.registerInject(this);
+            await InjectScript(source);
+
+            NKLogging.log(string.Format("+E{0} Injected {1}", this.NKid, source.filename));
+        }
+
+        public NKScriptValue NKgetScriptValue(string key)
+        {
+            return new NKScriptValue(key, this, null);
         }
 
         public Task<Task<object>> ensureOnEngineThread(Func<Task<object>> t)
@@ -256,15 +268,6 @@ namespace io.nodekit.NKScripting
                          System.Threading.CancellationToken.None, TaskCreationOptions.DenyChildAttach, _async_queue);
             else
                 return Task.FromResult<Task>(t.Invoke());
-        }
-
-        public Task<NKScriptValueProtocol> ensureOnEngineThread(Func<NKScriptValueProtocol> t)
-        {
-            if (_thread_id != Environment.CurrentManagedThreadId)
-                return Task.Factory.StartNew(t,
-                         System.Threading.CancellationToken.None, TaskCreationOptions.DenyChildAttach, _async_queue);
-            else
-                return Task.FromResult<NKScriptValueProtocol>(t.Invoke());
         }
 
         public Task<object> ensureOnEngineThread(Func<object> t)
@@ -295,7 +298,25 @@ namespace io.nodekit.NKScripting
 
         // Abstract Must Inherit Items, All Called Thread Safe on Main JS Thread (whatever thread with which the context instance is created )
         protected abstract Task<object> RunScript(string javaScriptString, string filename);
-        protected abstract Task<NKScriptValueProtocol> getJavaScriptValue(string key);
+      
+        public override Task<object> NKevaluateJavaScript(string javaScriptString, string filename)
+        {
+            return ensureOnEngineThread(() =>
+            {
+                if (filename == null)
+                    filename = "";
+
+                return RunScript(javaScriptString, filename);
+            }).Unwrap();
+        }
+    }
+
+    public abstract class NKScriptContextSyncBase : NKScriptContextBase
+    {
+        protected NKScriptContextSyncBase(int id) : base(id) {}
+
+        // Abstract Must Inherit Items, All Called Thread Safe on Main JS Thread (whatever thread with which the context instance is created )
+        protected abstract object RunScript(string javaScriptString, string filename);
  
         public override Task<object> NKevaluateJavaScript(string javaScriptString, string filename)
         {
@@ -305,43 +326,6 @@ namespace io.nodekit.NKScripting
                     filename = "";
 
                 return RunScript(javaScriptString, filename);
-            }).Unwrap();
-        }
-
-        public override Task<NKScriptValueProtocol> NKgetJavaScriptValue(string key)
-        {
-            return ensureOnEngineThread(() =>
-            {
-                  return getJavaScriptValue(key);
-            }).Unwrap();
-        }
-    }
-
-    public abstract class NKScriptContextSyncBase : NKScriptContextBase
-    {
-     
-        protected NKScriptContextSyncBase(int id) : base(id) {}
-
-        // Abstract Must Inherit Items, All Called Thread Safe on Main JS Thread (whatever thread with which the context instance is created )
-        protected abstract object RunScript(string javaScriptString, string filename);
-        protected abstract NKScriptValueProtocol getJavaScriptValue(string key);
-
-        public override Task<object> NKevaluateJavaScript(string javaScriptString, string filename)
-        {
-            return ensureOnEngineThread(() =>
-            {
-                if (filename == null)
-                    filename = "";
-
-                return RunScript(javaScriptString, filename);
-            });
-        }
-
-        public override Task<NKScriptValueProtocol> NKgetJavaScriptValue(string key)
-        {
-            return ensureOnEngineThread(() =>
-            {
-                return getJavaScriptValue(key);
             });
         }
     }

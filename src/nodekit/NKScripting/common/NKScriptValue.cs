@@ -24,31 +24,28 @@ using System.Threading.Tasks;
 
 namespace io.nodekit.NKScripting
 {
-    public interface NKScriptValueProtocol
-    {
-        Task invokeMethod(string method, object[] args);
-        string ns { get; }
-    }
-
-    public class NKScriptValue : IDisposable, NKScriptValueProtocol
+    public class NKScriptValue : IDisposable
     {
         public string ns;
-        string NKScriptValueProtocol.ns {  get  {  return this.ns; } }
+    
+    //    protected WeakReference<NKScriptChannel> _channel;
+  //      public NKScriptChannel channel { get { NKScriptChannel c; _channel.TryGetTarget(out c); return c; } }
 
-        protected WeakReference<NKScriptChannel> _channel;
-        public NKScriptChannel channel { get { NKScriptChannel c; _channel.TryGetTarget(out c); return c; } }
+  //      public NKScriptContext getContext() {  return channel.context; }
 
-        public NKScriptContext getContext() {  return channel.context; }
+        protected WeakReference<NKScriptContext> _context;
+        public NKScriptContext getContext() { NKScriptContext c; _context.TryGetTarget(out c); return c; }
+
 
         protected WeakReference<NKScriptValue> _origin;
         public NKScriptValue origin { get { NKScriptValue o; _origin.TryGetTarget(out o); return o; } }
 
         internal NKScriptValue() {}
 
-        internal NKScriptValue(string ns, NKScriptChannel channel, NKScriptValue origin)
+        internal NKScriptValue(string ns, NKScriptContext context, NKScriptValue origin)
         {
             this.ns = ns;
-            _channel = new WeakReference<NKScriptChannel>(channel);
+            _context = new WeakReference<NKScriptContext>(context);
             if (origin != null)
                 _origin = new WeakReference<NKScriptValue>(origin);
             else
@@ -57,10 +54,11 @@ namespace io.nodekit.NKScripting
 
         // The object is a stub for a JavaScript object which was retained as an argument.
         private int reference = 0;
-        internal NKScriptValue(int reference, NKScriptChannel channel, NKScriptValue origin)
+        internal NKScriptValue(int reference, NKScriptContext context, NKScriptValue origin)
         {
             this.ns = String.Format("{0}.$references[{$1}]", origin.ns, reference);
             this.reference = reference;
+            _context = new WeakReference<NKScriptContext>(context);
         }
 
         public Task<object> constructWithArguments(object[] args)
@@ -95,7 +93,7 @@ namespace io.nodekit.NKScripting
 
         public Task defineProperty(string property, object descriptor)
         {
-            var context = this.channel.context;
+            var context = this.getContext();
 
             string exp = String.Format("Object.defineProperty({0}, {1}, {2})", ns, property, context.NKserialize(descriptor));
             return evaluateExpression(exp, false);
@@ -120,7 +118,7 @@ namespace io.nodekit.NKScripting
 
         public virtual Task setValue(object value, string property)
         {
-            var context = this.channel.context;
+            var context = this.getContext();
 
             return evaluateExpression(scriptForUpdatingProperty(property, context.NKserialize(value)), false);
         }
@@ -133,7 +131,7 @@ namespace io.nodekit.NKScripting
 
         public Task setValue(object value, int index)
         {
-            var context = this.channel.context;
+            var context = this.getContext();
 
             string exp = String.Format("{0}[{$1] = {$2}", ns, index, context.NKserialize(value));
             return evaluateExpression(exp);
@@ -143,7 +141,7 @@ namespace io.nodekit.NKScripting
 
         async private Task<object> evaluateExpression(string expression, bool retain = true)
         {
-            var context = this.channel.context;
+            var context = this.getContext();
 
             if (retain)
             {
@@ -186,14 +184,14 @@ namespace io.nodekit.NKScripting
 
         private string scriptForUpdatingProperty(string name, object value)
         {
-            var context = this.channel.context;
+            var context = this.getContext();
 
             return scriptForFetchingProperty(name) + " = " + context.NKserialize(value);
         }
 
         private string scriptForCallingMethod(string name, object[] args)
         {
-            var context = this.channel.context;
+            var context = this.getContext();
 
             string[] argsSerialized = args.Select(arg => context.NKserialize(arg)).ToArray<string>();
 
@@ -209,17 +207,19 @@ namespace io.nodekit.NKScripting
 
         protected object wrapScriptObject(object obj)
         {
+            var context = this.getContext();
+
             var dict = obj as Dictionary<string, object>;
             if ((dict != null) && dict.ContainsKey("$sig") && (Convert.ToInt32(dict["$sig"]) == 0x5857574F))
             {
                 var num = Convert.ToInt32(dict["$ref"]);
-                return new NKScriptValue(num, channel, this);
+                return new NKScriptValue(num, context, this);
             }
             if (dict.ContainsKey("$ns"))
             {
                 var ns = dict["$ns"] as String;
                 if (ns != null)
-                    return new NKScriptValue(ns, channel, this);
+                    return new NKScriptValue(ns, context, this);
             }
             return obj;
         }
@@ -230,7 +230,7 @@ namespace io.nodekit.NKScripting
 
         protected virtual void Dispose(bool disposing)
         {
-            var context = this.channel.context;
+            var context = this.getContext();
 
             if (!disposedValue)
             {
@@ -252,9 +252,9 @@ namespace io.nodekit.NKScripting
                     else return;
                 }
                 var ignoreTask = context.NKevaluateJavaScript(script);
-                _channel.SetTarget(null);
+                _context.SetTarget(null);
                 _origin.SetTarget(null);
-                _channel = null;
+                _context = null;
                 _origin = null;
                 reference = 0;
 
@@ -274,25 +274,7 @@ namespace io.nodekit.NKScripting
         }
         #endregion
 
-
-
-
-        // DOM objects extension
-        public NKScriptValue windowObject
-        {
-            get
-            {
-                return new NKScriptValue("window", this.channel, this.origin);
-            }
-        }
-
-        public NKScriptValue documentObject
-        {
-            get
-            {
-                return new NKScriptValue("document", this.channel, this.origin);
-            }
-        }
+ 
 
       
     }

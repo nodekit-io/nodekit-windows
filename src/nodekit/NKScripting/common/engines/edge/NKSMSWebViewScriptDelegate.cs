@@ -53,7 +53,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
             if (msgHandlers.ContainsKey(channel))
             {
                 var scriptHandler = msgHandlers[channel];
-                var body = context.NKDeserialize(message);
+                var body = context.NKdeserialize(message);
                 var result = scriptHandler.didReceiveScriptMessageSync(new NKScriptMessage(channel, body));
                 var retValueSerialized = context.NKserialize(result);
                 return retValueSerialized;
@@ -66,7 +66,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
             if (msgHandlers.ContainsKey(channel))
             {
                 var scriptHandler = msgHandlers[channel];
-                var body = context.NKDeserialize(message);
+                var body = context.NKdeserialize(message);
                 scriptHandler.didReceiveScriptMessage(new NKScriptMessage(channel, body));
             }
         }
@@ -76,7 +76,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
             if (msgHandlers.ContainsKey(channel))
             {
                 var scriptHandler = msgHandlers[channel];
-                var body = context.NKDeserialize(message);
+                var body = context.NKdeserialize(message);
                 var result = scriptHandler.didReceiveScriptMessageSync(new NKScriptMessage(channel, body));
                 var retValueSerialized = context.NKserialize(result);
                 return Task.FromResult<string>(retValueSerialized).AsAsyncOperation();

@@ -40,7 +40,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\Native.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewScriptDelegate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEventEmitter.cs" />

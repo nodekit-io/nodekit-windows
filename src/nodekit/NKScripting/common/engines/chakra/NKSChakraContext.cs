@@ -76,16 +76,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
 
             var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "init_chakra.js", "lib");
             var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/init_chakra.js");
-            await script2.inject(this);
-        }
-
-        protected override NKScriptValueProtocol getJavaScriptValue(string key)
-        {
-            switchContextifNeeded();
-            var global = JavaScriptValue.GlobalObject;
-            var NKScripting = global.GetProperty(JavaScriptPropertyId.FromString(key));
-            var item = key.Split('.').Aggregate(JavaScriptValue.GlobalObject, (prod, next) => prod.GetProperty(JavaScriptPropertyId.FromString(next)));
-            return new NKChakraContextValue(this, key, item);
+            await this.NKinjectScript(script2);
         }
 
         protected override object RunScript(string javaScriptString, string filename)
@@ -121,6 +112,11 @@ namespace io.nodekit.NKScripting.Engines.Chakra
                 throw e;
             }
             return Marshal.PtrToStringUni(returnValue);
+        }
+
+        protected override Task InjectScript(NKScriptSource script)
+        {
+            return this.NKevaluateJavaScript(script.source, script.filename);
         }
 
         protected List<string> _projectedNamespaces = new List<string>();
@@ -168,9 +164,9 @@ namespace io.nodekit.NKScripting.Engines.Chakra
                         var globalstub = cs.rewriteGeneratedStub(globalstubber, ".global");
 
                         var script = new NKScriptSource(globalstub, targetNamespace + "/plugin/" + projectionName + ".js");
-                         await script.inject(this);
+                        await this.NKinjectScript(script);
                         await cs.initializeForContext(this);
-                        plugin.setNKScriptValue(this.getJavaScriptValue(targetNamespace));
+                        plugin.setNKScriptValue(this.NKgetScriptValue(targetNamespace));
 
                        NKLogging.log("+Windows Unversal Component Plugin with script loaded at " + targetNamespace);
                     }
@@ -183,9 +179,8 @@ namespace io.nodekit.NKScripting.Engines.Chakra
         private Dictionary<IntPtr, string> callBacktoScriptMessageHandlerName = new Dictionary<IntPtr, string>();
         private Dictionary<IntPtr, NKScriptMessageHandler> callBacktoScriptMessageHandler = new Dictionary<IntPtr, NKScriptMessageHandler>();
      
-        public void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name)
+        public override void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name)
         {
-  
             ensureOnEngineThread(() =>
             {        
                switchContextifNeeded();
@@ -217,7 +212,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             });
         }   
 
-        public void NKremoveScriptMessageHandlerForName(string name)
+        public override void NKremoveScriptMessageHandlerForName(string name)
         {
                  var cleanup = "delete NKScripting.messageHandlers." + name;
                 NKevaluateJavaScript(cleanup, "");
@@ -233,7 +228,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
         private JavaScriptValue postMessage(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)
         {
             var arg = arguments[1].ToString();
-            var body = this.NKDeserialize(arg);
+            var body = this.NKdeserialize(arg);
             var name = callBacktoScriptMessageHandlerName[callbackData];
             var scriptHandler = callBacktoScriptMessageHandler[callbackData];
             scriptHandler.didReceiveScriptMessage(new NKScriptMessage(name, body));
@@ -243,14 +238,13 @@ namespace io.nodekit.NKScripting.Engines.Chakra
         private JavaScriptValue postMessageSync(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)
         {
             var arg = arguments[1].ToString();
-            var body = this.NKDeserialize(arg);
+            var body = this.NKdeserialize(arg);
             var name = callBacktoScriptMessageHandlerName[callbackData];
             var scriptHandler = callBacktoScriptMessageHandler[callbackData];
             var result = scriptHandler.didReceiveScriptMessageSync(new NKScriptMessage(name, body));
             var retValueSerialized = NKserialize(result);
             return JavaScriptValue.FromString(retValueSerialized);
         }
-
     }
 }
 
