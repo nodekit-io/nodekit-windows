@@ -41,6 +41,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewScriptDelegate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEventEmitter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKLogging.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptChannel.cs" />
@@ -56,6 +58,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptValueNative.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\init_mswebview_uwp.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\nkscripting.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\promise.js" />
   </ItemGroup>

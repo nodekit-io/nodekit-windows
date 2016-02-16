@@ -27,6 +27,7 @@ namespace io.nodekit.NKScripting
         Task NKloadPlugin<T>(T plugin, string ns = null, Dictionary<string, object> options = null) where T : class;
         Task<object> NKevaluateJavaScript(string javaScriptString, string filename = null);
         string NKserialize(object obj);
+        object NKDeserialize(string json);
         Task<NKScriptValueProtocol> NKgetJavaScriptValue(string key);
     }
 

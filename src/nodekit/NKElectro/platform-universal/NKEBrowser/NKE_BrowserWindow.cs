@@ -27,12 +27,10 @@ namespace io.nodekit.NKElectro
     {
         internal NKEventEmitter events = new NKEventEmitter();
         private static Dictionary<int, NKE_BrowserWindow> windowArray = new Dictionary<int, NKE_BrowserWindow>();
-        internal object window;
-
+    
         internal NKScriptContext context;
-        internal object webView;
+        private object _webView;
         internal NKEBrowserType browserType;
-
 
         private int _id = 0;
         private string _type = "";
@@ -44,6 +42,11 @@ namespace io.nodekit.NKElectro
 
         public NKE_BrowserWindow(Dictionary<string, object> options)
         {
+            _id = NKScriptContextFactory.sequenceNumber++;
+
+            if (options == null)
+                options = new Dictionary<string, object>();
+
             // PARSE & STORE OPTIONS
             if (options.ContainsKey("nk.InstallElectro"))
                 _options["nk.InstallElectro"] = options["nk.InstallElectro"];
@@ -63,7 +66,7 @@ namespace io.nodekit.NKElectro
                     throw new PlatformNotSupportedException();
                 case NKEBrowserType.Edge:
                     NKLogging.log("+creating Edge Renderer");
-                    _id = this.createWebView(options);
+                   var ignore = this.createWebView(options);
                     _type = NKEBrowserType.Edge.ToString();
                     NKE_WebContents webContents = new NKE_WebContents(this);
                     _webContents = webContents;

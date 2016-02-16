@@ -127,8 +127,15 @@
   <ItemGroup>
     <Compile Include="NKEApp\NKEApp.cs" />
     <Compile Include="NKEApp\NKEAppDirectory.cs" />
-    <Compile Include="NKEBrowser\NKE_BrowserWindow_universal.cs" />
-    <Compile Include="NKEBrowser\NKE_WebContents_universal.cs" />
+    <Compile Include="NKEBrowser\NKE_BrowserConstants.cs" />
+    <Compile Include="NKEBrowser\NKE_BrowserWindow.cs" />
+    <Compile Include="NKEBrowser\platform-uwp\NKE_BrowserWindow_uwp.cs" />
+    <Compile Include="NKEBrowser\platform-uwp\NKE_BrowserWindow_uwp_MSWebView.cs" />
+    <Compile Include="NKEBrowser\NKE_WebContentsBase.cs" />
+    <Compile Include="NKEBrowser\platform-uwp\NKE_WebContents_uwp.cs" />
+    <Compile Include="NKEBrowser\platform-uwp\NKE_Window_uwp.xaml.cs">
+      <DependentUpon>NKE_Window_uwp.xaml</DependentUpon>
+    </Compile>
     <Compile Include="NKEDialog\NKEDialog-universal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\io.nodekit.NKElectro.rd.xml" />
@@ -139,7 +146,12 @@
       <Name>NKScripting-platform-universal</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Page Include="NKEBrowser\platform-uwp\NKE_Window_uwp.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
   <Import Project="..\common\io.nodekit.NKElectro.shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

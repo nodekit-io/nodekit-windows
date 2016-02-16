@@ -32,9 +32,9 @@ namespace io.nodekit.NKScripting
         protected int _thread_id;
         protected TaskScheduler _async_queue;
 
-        protected NKScriptContextBase()
+        protected NKScriptContextBase(int id)
         {
-            _id = NKScriptContextFactory.sequenceNumber++;
+            _id = id;
             _async_queue = TaskScheduler.FromCurrentSynchronizationContext();
             _thread_id = Environment.CurrentManagedThreadId;
         }
@@ -205,10 +205,6 @@ namespace io.nodekit.NKScripting
                 var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/nkscripting.js", "NKScripting", null);
                 await script.inject(this);
 
-                var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "promise.js", "lib");
-                var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/promise.js", "Promise", null);
-                await script2.inject(this);
-
                 await PrepareEnvironment();
 
                 preparationComplete = true;
@@ -295,7 +291,7 @@ namespace io.nodekit.NKScripting
 
     public abstract class NKScriptContextAsyncBase : NKScriptContextBase
     {
-        protected NKScriptContextAsyncBase() : base() {}
+        protected NKScriptContextAsyncBase(int id) : base(id) {}
 
         // Abstract Must Inherit Items, All Called Thread Safe on Main JS Thread (whatever thread with which the context instance is created )
         protected abstract Task<object> RunScript(string javaScriptString, string filename);
@@ -324,7 +320,7 @@ namespace io.nodekit.NKScripting
     public abstract class NKScriptContextSyncBase : NKScriptContextBase
     {
      
-        protected NKScriptContextSyncBase() : base() {}
+        protected NKScriptContextSyncBase(int id) : base(id) {}
 
         // Abstract Must Inherit Items, All Called Thread Safe on Main JS Thread (whatever thread with which the context instance is created )
         protected abstract object RunScript(string javaScriptString, string filename);

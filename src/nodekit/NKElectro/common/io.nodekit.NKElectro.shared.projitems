@@ -21,9 +21,6 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\_nke_renderer.js" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\NKE_BrowserConstants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\NKE_BrowserWindow.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\NKE_WebContentsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEIpc\NKE_IpcEvents.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEIpc\NKE_IpcMain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEIpc\NKE_IpcRenderer.cs" />
@@ -32,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)NKEApp\" />
+    <Folder Include="$(MSBuildThisFileDirectory)NKEBrowser\" />
     <Folder Include="$(MSBuildThisFileDirectory)NKEDialog\" />
     <Folder Include="$(MSBuildThisFileDirectory)NKEMenu\" />
     <Folder Include="$(MSBuildThisFileDirectory)NKEProtocol\" />

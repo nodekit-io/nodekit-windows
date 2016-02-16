@@ -27,7 +27,6 @@ namespace io.nodekit.NKScripting.Engines.Chakra
 {
     public class NKSChakraContext : NKScriptContextSyncBase, NKScriptContentController
     {
-       
         private static JavaScriptSourceContext currentSourceContext = JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
  
         [ThreadStatic]
@@ -36,7 +35,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
         private JavaScriptContext _context;
         private Queue<JavaScriptValue> _jsTaskQueue = new Queue<JavaScriptValue>();
 
-        internal NKSChakraContext(JavaScriptContext context, Dictionary<string, object> options) : base()
+        internal NKSChakraContext(int id, JavaScriptContext context, Dictionary<string, object> options) : base(id)
         {
             this._context = context;
 
@@ -220,12 +219,9 @@ namespace io.nodekit.NKScripting.Engines.Chakra
 
         public void NKremoveScriptMessageHandlerForName(string name)
         {
-            ensureOnEngineThread(() =>
-            {
-                var cleanup = "delete NKScripting.messageHandlers." + name;
+                 var cleanup = "delete NKScripting.messageHandlers." + name;
                 NKevaluateJavaScript(cleanup, "");
-            });
-        }
+         }
 
         private JavaScriptValue log(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)
         {

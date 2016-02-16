@@ -25,9 +25,10 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             var chakra = runtime.CreateContext();
             JavaScriptContext.Current = chakra;
             NKSChakraContext.currentContext = chakra;
-            var context = new NKSChakraContext(chakra, options);
+            int id = NKScriptContextFactory.sequenceNumber++;
 
-            var id = context.NKid;
+            var context = new NKSChakraContext(id, chakra, options);
+       
             var item = new Dictionary<String, object>();
             NKScriptContextFactory._contexts[id] = item;
             item["JSVirtualMachine"] = runtime;  // if future non-shared runtimes required;

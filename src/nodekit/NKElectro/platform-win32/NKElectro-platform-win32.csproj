@@ -41,9 +41,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NKEBrowser\NKE_BrowserWindow_win32.cs" />
-    <Compile Include="NKEBrowser\NKE_WebContents_win32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NKEBrowser\" />
   </ItemGroup>
   <Import Project="..\common\io.nodekit.NKElectro.shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

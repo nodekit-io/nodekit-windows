@@ -39,7 +39,7 @@ namespace io.nodekit.NKScripting
     {
         internal static Dictionary<int, object> _contexts = new Dictionary<int, object>();
 
-        internal static int sequenceNumber = 1;
+        public static int sequenceNumber = 1;
 
 
         public Task<NKScriptContext> createContext(Dictionary<string, object> options)

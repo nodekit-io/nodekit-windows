@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace io.nodekit
 {
@@ -74,10 +75,11 @@ namespace io.nodekit
         public virtual void emit<T>(string eventType, T data)
         {
             if (subscriptions.ContainsKey(eventType)) {
-                var eventSubscriptions = subscriptions[eventType];
+                var eventSubscriptions = subscriptions[eventType].Values.ToArray<NKEventSubscription>();
 
-                foreach (var item in eventSubscriptions.Values)
+                for (int i = eventSubscriptions.Length - 1; i >= 0; i--) //Loop backwards so you can remove elements.
                 {
+                    var item = eventSubscriptions[i];
                     currentSubscription = item;
                     (item as NKEventSubscriptionGeneric<T>).handler.Invoke(data);
                 } 
@@ -110,10 +112,11 @@ namespace io.nodekit
         {
             if (subscriptions.ContainsKey(eventType))
             {
-                var eventSubscriptions = subscriptions[eventType];
+                var eventSubscriptions = subscriptions[eventType].Values.ToArray<NKEventSubscription>();
 
-                foreach (var item in eventSubscriptions.Values)
+                for (int i = eventSubscriptions.Length - 1; i >= 0; i--) //Loop backwards so you can remove elements.
                 {
+                    var item = eventSubscriptions[i];
                     currentSubscription = item;
                     (item as NKEventSubscriptionGeneric<T>).handler.Invoke(data);
                 }
