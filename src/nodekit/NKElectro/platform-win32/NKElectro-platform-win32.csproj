@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\NKScripting\platform-win32\NKScripting-platform-win32.csproj">
-      <Project>{2f65cd64-b8ae-4257-93db-87334ea341f3}</Project>
+      <Project>{481f65a3-b074-4df6-bd02-256af55710a7}</Project>
       <Name>NKScripting-platform-win32</Name>
     </ProjectReference>
   </ItemGroup>

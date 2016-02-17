@@ -15,21 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+debugger;
 this.process = this.process || {}
 var process = this.process;
 
 process.platform = process.platform || "win32"
 
 this.console = this.console || function () { };
-console.log = console.log || NKScripting.log;
+console.log = console.log || window.external.log;
 
 NKScripting.serialize = true;
 
 NKScripting.getMessageHandlers = function (name) {
     return {
-        'postMessage': NKScriptingBridge.didReceiveScriptMessage.bind(null, name),
-        'postMessageSync': NKScriptingBridge.didReceiveScriptMessageSync.bind(null, name)
+        'postMessage': window.external.didReceiveScriptMessage.bind(null, name),
+        'postMessageSync': window.external.didReceiveScriptMessageSync.bind(null, name)
     };
 }
 

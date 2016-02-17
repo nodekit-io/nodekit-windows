@@ -23,32 +23,33 @@ namespace io.nodekit.NKElectro
 {
     public class NKE_Window : Window
     {
-        public NKE_Window(): base()
+
+        Border border;
+        Grid hostGrid;
+
+        public NKE_Window() : base() {
+
+            border = new Border();
+            hostGrid = new Grid();
+
+            hostGrid.Children.Add(border);
+            this.Content = hostGrid;
+            this.SizeToContent = SizeToContent.WidthAndHeight;
+        }
+
+        internal void addWebView(WebBrowser webView)
         {
-           
-            var webView = new WebBrowser();
-
-            //Create a border with the initial height and width of the user control.   
-            Border borderWithInitialDimensions = new Border();
-
-            borderWithInitialDimensions.Height = webView.Height;
-            borderWithInitialDimensions.Width = webView.Width;
+            border.Height = webView.Height;
+            border.Width = webView.Width;
 
             //Set the user control's dimensions to double.NaN so that it auto sizes   
             //to fill the window.   
             webView.Height = double.NaN;
             webView.Width = double.NaN;
 
-            //Create a grid hosting both the border and the user control.  The    
-            //border results in the grid and window (created below) having initial   
-            //dimensions.   
-            Grid hostGrid = new Grid();
-
-            hostGrid.Children.Add(borderWithInitialDimensions);
             hostGrid.Children.Add(webView);
-
-            this.Content = hostGrid;
-            this.SizeToContent = SizeToContent.WidthAndHeight;
         }
+
+        
     }
 }

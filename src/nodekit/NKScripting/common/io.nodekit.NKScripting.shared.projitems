@@ -42,6 +42,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewScriptDelegate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\trident\NKSMSWebBrowserContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\trident\NKSMSWebBrowserScriptDelegate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\trident\NKSMSWebBrowserCallback.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEventEmitter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKLogging.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKOptions.cs" />
@@ -58,7 +61,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptValueNative.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\init_mswebview_uwp.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\init_edge.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\init_trident.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\nkscripting.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\promise.js" />
   </ItemGroup>

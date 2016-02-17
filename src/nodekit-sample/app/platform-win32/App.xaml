@@ -1,0 +1,9 @@
+﻿<Application x:Class="io.nodekit.Samples.nodekit_sample.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:io.nodekit.Samples.nodekit_sample"
+             >
+    <Application.Resources>
+         
+    </Application.Resources>
+</Application>

@@ -90,8 +90,8 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
                 // var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/promise.js", "Promise", null);
                 // this.NKinjectScript(script);
 
-                var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "init_mswebview_uwp.js", "lib");
-                var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/init_mswebview_uwp.js");
+                var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "init_edge.js", "lib");
+                var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/init_edge.js");
                 await this.NKinjectScript(script2);
                  
             }
@@ -182,4 +182,3 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
     }
 }
 #endif
-      

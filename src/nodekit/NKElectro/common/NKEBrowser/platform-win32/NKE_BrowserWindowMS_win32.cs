@@ -2,14 +2,14 @@
 /*
 * nodekit.io
 *
-* Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
-* Portions Copyright (c) 2013 GitHub, Inc. under MIT License
+* Copyright (c) 2016 OffGrid Networks.All Rights Reserved.
+* Portions Copyright (c) 2013 GitHub, Inc.under MIT License
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
-*      http://www.apache.org/licenses/LICENSE-2.0
+* http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,7 +21,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-// using io.nodekit.NKScripting.Engines.MSWebView;
+using io.nodekit.NKScripting.Engines.MSWebBrowser;
+using System.Windows.Controls;
 
 namespace io.nodekit.NKElectro
 {
@@ -31,7 +32,7 @@ namespace io.nodekit.NKElectro
         private NKE_Window _window;
 
         internal async Task createWebView(Dictionary<string, object> options)
-        {   
+        {
             _window = await createWindow(options);
 
             string url;
@@ -40,9 +41,20 @@ namespace io.nodekit.NKElectro
             else
                 url = NKEBrowserDefaults.kPreloadURL;
 
-              events.emit("did-finish-load", _id);
+            WebBrowser webView = new WebBrowser();
+            this.webView = webView;
+
+            _window.addWebView(webView);
+            webView.Navigate(new Uri(url));
+            context = await NKSMSWebBrowserContext.getScriptContext(_id, webView, options);
+             webView.LoadCompleted += WebView_LoadCompleted;
+            events.emit("did-finish-load", _id);
         }
 
+        private void WebView_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
+        {
+            events.emit("did-finish-load", _id);
+        }
     }
 }
 #endif

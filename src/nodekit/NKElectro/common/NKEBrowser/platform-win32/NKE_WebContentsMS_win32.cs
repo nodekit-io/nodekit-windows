@@ -50,12 +50,12 @@ namespace io.nodekit.NKElectro
 
             webView = (WebBrowser)_browserWindow.webView;
             webView.Navigating += WebView_Navigating;
-            webView.Navigated += WebView_Navigated;
+            webView.LoadCompleted += WebView_LoadCompleted;
      
             this.init_IPC();
         }
 
-        private void WebView_Navigated(object sender, System.Windows.Navigation.NavigationEventArgs e)
+        private void WebView_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
             _isLoading = false;
         }
@@ -85,16 +85,17 @@ namespace io.nodekit.NKElectro
         {
             var httpReferrer = options.itemOrDefault<string>("httpReferrer");
             var userAgent = options.itemOrDefault<string>("userAgent");
-            var extraHeaders = options.itemOrDefault<Dictionary<string, object>>("extraHeaders");
+            var extraHeaders = "";
+
+            foreach (var item in options.itemOrDefault<Dictionary<string, object>>("extraHeaders", new Dictionary<string, object>()))
+            {
+                extraHeaders += item.Key + ": " + item.Value + "\n"; 
+            }
             var uri = new Uri(url);
 
-            webView.Navigate(uri);
+            webView.Navigate(uri, "_self", null, extraHeaders);
         }
-        /*
-        
-    func isLoading()  -> Bool { return self.webView?.loading ?? false }
-*/
-
+      
         public string getURL()
         {
             return webView.Source.AbsoluteUri;

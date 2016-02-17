@@ -22,17 +22,37 @@ using System;
 using System.Collections.Generic;
 using io.nodekit.NKScripting;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace io.nodekit.NKElectro
 {
     public partial class NKE_BrowserWindow
     {
         private int _thread_id;
-    
-       internal Task<NKE_Window> createWindow(Dictionary<string, object> options)
+        private System.Windows.Threading.Dispatcher _dispatcher;
+
+        internal async Task ensureOnUIThread(Action t)
+        {
+            if (_thread_id != Environment.CurrentManagedThreadId)
+                await _dispatcher.InvokeAsync(t);
+            else
+            {
+                t.Invoke();
+            }
+        }
+
+        internal Task<NKE_Window> createWindow(Dictionary<string, object> options)
         {
             _thread_id = Environment.CurrentManagedThreadId;
-            var tcs = new TaskCompletionSource<NKE_Window>();      
+            _dispatcher = Application.Current.Dispatcher;
+
+            var tcs = new TaskCompletionSource<NKE_Window>();
+
+            var window = new NKE_Window();
+            window.Show();
+            window.Activate();
+            tcs.TrySetResult(window);
+
             return tcs.Task;
         }
 
@@ -53,6 +73,10 @@ namespace io.nodekit.NKElectro
 
         public void close()
         {
+            _window = null;
+            windowArray.Remove(_id);
+            context = null;
+            webView = null;
             throw new NotImplementedException();
         }
 
@@ -198,7 +222,7 @@ namespace io.nodekit.NKElectro
 
         public void maximize()
         {
-             throw new NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void minimize()
