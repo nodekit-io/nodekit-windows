@@ -1,4 +1,4 @@
-﻿#if WINDOWS_WPF
+﻿#if WINDOWS_WIN32_WPF
 /*
 * nodekit.io
 *
@@ -21,7 +21,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using io.nodekit.NKScripting.Engines.MSWebBrowser;
 using System.Windows.Controls;
 
 namespace io.nodekit.NKElectro
@@ -30,25 +29,34 @@ namespace io.nodekit.NKElectro
     {
         private static NKEventEmitter globalEvents = NKEventEmitter.global;
         private NKE_Window _window;
+        private Dictionary<string, object> options;
 
-        internal async Task createWebView(Dictionary<string, object> options)
+        internal void createWebView(Dictionary<string, object> options)
         {
-            _window = await createWindow(options);
+            this.options = options;
+            ensureOnUIThread(createWebViewUI);
+        }
 
+        internal void createWebViewUI()
+        {
+
+            createWindow(options);
+     
             string url;
             if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
                 url = (string)options[NKEBrowserOptions.kPreloadURL];
             else
                 url = NKEBrowserDefaults.kPreloadURL;
 
-            WebBrowser webView = new WebBrowser();
-            this.webView = webView;
+            //   WebBrowser webView = new WebBrowser();
+            //   _window.addWebView(webView);
+           WebBrowser webView = _window.webBrowser;
+           this.webView = webView;
 
-            _window.addWebView(webView);
-            webView.Navigate(new Uri(url));
-            context = await NKSMSWebBrowserContext.getScriptContext(_id, webView, options);
-             webView.LoadCompleted += WebView_LoadCompleted;
-            events.emit("did-finish-load", _id);
+           webView.Navigate(new Uri(url));
+     //       context = await NKSMSWebBrowserContext.getScriptContext(_id, webView, options);
+     //        webView.LoadCompleted += WebView_LoadCompleted;
+         //   events.emit("did-finish-load", _id);
         }
 
         private void WebView_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)

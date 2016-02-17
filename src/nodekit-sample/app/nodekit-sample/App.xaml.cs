@@ -16,6 +16,7 @@
 * limitations under the License.
 */
 
+using io.nodekit.NKScripting;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -74,9 +75,10 @@ namespace io.nodekit.Samples.nodekit_sample
                
         }
 
+        private NKScriptContext context;
         private async Task startNodeKit(Dictionary<string, object> options = null)
         {
-            var context = await NKScripting.NKScriptContextFactory.createContext(options);
+            context = await NKScripting.NKScriptContextFactory.createContext(options);
             await NKElectro.Main.addElectro(context);
 
             var appjs = await NKStorage.getResourceAsync(typeof(App), "index.js", "app");

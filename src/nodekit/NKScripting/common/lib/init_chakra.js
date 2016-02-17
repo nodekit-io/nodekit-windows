@@ -22,5 +22,15 @@ var process = this.process;
 process.platform = process.platform || "win32"
 
 this.console = this.console || function () { };
-console.log = console.log || NKScripting.log;
+console.log = console.log || NKScriptingBridge.log;
+
+NKScripting.serialize = true;
+
+NKScripting.getMessageHandlers = function (name) {
+    return {
+        'postMessage': NKScriptingBridge.didReceiveScriptMessage.bind(null, name),
+        'postMessageSync': NKScriptingBridge.didReceiveScriptMessageSync.bind(null, name)
+    };
+}
+
 console.log("+Chakra JavaScript Engine Initialized");

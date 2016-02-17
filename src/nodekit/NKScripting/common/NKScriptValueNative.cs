@@ -29,6 +29,8 @@ namespace io.nodekit.NKScripting
         private NKScriptInvocation proxy;
         internal object plugin { get { return proxy.target; } }
         private WeakReference<object> _nativeObject;
+        private object _nativeObjectStrong;
+
         public object nativeObject { get { object o; _nativeObject.TryGetTarget(out o); return o; } }
 
         protected WeakReference<NKScriptChannel> _channel;
@@ -46,7 +48,7 @@ namespace io.nodekit.NKScripting
             Type t = value.GetType();
             NKScriptChannel channel = value.getNKScriptChannel();
             string pluginNS = channel.principal.ns;
-            int id = channel.nativeFirstSequence++;
+            int id = NKScriptChannel.nativeFirstSequence++;
             string ns = string.Format("{0}[{1}]", pluginNS, id);
             this._channel = new WeakReference<NKScriptChannel>(channel);
 
@@ -101,6 +103,7 @@ namespace io.nodekit.NKScripting
 
             if (instance == null)
                 throw new ArgumentException(String.Format("!Failed to create instance for plugin class {0}"), cls.Name);
+            _nativeObjectStrong = instance;
 
             proxy = bindObject(instance);
             syncProperties();
@@ -131,8 +134,8 @@ namespace io.nodekit.NKScripting
         private void unbindObject(object obj)
         {
             var channel = getChannel();
-
-            _nativeObject.SetTarget(null);
+            if (_nativeObject != null)
+                _nativeObject.SetTarget(null);
             _nativeObject = null;
             obj.setNKScriptValue(null);
 

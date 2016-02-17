@@ -27,6 +27,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using io.nodekit.NKScripting.Engines.MSWebView;
 using io.nodekit.NKScripting;
+using Windows.UI.Core;
+using Windows.ApplicationModel.Core;
 
 namespace io.nodekit.NKElectro
 {
@@ -35,24 +37,30 @@ namespace io.nodekit.NKElectro
         private static NKEventEmitter globalEvents = NKEventEmitter.global;
         private NKE_Window _window;
 
-        internal async Task createWebView(Dictionary<string, object> options)
-        {   
-            _window = await createWindow(options);
+        internal Task createWebView(Dictionary<string, object> options)
+        {
 
-            string url;
-            if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
-                url = (string)options[NKEBrowserOptions.kPreloadURL];
-            else
-                url = NKEBrowserDefaults.kPreloadURL;
+            return CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+            {
 
-            WebView webView = new WebView(WebViewExecutionMode.SeparateThread);
-            this.webView = webView;
+                _window = await createWindow(options);
 
-            _window.controls.Add(webView);
-            webView.Navigate(new Uri(url));
-            context = await NKSMSWebViewContext.getScriptContext(_id, webView, options);
-            webView.NavigationCompleted += WebView_NavigationCompleted;
-            events.emit("did-finish-load", _id);
+                string url;
+                if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
+                    url = (string)options[NKEBrowserOptions.kPreloadURL];
+                else
+                    url = NKEBrowserDefaults.kPreloadURL;
+
+                WebView webView = new WebView(WebViewExecutionMode.SeparateThread);
+                this.webView = webView;
+
+                _window.controls.Add(webView);
+                webView.Navigate(new Uri(url));
+                context = await NKSMSWebViewContext.getScriptContext(_id, webView, options);
+                webView.NavigationCompleted += WebView_NavigationCompleted;
+                events.emit("did-finish-load", _id);
+
+            }).AsTask();
         }
 
         private void WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)

@@ -1,13 +1,12 @@
-﻿using System;
+﻿using io.nodekit.NKScripting;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Navigation;
 
 namespace io.nodekit.Samples.nodekit_sample
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
         [STAThread]
@@ -23,9 +22,12 @@ namespace io.nodekit.Samples.nodekit_sample
             var ignoreTask = startNodeKit();
         }
 
+        private NKScriptContext context;
+
         private async Task startNodeKit(Dictionary<string, object> options = null)
         {
-            var context = await NKScripting.NKScriptContextFactory.createContext(options);
+            NKElectro.NKE_BrowserWindow.setupSync();
+            context = await NKScriptContextFactory.createContext(options);
             await NKElectro.Main.addElectro(context);
 
             var appjs = await NKStorage.getResourceAsync(typeof(App), "index.js", "app");
@@ -34,8 +36,5 @@ namespace io.nodekit.Samples.nodekit_sample
 
             NKEventEmitter.global.emit<string>("nk.jsApplicationReady");
         }
-
     }
-
-
 }

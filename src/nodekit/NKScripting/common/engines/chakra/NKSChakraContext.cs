@@ -21,35 +21,51 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
+#if WINDOWS_UWP
 namespace io.nodekit.NKScripting.Engines.Chakra
+#elif WINDOWS_WIN32
+namespace io.nodekit.NKScripting.Engines.ChakraCore
+#endif
 {
     public class NKSChakraContext : NKScriptContextSyncBase, NKScriptContentController
     {
         private static JavaScriptSourceContext currentSourceContext = JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
- 
+
         [ThreadStatic]
-        internal static JavaScriptContext currentContext;
+        internal static JavaScriptContext currentContext ;
 
         private JavaScriptContext _context;
         private Queue<JavaScriptValue> _jsTaskQueue = new Queue<JavaScriptValue>();
-
-        internal NKSChakraContext(int id, JavaScriptContext context, Dictionary<string, object> options) : base(id)
+        private NKSChakraScriptDelegate _webViewScriptDelegate;
+       
+        public NKSChakraContext(int id, JavaScriptContext context, Dictionary<string, object> options) : base(id)
         {
-            this._context = context;
+            _async_queue = TaskScheduler.Current;
 
+            this._context = context;
+     
             JavaScriptPromiseContinuationCallback promiseContinuationCallback = delegate (JavaScriptValue jsTask, IntPtr callbackState)
             {
                 _jsTaskQueue.Enqueue(jsTask);
             };
 
-            Native.ThrowIfError(Native.JsSetPromiseContinuationCallback(promiseContinuationCallback, IntPtr.Zero));
+            ensureOnEngineThread(() =>
+            {
+                NKSChakraContext.currentContext = context;
 
+                JavaScriptContext.Current = context;
+
+#if WINDOWS_UWP
+            Native.ThrowIfError(Native.JsSetPromiseContinuationCallback(promiseContinuationCallback, IntPtr.Zero));
             Native.ThrowIfError(Native.JsProjectWinRTNamespace("Windows"));
-   
-            // if (options.ContainsKey("nk.ScriptingDebug") && ((bool)options["nk.ScriptingDebug"] == true))
-                Native.ThrowIfError(Native.JsStartDebugging());
+         // if (options.ContainsKey("nk.ScriptingDebug") && ((bool)options["nk.ScriptingDebug"] == true);
+                 Native.ThrowIfError(Native.JsStartDebugging());
+#endif
+            });
+
         }
 
         public void switchContextifNeeded()
@@ -63,16 +79,16 @@ namespace io.nodekit.NKScripting.Engines.Chakra
 
         async override protected Task PrepareEnvironment()
         {
+            switchContextifNeeded();
             var global = JavaScriptValue.GlobalObject;
             var NKScripting = global.GetProperty(JavaScriptPropertyId.FromString("NKScripting"));
-         
-            IntPtr dataCallBack = IntPtr.Zero;
-            var logFunction = JavaScriptValue.CreateFunction(log, dataCallBack);
-            NKScripting.SetProperty(JavaScriptPropertyId.FromString("log"), logFunction, true);
 
             // var source = await NKStorage.getResourceAsync(typeof(NKScriptContext), "promise.js", "lib");
             // var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/promise.js", "Promise", null);
             // await script.inject(this);
+
+            _webViewScriptDelegate = new NKSChakraScriptDelegate(this);
+            await _webViewScriptDelegate.createBridge();
 
             var source2 = await NKStorage.getResourceAsync(typeof(NKScriptContext), "init_chakra.js", "lib");
             var script2 = new NKScriptSource(source2, "io.nodekit.scripting/NKScripting/init_chakra.js");
@@ -121,6 +137,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
 
         protected List<string> _projectedNamespaces = new List<string>();
 
+#if WINDOWS_UWP
         protected override async Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options) 
         {
             bool mainThread = (bool)options["MainThread"];
@@ -131,6 +148,7 @@ namespace io.nodekit.NKScripting.Engines.Chakra
                 case NKScriptExportType.JSExport:
                     throw new NotSupportedException("JSExport option is for darwin platforms only");
                 case NKScriptExportType.WinRT:
+
                     if (plugin == null)
                     {
                         switchContextifNeeded();
@@ -175,76 +193,34 @@ namespace io.nodekit.NKScripting.Engines.Chakra
                     throw new NotImplementedException("Unknown Scripting Plugin Bridge Option");
             }
         }
+#endif
+#if WINDOWS_WIN32
+        protected override Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options)
+        {
+            NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
 
-        private Dictionary<IntPtr, string> callBacktoScriptMessageHandlerName = new Dictionary<IntPtr, string>();
-        private Dictionary<IntPtr, NKScriptMessageHandler> callBacktoScriptMessageHandler = new Dictionary<IntPtr, NKScriptMessageHandler>();
-     
+            switch (bridge)
+            {
+                case NKScriptExportType.JSExport:
+                    throw new NotSupportedException("JSExport option is for darwin platforms only");
+                case NKScriptExportType.WinRT:
+                    throw new NotSupportedException("WinRT option is for Windows Store Applications only");
+                default:
+                    throw new NotImplementedException("Unknown Scripting Plugin Bridge Option");
+            }
+        }
+#endif
+
         public override void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name)
         {
-            ensureOnEngineThread(() =>
-            {        
-               switchContextifNeeded();
-                var global = JavaScriptValue.GlobalObject;
-                var NKScripting = global.GetProperty(JavaScriptPropertyId.FromString("NKScripting"));
-                var messageHandlers = NKScripting.GetProperty(JavaScriptPropertyId.FromString("messageHandlers"));
-                NKScripting.SetProperty(JavaScriptPropertyId.FromString("serialize"), JavaScriptValue.FromBoolean(true), true);
-
-                var nameProperty = JavaScriptPropertyId.FromString(name);
-                JavaScriptValue namedHandler;
-                if (messageHandlers.HasProperty(nameProperty))
-                    namedHandler = messageHandlers.GetProperty(nameProperty);
-                else
-                {
-                    namedHandler = JavaScriptValue.CreateObject();
-                    messageHandlers.SetProperty(nameProperty, namedHandler, true);
-                }
-
-                GCHandle dataCallBackHandle = GCHandle.Alloc(scriptMessageHandler);
-                IntPtr dataCallBack = (IntPtr)dataCallBackHandle;
-                callBacktoScriptMessageHandlerName[dataCallBack] = name;
-                callBacktoScriptMessageHandler[dataCallBack] = scriptMessageHandler;
-
-                var postMessageFunction = JavaScriptValue.CreateFunction(postMessage, dataCallBack);
-                namedHandler.SetProperty(JavaScriptPropertyId.FromString("postMessage"), postMessageFunction, true);
-
-                var postMessageSyncFunction = JavaScriptValue.CreateFunction(postMessageSync, dataCallBack);
-                namedHandler.SetProperty(JavaScriptPropertyId.FromString("postMessageSync"), postMessageSyncFunction, true);
-            });
-        }   
+            ((NKScriptContentController)_webViewScriptDelegate).NKaddScriptMessageHandler(scriptMessageHandler, name);
+        }
 
         public override void NKremoveScriptMessageHandlerForName(string name)
         {
-                 var cleanup = "delete NKScripting.messageHandlers." + name;
-                NKevaluateJavaScript(cleanup, "");
-         }
-
-        private JavaScriptValue log(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)
-        {
-            var arg = arguments[1].ToString();
-            NKLogging.log(arg);
-            return JavaScriptValue.Null;
+            ((NKScriptContentController)_webViewScriptDelegate).NKremoveScriptMessageHandlerForName(name);
         }
-
-        private JavaScriptValue postMessage(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)
-        {
-            var arg = arguments[1].ToString();
-            var body = this.NKdeserialize(arg);
-            var name = callBacktoScriptMessageHandlerName[callbackData];
-            var scriptHandler = callBacktoScriptMessageHandler[callbackData];
-            scriptHandler.didReceiveScriptMessage(new NKScriptMessage(name, body));
-            return JavaScriptValue.Null;
-        }
-
-        private JavaScriptValue postMessageSync(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)
-        {
-            var arg = arguments[1].ToString();
-            var body = this.NKdeserialize(arg);
-            var name = callBacktoScriptMessageHandlerName[callbackData];
-            var scriptHandler = callBacktoScriptMessageHandler[callbackData];
-            var result = scriptHandler.didReceiveScriptMessageSync(new NKScriptMessage(name, body));
-            var retValueSerialized = NKserialize(result);
-            return JavaScriptValue.FromString(retValueSerialized);
-        }
+    
     }
 }
 

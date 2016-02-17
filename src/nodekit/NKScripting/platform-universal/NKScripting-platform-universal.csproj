@@ -107,8 +107,6 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NKData.cs" />
-    <Compile Include="NKStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\io.nodekit.NKScripting.rd.xml" />
   </ItemGroup>

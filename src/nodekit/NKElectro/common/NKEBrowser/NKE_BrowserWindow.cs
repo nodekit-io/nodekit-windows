@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace io.nodekit.NKElectro
 {
-    public partial class NKE_BrowserWindow : NKScriptExport
+    public partial class NKE_BrowserWindow : NKScriptExport, IDisposable
     {
         internal NKEventEmitter events = new NKEventEmitter();
         private static Dictionary<int, NKE_BrowserWindow> windowArray = new Dictionary<int, NKE_BrowserWindow>();
@@ -48,10 +48,10 @@ namespace io.nodekit.NKElectro
 
             windowArray[_id] = this;
 
-            var ignoreTask = createBrowserWindow(options);
+            createBrowserWindow(options);
         }
 
-        private async Task createBrowserWindow(Dictionary<string, object> options)
+        private void createBrowserWindow(Dictionary<string, object> options)
         {
             // PARSE & STORE OPTIONS
             if (options.ContainsKey(NKEBrowserOptions.nkBrowserType))
@@ -67,11 +67,11 @@ namespace io.nodekit.NKElectro
                     throw new PlatformNotSupportedException();
                 case NKEBrowserType.MSWebView:
                     NKLogging.log("+creating Edge Renderer");
-                    await createWebView(options);
-                    _type = NKEBrowserType.MSWebView.ToString();
-                    _webContents = new NKE_WebContentsMS(this);
-                    if (options.itemOrDefault<bool>("nk.InstallElectro", true))
-                        await Renderer.addElectro(context);
+                   createWebView(options);
+                   _type = NKEBrowserType.MSWebView.ToString();
+               //     _webContents = new NKE_WebContentsMS(this);
+                //    if (options.itemOrDefault<bool>("nk.InstallElectro", true))
+                //        await Renderer.addElectro(context);
                      NKLogging.log(string.Format("+E{0} Renderer Ready", _id));        
                     break;
                 default:
@@ -105,6 +105,42 @@ namespace io.nodekit.NKElectro
         {
             return key == ".ctor:options" ? "" : name;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            NKLogging.log("DISPOSING BROWSERWINDOW");
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~NKE_BrowserWindow() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
         #endregion
 
     }

@@ -1,4 +1,4 @@
-﻿#if WINDOWS_WPF
+﻿#if WINDOWS_WIN32_WPF
 /*
 * nodekit.io
 *

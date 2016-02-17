@@ -9,6 +9,34 @@
     <Import_RootNamespace>io.nodekit.NKScripting</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptBackgroundWorkItemCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptBeforeCollectCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptEngineException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptErrorCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptFatalException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptMemoryAllocationCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptMemoryEventType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptNativeFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptObjectBeforeCollectCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptObjectFinalizeCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptPromiseContinuationCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptPropertyId.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptPropertyIdType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptRuntime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptRuntimeAttributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptRuntimeVersion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptScriptException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptSerializedScriptLoadSourceCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptSerializedScriptUnloadCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptSourceContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptThreadServiceCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptTypedArrayType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptUsageException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\JavaScriptValueType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakraCore\Engine\Native.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptBackgroundWorkItemCallback.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptBeforeCollectCallback.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptContext.cs" />
@@ -37,14 +65,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptUsageException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptValueType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\Native.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\Native_uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)engines\edge\NKSMSWebViewScriptDelegate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)engines\trident\NKSMSWebBrowserContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)engines\trident\NKSMSWebBrowserScriptDelegate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)engines\trident\NKSMSWebBrowserCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraScriptDelegate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\trident-win32\NKSMSWebBrowserCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\trident-win32\NKSMSWebBrowserContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\trident-win32\NKSMSWebBrowserScriptDelegate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\edge-uwp\NKSMSWebViewContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\edge-uwp\NKSMSWebViewScriptDelegate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEventEmitter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKLogging.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKOptions.cs" />
@@ -59,6 +88,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptTypeInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptValueNative.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)util\platform-uwp\NKData-platform-uwp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)util\platform-uwp\NKStorage-platform-uwp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)util\platform-win32\NKData-platform-win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)util\platform-win32\NKStorage-platform-win32.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib\init_edge.js" />

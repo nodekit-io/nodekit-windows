@@ -27,8 +27,8 @@ namespace io.nodekit.NKScripting
     {
         private string id;
         private bool isFactory = false;
-        private int sequenceNumber = 0;
-        internal int nativeFirstSequence = Int32.MaxValue;
+        private static int sequenceNumber = 0;
+        internal static int nativeFirstSequence = Int32.MaxValue;
 
         private WeakReference<NKScriptContext> _context = null;
         internal NKScriptContext context { get { NKScriptContext o; _context.TryGetTarget(out o); return o; } }
@@ -62,7 +62,7 @@ namespace io.nodekit.NKScripting
             context.setNKScriptChannel(this);
             if ((this.id != null) || (context == null) ) return null;
       
-            this.id = (this.sequenceNumber++).ToString();
+            this.id = (NKScriptChannel.sequenceNumber++).ToString();
          
            context.NKaddScriptMessageHandler(this, id);
 

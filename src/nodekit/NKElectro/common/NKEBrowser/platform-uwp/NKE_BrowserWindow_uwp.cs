@@ -25,6 +25,8 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
 
 namespace io.nodekit.NKElectro
 {
@@ -35,6 +37,7 @@ namespace io.nodekit.NKElectro
 
         internal async Task ensureOnUIThread(Action t)
         {
+
             if (_thread_id != Environment.CurrentManagedThreadId)
                 await _dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => t.Invoke());
             else
@@ -45,11 +48,13 @@ namespace io.nodekit.NKElectro
 
         internal Task<NKE_Window> createWindow(Dictionary<string, object> options)
         {
+
+            var tcs = new TaskCompletionSource<NKE_Window>();
+
             _thread_id = Environment.CurrentManagedThreadId;
             _dispatcher = Windows.UI.Core.CoreWindow.GetForCurrentThread().Dispatcher;
 
-            var tcs = new TaskCompletionSource<NKE_Window>();
-            
+
             Frame rootFrame = Window.Current.Content as Frame;
             if (rootFrame == null)
             {
@@ -60,8 +65,8 @@ namespace io.nodekit.NKElectro
 
             globalEvents.once<NKE_Window>("nk.window." + this._id, (window) =>
             {
-            //     this._window = window;
-                 tcs.TrySetResult(window);
+                //     this._window = window;
+                tcs.TrySetResult(window);
             });
 
             if (rootFrame.Content == null)
@@ -69,6 +74,7 @@ namespace io.nodekit.NKElectro
                 rootFrame.Navigate(typeof(NKE_Window), this._id);
             }
             Window.Current.Activate();
+
             return tcs.Task;
         }
 

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace io.nodekit.NKScripting
@@ -40,10 +41,15 @@ namespace io.nodekit.NKScripting
         internal static Dictionary<int, object> _contexts = new Dictionary<int, object>();
 
         public static int sequenceNumber = 1;
-
+        public static TaskFactory UITaskFactory;
 
         public static Task<NKScriptContext> createContext(Dictionary<string, object> options)
         {
+            var prev = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+            UITaskFactory = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
+            SynchronizationContext.SetSynchronizationContext(prev);
+
             if (options == null)
             {
                 options = new Dictionary<string, object>();
@@ -65,11 +71,19 @@ namespace io.nodekit.NKScripting
                 case NKEngineType.UIWebView:
                     throw new NotSupportedException(String.Format("{0} not supported on Windows Platform; use OSX or iOS ", engine.ToString()));
                 case NKEngineType.Chakra:
+#if WINDOWS_UWP
                     return Engines.Chakra.NKSChakraContextFactory.createContext(options);
+#elif WINDOWS_WIN32
+                    return Engines.ChakraCore.NKSChakraContextFactory.createContext(options);
+#endif
                 case NKEngineType.Trident:
                     throw new NotImplementedException(String.Format("{0} not implemented on Universal Windows Platform ", engine.ToString()));
                 case NKEngineType.ChakraCore:
+#if WINDOWS_UWP
                     throw new NotImplementedException(String.Format("{0} not required on Universal Windows Platform; use Chakra ", engine.ToString()));
+#elif WINDOWS_WIN32
+                    return Engines.ChakraCore.NKSChakraContextFactory.createContext(options);
+#endif   
                 default:
                     throw new ArgumentException(String.Format("{0} unknown engine type", engine.ToString()));
             }

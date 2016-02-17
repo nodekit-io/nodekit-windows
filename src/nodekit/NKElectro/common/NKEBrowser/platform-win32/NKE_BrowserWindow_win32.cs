@@ -1,4 +1,4 @@
-﻿#if WINDOWS_WPF
+﻿#if WINDOWS_WIN32_WPF
 /*
 * nodekit.io
 *
@@ -28,32 +28,25 @@ namespace io.nodekit.NKElectro
 {
     public partial class NKE_BrowserWindow
     {
-        private int _thread_id;
-        private System.Windows.Threading.Dispatcher _dispatcher;
 
-        internal async Task ensureOnUIThread(Action t)
+        private static TaskFactory syncContext;
+
+        public static void setupSync()
         {
-            if (_thread_id != Environment.CurrentManagedThreadId)
-                await _dispatcher.InvokeAsync(t);
-            else
-            {
-                t.Invoke();
-            }
+            syncContext = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        internal Task<NKE_Window> createWindow(Dictionary<string, object> options)
+        internal void ensureOnUIThread(Action action)
         {
-            _thread_id = Environment.CurrentManagedThreadId;
-            _dispatcher = Application.Current.Dispatcher;
+            syncContext.StartNew(action);
+        }
 
-            var tcs = new TaskCompletionSource<NKE_Window>();
-
+        internal void createWindow(Dictionary<string, object> options)
+        {
             var window = new NKE_Window();
             window.Show();
             window.Activate();
-            tcs.TrySetResult(window);
-
-            return tcs.Task;
+            _window = window;
         }
 
         public void blurWebView()

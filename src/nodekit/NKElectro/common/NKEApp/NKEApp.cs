@@ -74,8 +74,11 @@ namespace io.nodekit.NKElectro
 #if WINDOWS_UWP
             Windows.ApplicationModel.Core.CoreApplication.Exit();
 #endif
-#if WINDOWS_WPF
+#if WINDOWS_WIN32_WPF
             System.Windows.Application.Current.Shutdown();
+#endif
+#if WINDOWS_WIN32_WF
+            System.Windows.Forms.Application.Exit();
 #endif
         }
 
@@ -84,8 +87,11 @@ namespace io.nodekit.NKElectro
 #if WINDOWS_UWP
             Windows.ApplicationModel.Core.CoreApplication.Exit();
 #endif
-#if WINDOWS_WPF
+#if WINDOWS_WIN32_WPF
             System.Windows.Application.Current.Shutdown(exitCode);
+#endif
+#if WINDOWS_WIN32_WF
+            System.Windows.Forms.Application.Exit();
 #endif
         }
 

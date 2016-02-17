@@ -47,7 +47,6 @@ namespace io.nodekit.NKScripting
         protected NKScriptContextBase(int id)
         {
             _id = id;
-            _async_queue = TaskScheduler.FromCurrentSynchronizationContext();
             _thread_id = Environment.CurrentManagedThreadId;
         }
 
@@ -216,10 +215,11 @@ namespace io.nodekit.NKScripting
 
                 var script = new NKScriptSource(source, "io.nodekit.scripting/NKScripting/nkscripting.js", "NKScripting", null);
                 await this.NKinjectScript(script);
-
-                await PrepareEnvironment();
-
-                preparationComplete = true;
+                await ensureOnEngineThread(async () =>
+                {
+                    await PrepareEnvironment();
+                    preparationComplete = true;
+                });
             }
             catch
             {
@@ -255,7 +255,7 @@ namespace io.nodekit.NKScripting
 
         public Task<Task<object>> ensureOnEngineThread(Func<Task<object>> t)
         {
-            if (_thread_id != Environment.CurrentManagedThreadId)
+           if (_thread_id != Environment.CurrentManagedThreadId)
                 return Task.Factory.StartNew(t,
                          System.Threading.CancellationToken.None, TaskCreationOptions.DenyChildAttach, _async_queue);
             else
