@@ -177,11 +177,11 @@ namespace io.nodekit.NKRemoting
             cancelToken.Register(requestClientTeardown);
             var nkready = readObject(asyncPipe);
             if (nkready == null || nkready.command != NKRemotingMessage.Command.NKRemotingReady)
-                Environment.Exit(911);
-
+               Environment.Exit(910);
+     
+            Task.Factory.StartNew((s)=> _processServerMessages(asyncPipe), null, cancelToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             NKEventEmitter.global.forward<NKEvent>(eventForwarderFromMain);
 
-            Task.Factory.StartNew((s)=> _processServerMessages(asyncPipe), null, cancelToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         private void requestClientTeardown()
@@ -237,9 +237,9 @@ namespace io.nodekit.NKRemoting
             cancelToken.Register(requestSelfTeardown);
 
             this.asyncPipe = asyncPipe;
-            NKEventEmitter.global.forward<NKEvent>(eventForwarderFromRenderer);
-
+       
             Task.Factory.StartNew((s) => _processClientMessages(), null, cancelToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+  
         }
 
         private void requestSelfTeardown()
@@ -300,7 +300,7 @@ namespace io.nodekit.NKRemoting
                 var eventType = message.args[0];
                 NKEvent eventObject = new NKEvent((IDictionary<string, object>)(NKData.jsonDeserialize(message.args[1])));
                 NKEventEmitter.global.emit<NKEvent>(eventType, eventObject, false);
-            }
+            } 
 
             if (!cancelToken.IsCancellationRequested)
                 await _processServerMessages(stream);
@@ -393,7 +393,7 @@ namespace io.nodekit.NKRemoting
                       handler.didReceiveScriptMessage(nks);
               } else
                 {
-                    NKLogging.log("+Renderer Received Unknown Script Message");
+                    NKLogging.log("+Renderer Received Unknown Script Message " + message.args[1]);
 
                 }
             }
@@ -480,6 +480,7 @@ namespace io.nodekit.NKRemoting
             msg.command = NKRemotingMessage.Command.NKRemotingReady;
             msg.args = new string[] { };
             writeObject(asyncPipe, msg);
+            NKEventEmitter.global.forward<NKEvent>(eventForwarderFromRenderer);
 
         }
 
@@ -623,7 +624,7 @@ namespace io.nodekit.NKRemoting
                     _writeLength(stream, data.Length);
                     _writeObject(stream, data);
                 }
-                catch (Exception ex) { NKLogging.log("!Write Error" + ex.Message); }
+                catch (Exception ex) { Console.WriteLine("!Write Error" + ex.Message); }
             }
         }
 

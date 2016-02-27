@@ -52,7 +52,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebBrowser
 
         public void log(string message)
         {
-            callback.log(message);
+             callback.log(message);
         }
     }
 }

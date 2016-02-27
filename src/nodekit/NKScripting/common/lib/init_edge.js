@@ -21,7 +21,7 @@ var process = this.process;
 process.platform = process.platform || "win32"
 
 this.console = this.console || function () { };
-console.log = console.log || NKScriptingBridge.log;
+console.log = function (arg) { NKScriptingBridge.log(arg); }
 
 NKScripting.serialize = true;
 
@@ -32,4 +32,4 @@ NKScripting.getMessageHandlers = function (name) {
     };
 }
 
-console.log("+Edge JavaScript Engine Initialized");
+console.log("+Renderer WebView: Edge JavaScript Engine Initialized");

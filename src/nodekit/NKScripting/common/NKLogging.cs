@@ -20,14 +20,28 @@ using System;
 
 namespace io.nodekit
 {
+
     public static class NKLogging
     {
         public static void log(object value)
         {
-            System.Diagnostics.Debug.WriteLine(value);
+            if (NKEventEmitter.isMainProcess)
+                System.Diagnostics.Debug.WriteLine(value);
+            else
+                NKEventEmitter.global.emit<NKEvent>("NK.Logging", new NKEvent(0, null, null, new object[] { value }), true);
+
 #if WINDOWS_WIN32
-   //       Console.WriteLine(value);
+     //    Console.WriteLine(value);
 #endif
+        }
+
+        static NKLogging()
+        {
+            if (NKEventEmitter.isMainProcess)
+                NKEventEmitter.global.on<NKEvent>("NK.Logging", (e, data) =>
+                {
+                    log(data.arg[0]);
+                });
         }
     }
 }

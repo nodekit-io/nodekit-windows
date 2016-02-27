@@ -40,7 +40,7 @@ namespace io.nodekit.NKElectro
         {
             try
             {
-
+            //    throw new NotImplementedException();
 #if WINDOWS_WIN32_WPF
                 _browserWindow.createWindow(options);
                 WebBrowser webView = _browserWindow._window.webBrowser;

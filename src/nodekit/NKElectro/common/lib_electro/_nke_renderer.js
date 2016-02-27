@@ -20,7 +20,7 @@
 this.process = this.process || {}
 var process = this.process;
 
-process.platform = "darwin"
+process.platform = process.platform || "darwin"
 process.type = "renderer"
 process.versions = {}
 

@@ -61,6 +61,8 @@ namespace io.nodekit
     public class NKEventEmitter
     {
         public static NKEventEmitter global = new NKSignalEmitter();
+        public static bool isMainProcess = true;
+
         protected NKEventSubscription currentSubscription;
 
         // TODO: Switch to ConcurrentDictionary

@@ -71,7 +71,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebBrowser
 
         void NKSMSWebBrowserCallbackProtocol.log(string message)
         {
-            System.Diagnostics.Debug.WriteLine(message);
+            NKLogging.log(message);
         }
     }
 }

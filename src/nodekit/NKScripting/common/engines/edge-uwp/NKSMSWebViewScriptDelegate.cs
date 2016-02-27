@@ -87,7 +87,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
 
         void NKSMSWebViewCallbackProtocol.log(string message)
         {
-            System.Diagnostics.Debug.WriteLine(message);
+            NKLogging.log(message);
         }
     }
 }

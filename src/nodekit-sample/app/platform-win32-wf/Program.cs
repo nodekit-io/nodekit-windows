@@ -29,8 +29,7 @@ namespace io.nodekit.Samples.nodekit_sample
             }
         }
     }
-
-  
+      
     class Main : ApplicationContext
     {
 
@@ -47,6 +46,7 @@ namespace io.nodekit.Samples.nodekit_sample
 
         private async Task startNodeKit(string[] args)
         {
+            NKEventEmitter.isMainProcess = true;
             var options = new Dictionary<string, object>
             {
                 ["NKS.MainThreadScheduler"] = TaskScheduler.FromCurrentSynchronizationContext(),
@@ -81,6 +81,8 @@ namespace io.nodekit.Samples.nodekit_sample
         NKScriptContextRemotingProxy proxy;
         private async Task startNodeKit(string[] args)
         {
+            NKEventEmitter.isMainProcess = false;
+
             var options = new Dictionary<string, object>
             {
                 ["NKS.MainThreadScheduler"] = TaskScheduler.FromCurrentSynchronizationContext(),

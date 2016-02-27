@@ -46,23 +46,28 @@ namespace io.nodekit.NKScripting.Engines.MSWebBrowser
 
         private NKSMSWebBrowserContext(int id, WebBrowser webView, Dictionary<string, object> options) : base(id)
         {
-            _async_queue = TaskScheduler.FromCurrentSynchronizationContext();
-            this._isLoaded = false;
-            this._isFirstLoaded = false;
-            this._webView = webView;
-            this._id = id;
-            this.tcs = new TaskCompletionSource<NKScriptContext>();
-            _webViewScriptDelegate = new NKSMSWebViewScriptDelegate(this);
-            _webViewCallbackBridge = new NKSMSWebBrowserCallback(_webViewScriptDelegate);
-            _webView.Navigating += _webView_Navigating;
+            try {
+                _async_queue = TaskScheduler.FromCurrentSynchronizationContext();
+                this._isLoaded = false;
+                this._isFirstLoaded = false;
+                this._webView = webView;
+                this._id = id;
+                this.tcs = new TaskCompletionSource<NKScriptContext>();
+                _webViewScriptDelegate = new NKSMSWebViewScriptDelegate(this);
+                _webViewCallbackBridge = new NKSMSWebBrowserCallback(_webViewScriptDelegate);
+                _webView.Navigating += _webView_Navigating;
 
 #if WINDOWS_WIN32_WPF
             webView.LoadCompleted += _webView_LoadCompleted;
 #elif WINDOWS_WIN32_WF
-            webView.DocumentCompleted += _webView_DocumentCompleted;
+                webView.DocumentCompleted += _webView_DocumentCompleted;
 #endif
-            _webView.ObjectForScripting = _webViewCallbackBridge;
-            NKLogging.log("+NodeKit Trident JavaScript Engine E" + id);
+                _webView.ObjectForScripting = _webViewCallbackBridge;
+             } catch (Exception ex)
+            {
+                NKLogging.log("!Error creating Trident context: " + ex.Message);
+                NKLogging.log(ex.StackTrace);
+            }
         }
 
 #if WINDOWS_WIN32_WPF
