@@ -71,9 +71,18 @@ namespace io.nodekit.NKElectro
             {
                 rootFrame.Navigate(typeof(NKE_Window), this._id);
             }
+            NKEventEmitter.global.emit<string>("NKE.WindowAdded", _id.ToString(), false);
+
+            rootFrame.Unloaded += RootFrame_Unloaded;
             Window.Current.Activate();
 
+
             return tcs.Task;
+        }
+
+        private void RootFrame_Unloaded(object sender, RoutedEventArgs e)
+        {
+            NKEventEmitter.global.emit<string>("NKE.WindowRemoved", _id.ToString(), false);
         }
 
         private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)

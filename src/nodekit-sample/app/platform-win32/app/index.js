@@ -23,3 +23,7 @@ io.nodekit.electro.app.on("ready", function () {
         console.log(p.webContents.getTitle());
     });
 });
+
+io.nodekit.electro.app.on("window-all-closed", function () {
+    io.nodekit.electro.app.quit();
+});

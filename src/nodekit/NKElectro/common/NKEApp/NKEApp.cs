@@ -31,6 +31,7 @@ namespace io.nodekit.NKElectro
         #region NKScriptExport
 
         private static string defaultNamespace { get { return "io.nodekit.electro.app";  } }
+        private static int windowCount;
 
         private static string rewriteGeneratedStub(string stub, string forKey)
         {
@@ -46,6 +47,7 @@ namespace io.nodekit.NKElectro
 
         private static Task initializeForContext(NKScriptContext context)
         {
+            windowCount = 0;
             var jsValue = typeof(NKE_App).getNKScriptValue();
             var events = NKEventEmitter.global;
 
@@ -66,6 +68,29 @@ namespace io.nodekit.NKElectro
                 jsValue.invokeMethod("emit", new[] { "quit" });
             });
 
+            events.on<string>("NKS.ProcessAdded", (e, data) => windowCount++);
+            events.on<string>("NKE.WindowAdded", (e, data) => windowCount++);
+
+            events.on<string>("NKS.ProcessRemoved", (e, data) =>
+            {
+                windowCount--;
+                if (windowCount == 0)
+                    events.emit<string>("NKE.WindowAllClosed", "");
+            });
+
+            events.on<string>("NKE.WindowRemoved", (e, data) =>
+            {
+                windowCount--;
+                if (windowCount == 0)
+                    events.emit<string>("NKE.WindowAllClosed", "");
+            });
+
+            events.once<string>("NKE.WindowAllClosed", (e, data) =>
+            {
+             //   exit(0);
+                 jsValue.invokeMethod("emit", new[] { "window-all-closed" });
+            });
+
             return Task.FromResult<object>(null);
           }
         #endregion
@@ -75,11 +100,8 @@ namespace io.nodekit.NKElectro
 #if WINDOWS_UWP
             Windows.ApplicationModel.Core.CoreApplication.Exit();
 #endif
-#if WINDOWS_WIN32_WPF
-            System.Windows.Application.Current.Shutdown();
-#endif
-#if WINDOWS_WIN32_WF
-            System.Windows.Forms.Application.Exit();
+#if WINDOWS_WIN32
+            Environment.Exit(0);
 #endif
         }
 
@@ -88,11 +110,8 @@ namespace io.nodekit.NKElectro
 #if WINDOWS_UWP
             Windows.ApplicationModel.Core.CoreApplication.Exit();
 #endif
-#if WINDOWS_WIN32_WPF
-            System.Windows.Application.Current.Shutdown(exitCode);
-#endif
-#if WINDOWS_WIN32_WF
-            System.Windows.Forms.Application.Exit();
+#if WINDOWS_WIN32
+              Environment.Exit(0);
 #endif
         }
 

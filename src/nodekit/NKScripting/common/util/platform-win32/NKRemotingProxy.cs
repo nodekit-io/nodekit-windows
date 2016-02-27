@@ -145,6 +145,7 @@ namespace io.nodekit.NKRemoting
 
             this.id = id;
             process = Process.Start(startInfo);
+            NKEventEmitter.global.emit<string>("NKS.ProcessAdded", id, false);
             process.EnableRaisingEvents = true;
             process.Exited += Process_Exited;
        
@@ -272,7 +273,7 @@ namespace io.nodekit.NKRemoting
         }
 
         private void Process_Exited(object sender, EventArgs e)
-        {
+        {   
             NKLogging.log("+[MAIN] The Renderer Process has exited");
             try
             {
@@ -281,6 +282,7 @@ namespace io.nodekit.NKRemoting
                 syncPipeOut.Close();
             }
             catch { }
+            NKEventEmitter.global.emit<string>("NKS.ProcessRemoved", id, false);
         }
         // MAIN PROCESS PIPE EVENT LOOP
         private async Task _processServerMessages(Stream stream)
@@ -439,9 +441,7 @@ namespace io.nodekit.NKRemoting
                 msg.command = NKRemotingMessage.Command.NKScriptMessageSync;
                 msg.args = new[] { message.name, context.NKserialize(message.body) };
                 writeObject(syncPipeOut, msg);
-
                 return readObject(syncPipeIn);
-
             }
           , cancelToken, TaskCreationOptions.None, TaskScheduler.Default);
 
@@ -459,7 +459,7 @@ namespace io.nodekit.NKRemoting
 
             object result = null;
             if (nkr.args.Length>0)
-               result = context.NKserialize(nkr.args[0]);
+               result = context.NKdeserialize(nkr.args[0]);
      
             return result;
         }
