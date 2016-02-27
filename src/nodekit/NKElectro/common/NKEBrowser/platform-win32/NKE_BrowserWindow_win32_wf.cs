@@ -31,25 +31,6 @@ namespace io.nodekit.NKElectro
 {
     public partial class NKE_BrowserWindow
     {
-        private NKE_Window _window;
-   
-        private static TaskFactory syncContext;
-
-        public static void setupSync()
-        {
-            syncContext = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        internal Task ensureOnUIThread(Action action)
-        {
-             return syncContext.StartNew(action);
-        }
-
-        internal Task ensureOnUIThread(Func<Task> action)
-        {
-            return syncContext.StartNew(action).Unwrap();
-        }
-
         internal void createWindow(Dictionary<string, object> options, Control customWebView)
         {
             var window = new NKE_Window(customWebView);

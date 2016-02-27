@@ -40,7 +40,6 @@ namespace io.nodekit.Samples.nodekit_sample
         {
             var window = new Form();
             var handle = window.Handle;
-            NKElectro.NKE_BrowserWindow.setupSync();
             var _ = startNodeKit(args);
        }
 
@@ -48,10 +47,15 @@ namespace io.nodekit.Samples.nodekit_sample
 
         private async Task startNodeKit(string[] args)
         {
-            var options = new Dictionary<string, object>();
-            options["NKS.Engine"] = NKEngineType.Chakra;
-            context = await NKScriptContextFactory.createContext(options);
-            await NKElectro.Main.addElectro(context, true);
+            var options = new Dictionary<string, object>
+            {
+                ["NKS.MainThreadScheduler"] = TaskScheduler.FromCurrentSynchronizationContext(),
+                ["NKS.MainThreadId"] = Environment.CurrentManagedThreadId,
+                ["NKS.RemoteProcess"] = true,
+                ["NKS.Engine"] = NKEngineType.Chakra
+            };
+             context = await NKScriptContextFactory.createContext(options);
+            await NKElectro.Main.addElectro(context, options);
 
             var appjs = await NKStorage.getResourceAsync(typeof(Main), "index.js", "app");
             var script = "function loadapp(){\n" + appjs + "\n}\n" + "loadapp();" + "\n";
@@ -70,18 +74,23 @@ namespace io.nodekit.Samples.nodekit_sample
         {
             var window = new Form();
             var handle = window.Handle;
-            NKElectro.NKE_BrowserWindow.setupSync();
-            var _ = startNodeKit(args);
+             var _ = startNodeKit(args);
         }
 
         private NKScriptContext context;
         NKScriptContextRemotingProxy proxy;
         private async Task startNodeKit(string[] args)
         {
-             var options = new Dictionary<string, object>();
+            var options = new Dictionary<string, object>
+            {
+                ["NKS.MainThreadScheduler"] = TaskScheduler.FromCurrentSynchronizationContext(),
+                ["NKS.MainThreadId"] = Environment.CurrentManagedThreadId,
+                ["NKS.Engine"] = NKEngineType.Chakra
+            };
+
             proxy = NKRemoting.NKRemotingProxy.registerAsClient(args[0]);
             context = await NKScripting.Engines.NKRemoting.NKSNKRemotingContext.createContext(proxy, options);
-            await NKElectro.Main.addElectroRemoteProxy(context);
+            await NKElectro.Main.addElectroRemoteProxy(context, options);
             proxy.NKready();
         }
     }

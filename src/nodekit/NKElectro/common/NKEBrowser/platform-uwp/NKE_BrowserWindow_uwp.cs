@@ -33,28 +33,24 @@ namespace io.nodekit.NKElectro
     public partial class NKE_BrowserWindow
     {
 
-        internal NKE_Window _window;
-        private int _thread_id;
-        private Windows.UI.Core.CoreDispatcher _dispatcher;
+   //     private Windows.UI.Core.CoreDispatcher _dispatcher;
 
-        internal async Task ensureOnUIThread(Action t)
+  /*      internal async Task ensureOnUIThread2(Action t)
         {
-
             if (_thread_id != Environment.CurrentManagedThreadId)
                 await _dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => t.Invoke());
             else
             {
                 t.Invoke();
             }
-        }
+        } */
 
         internal Task<NKE_Window> createWindow(Dictionary<string, object> options)
         {
 
             var tcs = new TaskCompletionSource<NKE_Window>();
 
-            _thread_id = Environment.CurrentManagedThreadId;
-            _dispatcher = Windows.UI.Core.CoreWindow.GetForCurrentThread().Dispatcher;
+         //    _dispatcher = Windows.UI.Core.CoreWindow.GetForCurrentThread().Dispatcher;
 
 
             Frame rootFrame = Window.Current.Content as Frame;

@@ -19,8 +19,6 @@ namespace io.nodekit.Samples.nodekit_sample
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            NKElectro.NKE_BrowserWindow.setupSync();
-
             var args = e.Args;
 
             if (args.Length > 0 && args[0].StartsWith("NKR="))
@@ -38,10 +36,16 @@ namespace io.nodekit.Samples.nodekit_sample
 
         private async Task startNodeKitMain(string[] args)
         {
-            var options = new Dictionary<string, object>();
-            options["NKS.Engine"] = NKEngineType.Chakra;
+            var options = new Dictionary<string, object>
+            {
+                ["NKS.MainThreadScheduler"] = TaskScheduler.FromCurrentSynchronizationContext(),
+                ["NKS.MainThreadId"] = Environment.CurrentManagedThreadId,
+                ["NKS.RemoteProcess"] = true,
+                ["NKS.Engine"] = NKEngineType.Chakra
+            };
+
             context = await NKScriptContextFactory.createContext(options);
-            await NKElectro.Main.addElectro(context, true);
+            await NKElectro.Main.addElectro(context, options);
 
             var appjs = await NKStorage.getResourceAsync(typeof(App), "index.js", "app");
             var script = "function loadapp(){\n" + appjs + "\n}\n" + "loadapp();" + "\n";
@@ -53,10 +57,15 @@ namespace io.nodekit.Samples.nodekit_sample
         // FOR FUTURE USE IF NEEDED
         private async Task startNodeKitRenderer(string[] args)
         {
-            var options = new Dictionary<string, object>();
+            var options = new Dictionary<string, object>
+            {
+                ["NKS.MainThreadScheduler"] = TaskScheduler.FromCurrentSynchronizationContext(),
+                ["NKS.MainThreadId"] = Environment.CurrentManagedThreadId,
+                ["NKS.RemoteProcess"] = true,
+            };
             proxy = NKRemoting.NKRemotingProxy.registerAsClient(args[0]);
             context = await NKScripting.Engines.NKRemoting.NKSNKRemotingContext.createContext(proxy, options);
-            await NKElectro.Main.addElectroRemoteProxy(context);
+            await NKElectro.Main.addElectroRemoteProxy(context, options);
             proxy.NKready();
         }
     }

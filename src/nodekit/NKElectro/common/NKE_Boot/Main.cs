@@ -25,14 +25,16 @@ namespace io.nodekit.NKElectro
 {
     public class Main
     {
-        public async static Task addElectro(NKScriptContext context, bool multiProcess = false)
+        public async static Task addElectro(NKScriptContext context, Dictionary<string, object> options)
         {
             var appjs = await NKStorage.getResourceAsync(typeof(Main), "_nke_main.js", "lib_electro");
             var script = "function loadbootstrap(){\n" + appjs + "\n}\n" + "loadbootstrap();" + "\n";
             var scriptsource = new NKScriptSource(script, "io.nodekit.electro/lib-electro/_nke_main.js", "io.nodekit.electro.main");
             await context.NKinjectScript(scriptsource);
 
-            var options = new Dictionary<string, object>
+            bool multiProcess = NKOptions.itemOrDefault<bool>(options, "NKS.RemoteProcess", false);
+
+            var optionsDefault = new Dictionary<string, object>
             {
                 ["NKS.PluginBridge"] = NKScriptExportType.NKScriptExport
             };
@@ -43,19 +45,27 @@ namespace io.nodekit.NKElectro
                 ["NKS.RemoteProcess"] = true
             };
 
-            await context.NKloadPlugin(typeof(NKE_App), null, options);
+            var optionsMain = new Dictionary<string, object>
+            {
+                ["NKS.PluginBridge"] = NKScriptExportType.NKScriptExport,
+                ["NKS.MainThread"] = true,
+                ["NKS.MainThreadId"] = (int)options["NKS.MainThreadId"],
+                ["NKS.MainThreadScheduler"] = (TaskScheduler)options["NKS.MainThreadScheduler"]
+            };
+
+            await context.NKloadPlugin(typeof(NKE_App), null, optionsDefault);
 
             if (!multiProcess)
-                await context.NKloadPlugin(typeof(NKE_BrowserWindow), null, options);
+                await NKE_BrowserWindow.attachToContext(context, optionsMain);
             else
-                await context.NKloadPlugin(typeof(NKE_BrowserWindow), null, optionsMulti);
+                await NKE_BrowserWindow.attachToContext(context, optionsMulti);
 
             if (!multiProcess)
-                await context.NKloadPlugin(typeof(NKE_WebContents), null, options);
+                await NKE_WebContents.attachToContext(context, optionsMain);
             else
-                await context.NKloadPlugin(typeof(NKE_WebContents), null, optionsMulti);
+                await NKE_WebContents.attachToContext(context, optionsMulti);
 
-
+  
             // await context.NKloadPlugin(typeof(NKEDialog), "io.nodekit.electro.dialog", options);
 
             // NKE_BrowserWindow.attachTo(context);
@@ -66,15 +76,18 @@ namespace io.nodekit.NKElectro
             // NKE_Protocol.attachTo(context);
         }
 
-        public async static Task addElectroRemoteProxy(NKScriptContext context)
+        public async static Task addElectroRemoteProxy(NKScriptContext context, Dictionary<string, object> options)
         {
-            var options = new Dictionary<string, object>
+            var optionsDefault = new Dictionary<string, object>
             {
-                ["NKS.PluginBridge"] = NKScriptExportType.NKScriptExport
+                ["NKS.PluginBridge"] = NKScriptExportType.NKScriptExport,
+                ["NKS.MainThread"] = true,
+                ["NKS.MainThreadId"] = (int)options["NKS.MainThreadId"],
+                ["NKS.MainThreadScheduler"] = (TaskScheduler)options["NKS.MainThreadScheduler"]
             };
 
-            await context.NKloadPlugin(typeof(NKE_BrowserWindow), null, options);
-            await context.NKloadPlugin(typeof(NKE_WebContents), null, options);
+            await NKE_BrowserWindow.attachToContext(context, optionsDefault);
+            await NKE_WebContents.attachToContext(context, optionsDefault);
 
             // await context.NKloadPlugin(typeof(NKEDialog), "io.nodekit.electro.dialog", options);
 

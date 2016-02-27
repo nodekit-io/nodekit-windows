@@ -26,7 +26,7 @@ namespace io.nodekit
         {
             System.Diagnostics.Debug.WriteLine(value);
 #if WINDOWS_WIN32
-     //       Console.WriteLine(value);
+   //       Console.WriteLine(value);
 #endif
         }
     }

@@ -16,7 +16,7 @@
 * limitations under the License.
 */
 var BrowserWindow = io.nodekit.electro.BrowserWindow;
-debugger;
+//debugger;
 io.nodekit.electro.app.on("ready", function () {
     var p = new BrowserWindow({ 'preloadURL': 'http://bing.com' });
     p.on("did-finish-load", function () {

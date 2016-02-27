@@ -19,6 +19,8 @@
 
 using System;
 using io.nodekit.NKScripting;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace io.nodekit.NKElectro
 {
@@ -28,6 +30,12 @@ namespace io.nodekit.NKElectro
         protected int _id;
         protected string _type;
         protected NKEventEmitter globalEvents = NKEventEmitter.global;
+
+        internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
+        {
+            return context.NKloadPlugin(typeof(NKE_WebContents), null, options);
+        }
+
 
         public NKE_WebContents(NKE_BrowserWindow browserWindow)
         {

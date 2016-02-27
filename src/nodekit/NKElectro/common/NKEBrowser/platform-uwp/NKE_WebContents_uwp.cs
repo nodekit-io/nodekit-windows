@@ -34,40 +34,36 @@ namespace io.nodekit.NKElectro
         internal WebView webView;
         private bool _isLoading;
 
-        internal Task createWebView(Dictionary<string, object> options)
+        internal async Task createWebView(Dictionary<string, object> options)
         {
+            _browserWindow._window = await _browserWindow.createWindow(options);
 
-            return CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
-            {
-                _browserWindow._window = await _browserWindow.createWindow(options);
+            string url;
+            if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
+                url = (string)options[NKEBrowserOptions.kPreloadURL];
+            else
+                url = NKEBrowserDefaults.kPreloadURL;
 
-               string url;
-               if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
-                   url = (string)options[NKEBrowserOptions.kPreloadURL];
-               else
-                   url = NKEBrowserDefaults.kPreloadURL;
+            WebView webView = new WebView(WebViewExecutionMode.SeparateThread);
+            this.webView = webView;
+            _browserWindow.webView = webView;
 
-               WebView webView = new WebView(WebViewExecutionMode.SeparateThread);
-               this.webView = webView;
-                _browserWindow.webView = webView;
+            _browserWindow._window.controls.Add(webView);
+            webView.Navigate(new Uri(url));
+            _browserWindow.context = await NKSMSWebViewContext.getScriptContext(_id, webView, options);
 
-                _browserWindow._window.controls.Add(webView);
-                webView.Navigate(new Uri(url));
-                 _browserWindow.context = await NKSMSWebViewContext.getScriptContext(_id, webView, options);
+            webView.NavigationStarting += WebView_NavigationStarting;
+            webView.NavigationCompleted += this.WebView_NavigationCompleted;
 
-                webView.NavigationStarting += WebView_NavigationStarting;
-                webView.NavigationCompleted += this.WebView_NavigationCompleted;
+            this.init_IPC();
 
-                this.init_IPC();
+            this._type = NKEBrowserType.MSWebView.ToString();
+            if (options.itemOrDefault<bool>("nk.InstallElectro", true))
+                await Renderer.addElectro(_browserWindow.context, options);
+            NKLogging.log(string.Format("+E{0} Renderer Ready", _id));
 
-                this._type = NKEBrowserType.MSWebView.ToString();
-               if (options.itemOrDefault<bool>("nk.InstallElectro", true))
-                   await Renderer.addElectro(_browserWindow.context);
-               NKLogging.log(string.Format("+E{0} Renderer Ready", _id));
+            _browserWindow.events.emit("NKE.DidFinishLoad", _id);
 
-              _browserWindow.events.emit("NKE.DidFinishLoad", _id);
-
-           }).AsTask();
         }
 
         private void WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
@@ -137,8 +133,8 @@ namespace io.nodekit.NKElectro
 
         public string getTitle()
         {
-            return "HELLO TITLE";
-        //    return webView.DocumentTitle;
+      //      return "HELLO TITLE";
+           return webView.DocumentTitle;
         }
 
         public bool isLoading()

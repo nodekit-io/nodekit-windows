@@ -29,6 +29,7 @@ namespace io.nodekit.NKElectro
         private NKEventEmitter events = NKEventEmitter.global;
 
         #region NKScriptExport
+
         private static string defaultNamespace { get { return "io.nodekit.electro.app";  } }
 
         private static string rewriteGeneratedStub(string stub, string forKey)

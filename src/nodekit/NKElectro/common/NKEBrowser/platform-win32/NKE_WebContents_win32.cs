@@ -36,50 +36,48 @@ namespace io.nodekit.NKElectro
         internal WebBrowser webView;
         private bool _isLoading;
 
-        internal Task createWebView(Dictionary<string, object> options)
+        internal async Task createWebView(Dictionary<string, object> options)
         {
-            return _browserWindow.ensureOnUIThread(async () =>
+            try
             {
-                try
-                {
 
 #if WINDOWS_WIN32_WPF
-                    _browserWindow.createWindow(options);
-                    WebBrowser webView = _browserWindow._window.webBrowser;
+                _browserWindow.createWindow(options);
+                WebBrowser webView = _browserWindow._window.webBrowser;
 #elif WINDOWS_WIN32_WF
                      WebBrowser webView = new WebBrowser();       
                     _browserWindow.createWindow(options, webView);
 #endif
-                    this.webView = webView;
-                    _browserWindow.webView = webView;
+                this.webView = webView;
+                _browserWindow.webView = webView;
 
-                    string url;
-                    if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
-                        url = (string)options[NKEBrowserOptions.kPreloadURL];
-                    else
-                        url = NKEBrowserDefaults.kPreloadURL;
+                string url;
+                if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
+                    url = (string)options[NKEBrowserOptions.kPreloadURL];
+                else
+                    url = NKEBrowserDefaults.kPreloadURL;
 
-                    webView.Navigate(new Uri(url));
+                webView.Navigate(new Uri(url));
 
 #if WINDOWS_WIN32_WPF
-                    webView.Navigating += this.WebView_Navigating;
-                    webView.LoadCompleted += this.WebView_LoadCompleted;
+                webView.Navigating += this.WebView_Navigating;
+                webView.LoadCompleted += this.WebView_LoadCompleted;
 #elif WINDOWS_WIN32_WF
                     webView.Navigating += this.WebView_Navigating;
                     webView.DocumentCompleted += this.WebView_DocumentCompleted;
 #endif
-                    this.init_IPC();
+                this.init_IPC();
 
-                    _browserWindow.context = await NKSMSWebBrowserContext.getScriptContext(_id, webView, options);
-                    _browserWindow.events.emit("NKE.DidFinishLoad", _id);
-                }
-                catch (Exception ex)
-                {
-                    NKLogging.log("!Error creating browser webcontent: " + ex.Message);
-                    NKLogging.log(ex.StackTrace);
-                }
-                options = null;
-            });
+                _browserWindow.context = await NKSMSWebBrowserContext.getScriptContext(_id, webView, options);
+                _browserWindow.events.emit("NKE.DidFinishLoad", _id);
+            }
+            catch (Exception ex)
+            {
+                NKLogging.log("!Error creating browser webcontent: " + ex.Message);
+                NKLogging.log(ex.StackTrace);
+            }
+            options = null;
+
         }
 
 
@@ -148,12 +146,11 @@ namespace io.nodekit.NKElectro
 
         public string getTitle()
         {
-return "HELLO TITLE";
 #if WINDOWS_WIN32_WPF
-        //    return (string)webView.InvokeScript("eval", new object[] { "document.title" });
+            return (string)webView.InvokeScript("eval", new object[] { "document.title" });
 #elif WINDOWS_WIN32_WF
-      //     return (string)webView.Document.InvokeScript("eval", new object[] { "document.title" });
-#endif            
+           return (string)webView.Document.InvokeScript("eval", new object[] { "document.title" });
+#endif
         }
 
         public bool isLoadingSync()

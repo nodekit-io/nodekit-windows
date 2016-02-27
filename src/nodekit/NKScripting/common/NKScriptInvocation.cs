@@ -52,12 +52,23 @@ namespace io.nodekit.NKScripting
 
         public object call(MethodBase method, object[] args)
         {
-            return method.Invoke(target, UnwrapArgs(method, args));
+            Func<object> work = () =>
+            {
+                return method.Invoke(target, UnwrapArgs(method, args));
+            };
+
+            if (queue != null)
+            {
+                var t = Task.Factory.StartNew<object>(work, new System.Threading.CancellationToken(false), TaskCreationOptions.None, queue);
+                t.Wait();
+                return t.Result;
+            }
+            else
+                return work.Invoke();
         }
 
         public Task<object> callAsync(MethodBase method, object[] args)
         {
-
             Func<object> work = () =>
             {
                 return method.Invoke(target, UnwrapArgs(method, args));

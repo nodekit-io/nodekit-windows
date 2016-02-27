@@ -28,7 +28,8 @@ namespace io.nodekit.NKElectro
     {
         internal NKEventEmitter events = new NKEventEmitter();
         private static Dictionary<int, NKE_BrowserWindow> windowArray = new Dictionary<int, NKE_BrowserWindow>();
-    
+        internal static Dictionary<string, object> startupOptions;
+
         internal NKScriptContext context;
         internal object webView;
         internal NKEBrowserType browserType;
@@ -38,10 +39,55 @@ namespace io.nodekit.NKElectro
         private NKE_WebContents _webContents;
         protected NKEventEmitter globalEvents = NKEventEmitter.global;
 
+        private static TaskFactory syncContext;
+        private int _thread_id;
+
+        internal NKE_Window _window;
+
         public NKE_BrowserWindow() { }
+
+        internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
+        {
+            startupOptions = options;
+            return context.NKloadPlugin(typeof(NKE_BrowserWindow), null, options);
+        }
+
+        internal Task ensureOnUIThread(Action action)
+        {
+            if (_thread_id != Environment.CurrentManagedThreadId)
+                return syncContext.StartNew(action);
+            else
+            {
+                action.Invoke();
+                return Task.FromResult<object>(null);
+            }
+        }
+
+        internal Task ensureOnUIThread(Func<Task> action)
+        {
+            if (_thread_id != Environment.CurrentManagedThreadId)
+                return syncContext.StartNew(action).Unwrap();
+            else
+            {
+                return action.Invoke();
+            }
+        }
+
+        internal Task ensureOnUIThread(Func<object, Task> action, object state)
+        {
+            if (_thread_id != Environment.CurrentManagedThreadId)
+                return syncContext.StartNew(action, state).Unwrap();
+            else
+            {
+                return action.Invoke(state);
+            }
+        }
 
         public NKE_BrowserWindow(Dictionary<string, object> options)
         {
+            _thread_id = (int)startupOptions["NKS.MainThreadId"];
+            syncContext = new TaskFactory((TaskScheduler)startupOptions["NKS.MainThreadScheduler"]);
+
             _id = NKScriptContextFactory.sequenceNumber++;
 
             if (options == null)
@@ -51,8 +97,8 @@ namespace io.nodekit.NKElectro
             try
             {
                 _webContents = new NKE_WebContents(this);
-                var _ = createBrowserWindow(options);  
-            }
+                var _ = ensureOnUIThread(createBrowserWindow, options);
+             }
             catch (Exception ex)
             {
                 NKLogging.log("!Error Creating Window" + ex.Message);
@@ -65,8 +111,9 @@ namespace io.nodekit.NKElectro
    
         }
 
-        private async Task createBrowserWindow(Dictionary<string, object> options)
+        private async Task createBrowserWindow(object optionsObject)
         {
+            Dictionary<string, object> options = optionsObject as Dictionary<string, object>;
             // PARSE & STORE OPTIONS
             if (options.ContainsKey(NKEBrowserOptions.nkBrowserType))
                 browserType = (NKEBrowserType)Enum.Parse(typeof(NKEBrowserType), (options[NKEBrowserOptions.nkBrowserType]) as string);

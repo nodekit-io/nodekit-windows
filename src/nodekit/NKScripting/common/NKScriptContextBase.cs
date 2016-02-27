@@ -177,7 +177,7 @@ namespace io.nodekit.NKScripting
                     if (remoteProcess)
                         channel = new NKScriptChannelRemote((NKScriptContext)this);
                     else if (mainThread)
-                        channel = new NKScriptChannel((NKScriptContext)this, TaskScheduler.FromCurrentSynchronizationContext());
+                        channel = new NKScriptChannel((NKScriptContext)this, (TaskScheduler)options["NKS.MainThreadScheduler"]);
                     else
                         channel = new NKScriptChannel((NKScriptContext)this);
                     var scriptValue = await channel.bindPlugin<T>(plugin, ns);
@@ -187,7 +187,7 @@ namespace io.nodekit.NKScripting
                     break;
                 case NKScriptExportType.NKScriptExportRemote:
                      if (mainThread)
-                        channel = new NKScriptChannelRemote((NKScriptContext)this, TaskScheduler.FromCurrentSynchronizationContext());
+                        channel = new NKScriptChannelRemote((NKScriptContext)this, (TaskScheduler)options["NKS.MainThreadScheduler"]);
                     else
                         channel = new NKScriptChannelRemote((NKScriptContext)this);
                      var scriptValueRemote = await channel.bindPlugin<T>(plugin, ns);
