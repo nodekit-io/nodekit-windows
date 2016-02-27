@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 #if WINDOWS_UWP
 namespace io.nodekit.NKScripting.Engines.Chakra
 #elif WINDOWS_WIN32
-namespace io.nodekit.NKScripting.Engines.ChakraCore
+namespace io.nodekit.NKScripting.Engines.Chakra
 #endif
 {
     internal class NKSChakraScriptDelegate : NKScriptContentController
@@ -83,8 +83,12 @@ namespace io.nodekit.NKScripting.Engines.ChakraCore
 
         private JavaScriptValue log(JavaScriptValue callee, bool isConstructCall, JavaScriptValue[] arguments, ushort argumentCount, IntPtr callbackData)
         {
-            var arg = arguments[1].ToString();
-            NKLogging.log(arg);
+            var arg = arguments[1];
+            if (arg.ValueType == JavaScriptValueType.Undefined || arg.ValueType == JavaScriptValueType.Null)
+                NKLogging.log(arg.ValueType.ToString());
+            else
+                NKLogging.log(arg.ToString());
+
             return JavaScriptValue.Null;
         }
 
@@ -112,6 +116,9 @@ namespace io.nodekit.NKScripting.Engines.ChakraCore
                 var scriptHandler = msgHandlers[channel];
                 var body = context.NKdeserialize(message);
                 var result = scriptHandler.didReceiveScriptMessageSync(new NKScriptMessage(channel, body));
+                if (result == null)
+                    return JavaScriptValue.Null;
+
                 var retValueSerialized = context.NKserialize(result);
                 return JavaScriptValue.FromString(retValueSerialized);
             }

@@ -68,7 +68,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebBrowser
 #if WINDOWS_WIN32_WPF
         private void _webView_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
-        //    var ignore = this.completeInitialization();
+            var _ = this.completeInitialization();
         }
 
         private void _webView_Navigating(object sender, System.Windows.Navigation.NavigatingCancelEventArgs e)
@@ -78,7 +78,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebBrowser
 #elif WINDOWS_WIN32_WF
         private void _webView_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
-            //    var ignore = this.completeInitialization();
+            var _ = this.completeInitialization();
         }
 
         private void _webView_Navigating(object sender, WebBrowserNavigatingEventArgs e)
@@ -97,8 +97,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebBrowser
         }
 
         async override protected Task PrepareEnvironment()
-        {if (true)
-                return;
+        {
 
             if (!_isFirstLoaded)
             {
@@ -140,8 +139,8 @@ namespace io.nodekit.NKScripting.Engines.MSWebBrowser
 
         protected override Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options) 
         {
-            bool mainThread = (bool)options["MainThread"];
-            NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
+            bool mainThread = (bool)options["NKS.MainThread"];
+            NKScriptExportType bridge = (NKScriptExportType)options["NKS.PluginBridge"];
 
             switch (bridge)
             {

@@ -1,4 +1,4 @@
-﻿#if WINDOWS_WIN32_WF
+﻿#if WINDOWS_WIN32
 /*
 * nodekit.io
 *
@@ -21,40 +21,79 @@
 using System;
 using System.Collections.Generic;
 using io.nodekit.NKScripting;
+using System.Threading.Tasks;
+using io.nodekit.NKScripting.Engines.MSWebBrowser;
+#if WINDOWS_WIN32_WPF
+using System.Windows.Controls;
+#elif WINDOWS_WIN32_WF
 using System.Windows.Forms;
+#endif
 
 namespace io.nodekit.NKElectro
 {
-    public class NKE_WebContentsMS : NKE_WebContentsBase
+    public partial class NKE_WebContents
     {
         internal WebBrowser webView;
         private bool _isLoading;
-    
-        public NKE_WebContentsMS(NKE_BrowserWindow browserWindow)
+
+        internal Task createWebView(Dictionary<string, object> options)
         {
-            this._browserWindow = browserWindow;
-            this._id = browserWindow.id;
-
-            // Event:  'did-fail-load'
-            // Event:  'did-finish-load'
-
-            browserWindow.events.on<int>("did-finish-load", (id) =>
+            return _browserWindow.ensureOnUIThread(async () =>
             {
-                this.getNKScriptValue().invokeMethod("emit", new[] { "did-finish-load" });
-            });
-   
-            browserWindow.events.on<Tuple<int, string>>("did-fail-loading", (item) =>
-            {
-                this.getNKScriptValue().invokeMethod("emit", new[] { "did-fail-loading", item.Item2 });
-            });
+                try
+                {
 
-            webView = (WebBrowser)_browserWindow.webView;
-            webView.Navigating += WebView_Navigating;
-            webView.DocumentCompleted += WebView_DocumentCompleted;
-     
-            this.init_IPC();
+#if WINDOWS_WIN32_WPF
+                    _browserWindow.createWindow(options);
+                    WebBrowser webView = _browserWindow._window.webBrowser;
+#elif WINDOWS_WIN32_WF
+                     WebBrowser webView = new WebBrowser();       
+                    _browserWindow.createWindow(options, webView);
+#endif
+                    this.webView = webView;
+                    _browserWindow.webView = webView;
+
+                    string url;
+                    if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
+                        url = (string)options[NKEBrowserOptions.kPreloadURL];
+                    else
+                        url = NKEBrowserDefaults.kPreloadURL;
+
+                    webView.Navigate(new Uri(url));
+
+#if WINDOWS_WIN32_WPF
+                    webView.Navigating += this.WebView_Navigating;
+                    webView.LoadCompleted += this.WebView_LoadCompleted;
+#elif WINDOWS_WIN32_WF
+                    webView.Navigating += this.WebView_Navigating;
+                    webView.DocumentCompleted += this.WebView_DocumentCompleted;
+#endif
+                    this.init_IPC();
+
+                    _browserWindow.context = await NKSMSWebBrowserContext.getScriptContext(_id, webView, options);
+                    _browserWindow.events.emit("NKE.DidFinishLoad", _id);
+                }
+                catch (Exception ex)
+                {
+                    NKLogging.log("!Error creating browser webcontent: " + ex.Message);
+                    NKLogging.log(ex.StackTrace);
+                }
+                options = null;
+            });
         }
 
+
+#if WINDOWS_WIN32_WPF
+        private void WebView_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
+        {
+            _isLoading = false;
+        }
+
+        private void WebView_Navigating(object sender, System.Windows.Navigation.NavigatingCancelEventArgs e)
+        {
+            _isLoading = true;
+        }
+#elif WINDOWS_WIN32_WF
         private void WebView_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
             _isLoading = false;
@@ -64,12 +103,13 @@ namespace io.nodekit.NKElectro
         {
             _isLoading = true;
         }
+#endif
 
         // Messages to renderer are sent to the window events queue for that renderer
         public void ipcSend(string channel, string replyId, object[] arg)
         {
-            var payload = new NKE_IPC_Event(0, channel, replyId, arg);
-            _browserWindow.events.emit("nk.IPCtoRenderer", payload);
+            var payload = new NKEvent(0, channel, replyId, arg);
+            _browserWindow.events.emit("NKE.IPCtoRenderer", payload);
 
             throw new NotImplementedException();
         }
@@ -77,8 +117,8 @@ namespace io.nodekit.NKElectro
         // Replies to renderer to the window events queue for that renderer
         public void ipcReply(int dest, string channel, string replyId, object result)
         {
-            var payload = new NKE_IPC_Event(0, channel, replyId, new[] { result });
-            _browserWindow.events.emit("nk.IPCReplytoRenderer", payload);
+            var payload = new NKEvent(0, channel, replyId, new[] { result });
+            _browserWindow.events.emit("NKE.IPCReplytoRenderer", payload);
         }
 
         public void loadURL(string url, Dictionary<string, object> options)
@@ -89,34 +129,44 @@ namespace io.nodekit.NKElectro
 
             foreach (var item in options.itemOrDefault<Dictionary<string, object>>("extraHeaders", new Dictionary<string, object>()))
             {
-                extraHeaders += item.Key + ": " + item.Value + "\n"; 
+                extraHeaders += item.Key + ": " + item.Value + "\n";
             }
             var uri = new Uri(url);
 
             webView.Navigate(uri, "_self", null, extraHeaders);
         }
-      
-        public string getURL()
+
+        public string getURLSync()
         {
-            return webView.Document.Url.AbsoluteUri;
+
+#if WINDOWS_WIN32_WPF
+              return webView.Source.AbsoluteUri;
+#elif WINDOWS_WIN32_WF
+               return webView.Document.Url.AbsoluteUri;
+#endif
         }
 
         public string getTitle()
         {
-            return (string)webView.Document.InvokeScript("eval", new object[] { "document.title" });
+return "HELLO TITLE";
+#if WINDOWS_WIN32_WPF
+        //    return (string)webView.InvokeScript("eval", new object[] { "document.title" });
+#elif WINDOWS_WIN32_WF
+      //     return (string)webView.Document.InvokeScript("eval", new object[] { "document.title" });
+#endif            
         }
 
-        public bool isLoading()
+        public bool isLoadingSync()
         {
             return _isLoading;
         }
 
-        public bool canGoBack()
+        public bool canGoBackSync()
         {
             return webView.CanGoBack;
         }
 
-        public bool canGoForward()
+        public bool canGoForwardSync()
         {
             return webView.CanGoForward;
         }
@@ -125,10 +175,14 @@ namespace io.nodekit.NKElectro
         {
             _browserWindow.context.NKevaluateJavaScript(code);
         }
-   
+
         public string getUserAgent()
         {
-            return (string)webView.Document.InvokeScript("eval", new[] { "navigator.userAgent" });
+#if WINDOWS_WIN32_WPF
+            return (string)webView.InvokeScript("eval", new[] { "navigator.userAgent" });
+#elif WINDOWS_WIN32_WF
+           return (string)webView.Document.InvokeScript("eval", new[] { "navigator.userAgent" });
+#endif
         }
 
         public void goBack()
@@ -141,14 +195,18 @@ namespace io.nodekit.NKElectro
             webView.GoForward();
         }
 
-         public void reload()
+        public void reload()
         {
             webView.Refresh();
         }
 
         public void reloadIgnoringCache()
         {
-            webView.Navigate(webView.Document.Url);
+#if WINDOWS_WIN32_WPF
+            webView.Refresh(true);
+#elif WINDOWS_WIN32_WF
+            webView.Refresh(WebBrowserRefreshOption.Completely);
+#endif
         }
 
         public void setUserAgent(string userAgent)
@@ -165,12 +223,9 @@ namespace io.nodekit.NKElectro
          *               REMAINDER OF ELECTRO API NOT IMPLEMENTED             *
          * ****************************************************************** */
 
-        public NKScriptValue session
+        public NKScriptValue getSession()
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
 
         public void addWorkSpace(string path)
@@ -371,7 +426,7 @@ namespace io.nodekit.NKElectro
         public void unselect()
         {
             throw new NotImplementedException();
-        } 
+        }
 
         // Event:  'certificate-error'
         // Event:  'crashed'
@@ -391,7 +446,7 @@ namespace io.nodekit.NKElectro
         // Event:  'plugin-crashed'
         // Event:  'select-client-certificate'
         // Event:  'will-navigate'
-        
+
     }
 }
 #endif

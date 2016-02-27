@@ -36,7 +36,7 @@ namespace io.nodekit.NKElectro
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             int id = (int)e.Parameter;
-            NKEventEmitter.global.emit("nk.window." + id, this);
+            NKEventEmitter.global.emit("NKE.WindowCreated." + id, this);
          }
 
 

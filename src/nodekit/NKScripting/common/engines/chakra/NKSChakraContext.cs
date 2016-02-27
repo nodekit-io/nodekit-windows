@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 #if WINDOWS_UWP
 namespace io.nodekit.NKScripting.Engines.Chakra
 #elif WINDOWS_WIN32
-namespace io.nodekit.NKScripting.Engines.ChakraCore
+namespace io.nodekit.NKScripting.Engines.Chakra
 #endif
 {
     public class NKSChakraContext : NKScriptContextSyncBase, NKScriptContentController
@@ -61,9 +61,11 @@ namespace io.nodekit.NKScripting.Engines.ChakraCore
 #if WINDOWS_UWP
             Native.ThrowIfError(Native.JsSetPromiseContinuationCallback(promiseContinuationCallback, IntPtr.Zero));
             Native.ThrowIfError(Native.JsProjectWinRTNamespace("Windows"));
-         // if (options.ContainsKey("nk.ScriptingDebug") && ((bool)options["nk.ScriptingDebug"] == true);
-                 Native.ThrowIfError(Native.JsStartDebugging());
+
 #endif
+                // if (options.ContainsKey("nk.ScriptingDebug") && ((bool)options["nk.ScriptingDebug"] == true);
+                Native.ThrowIfError(Native.JsStartDebugging());
+
             });
 
         }
@@ -104,8 +106,14 @@ namespace io.nodekit.NKScripting.Engines.ChakraCore
                 JavaScriptValue result;
 
                 switchContextifNeeded();
-                result = JavaScriptContext.RunScript(javaScriptString, currentSourceContext, filename);
-                currentSourceContext = JavaScriptSourceContext.Increment(currentSourceContext);
+                if (filename != null && filename != "")
+                {
+                    result = JavaScriptContext.RunScript(javaScriptString, currentSourceContext, filename);
+                    currentSourceContext = JavaScriptSourceContext.Increment(currentSourceContext);
+                }
+                else
+                    result = JavaScriptContext.RunScript(javaScriptString, JavaScriptSourceContext.None, string.Empty);
+          
                 // Execute promise tasks stored in taskQueue 
                 while (_jsTaskQueue.Count != 0)
                 {
@@ -140,8 +148,8 @@ namespace io.nodekit.NKScripting.Engines.ChakraCore
 #if WINDOWS_UWP
         protected override async Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options) 
         {
-            bool mainThread = (bool)options["MainThread"];
-            NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
+            bool mainThread = (bool)options["NKS.MainThread"];
+            NKScriptExportType bridge = (NKScriptExportType)options["NKS.PluginBridge"];
 
             switch (bridge)
             {
@@ -197,7 +205,7 @@ namespace io.nodekit.NKScripting.Engines.ChakraCore
 #if WINDOWS_WIN32
         protected override Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options)
         {
-            NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
+            NKScriptExportType bridge = (NKScriptExportType)options["NKS.PluginBridge"];
 
             switch (bridge)
             {

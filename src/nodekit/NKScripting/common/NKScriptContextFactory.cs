@@ -27,6 +27,7 @@ namespace io.nodekit.NKScripting
 {
     public enum NKEngineType
     {
+        NKRemoting, // default proxy for renderer process
         JavaScriptCore,  // default standalone javascript engine on iOS and OSX, but no JIT and in process  ** RECOMMENDED FOR DARWIN DEVELOPMENT ** 
         Nitro,  // high performance javascript engine that comes bundled with WKWebView, runs JIT in separate process  ** RECOMMENDED FOR DARWIN PRODUCTION **
         UIWebView,   // same javascriptcore engine as above, but bundled with UIWebView;  access to full window/DOM features
@@ -38,7 +39,8 @@ namespace io.nodekit.NKScripting
 
     public class NKScriptContextFactory
     {
-        internal static Dictionary<int, object> _contexts = new Dictionary<int, object>();
+
+         internal static Dictionary<int, object> _contexts = new Dictionary<int, object>();
 
         public static int sequenceNumber = 1;
         public static TaskFactory UITaskFactory;
@@ -57,13 +59,15 @@ namespace io.nodekit.NKScripting
 
             NKEngineType engine;
 
-            if (options.ContainsKey("Engine"))
-                engine = (NKEngineType)options["Engine"];
+            if (options.ContainsKey("NKS.Engine"))
+                engine = (NKEngineType)options["NKS.Engine"];
             else
                 engine = NKEngineType.Chakra;
 
             switch (engine)
             {
+                case NKEngineType.NKRemoting:
+                    throw new NotSupportedException(String.Format("{0} is created automatically by renderer process ", engine.ToString()));
                 case NKEngineType.JavaScriptCore:
                     throw new NotSupportedException(String.Format("{0} not supported on Windows Platform; use OSX or iOS ", engine.ToString()));
                 case NKEngineType.Nitro:
@@ -74,7 +78,7 @@ namespace io.nodekit.NKScripting
 #if WINDOWS_UWP
                     return Engines.Chakra.NKSChakraContextFactory.createContext(options);
 #elif WINDOWS_WIN32
-                    return Engines.ChakraCore.NKSChakraContextFactory.createContext(options);
+                    return Engines.Chakra.NKSChakraContextFactory.createContext(options);
 #endif
                 case NKEngineType.Trident:
                     throw new NotImplementedException(String.Format("{0} not implemented on Universal Windows Platform ", engine.ToString()));
@@ -82,7 +86,7 @@ namespace io.nodekit.NKScripting
 #if WINDOWS_UWP
                     throw new NotImplementedException(String.Format("{0} not required on Universal Windows Platform; use Chakra ", engine.ToString()));
 #elif WINDOWS_WIN32
-                    return Engines.ChakraCore.NKSChakraContextFactory.createContext(options);
+                    return Engines.Chakra.NKSChakraContextFactory.createContext(options);
 #endif   
                 default:
                     throw new ArgumentException(String.Format("{0} unknown engine type", engine.ToString()));

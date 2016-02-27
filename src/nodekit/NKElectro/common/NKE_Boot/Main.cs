@@ -25,7 +25,7 @@ namespace io.nodekit.NKElectro
 {
     public class Main
     {
-        public async static Task addElectro(NKScriptContext context)
+        public async static Task addElectro(NKScriptContext context, bool multiProcess = false)
         {
             var appjs = await NKStorage.getResourceAsync(typeof(Main), "_nke_main.js", "lib_electro");
             var script = "function loadbootstrap(){\n" + appjs + "\n}\n" + "loadbootstrap();" + "\n";
@@ -34,11 +34,47 @@ namespace io.nodekit.NKElectro
 
             var options = new Dictionary<string, object>
             {
-                ["PluginBridge"] = NKScriptExportType.NKScriptExport
+                ["NKS.PluginBridge"] = NKScriptExportType.NKScriptExport
+            };
+
+            var optionsMulti = new Dictionary<string, object>
+            {
+                ["NKS.PluginBridge"] = NKScriptExportType.NKScriptExport,
+                ["NKS.RemoteProcess"] = true
             };
 
             await context.NKloadPlugin(typeof(NKE_App), null, options);
+
+            if (!multiProcess)
+                await context.NKloadPlugin(typeof(NKE_BrowserWindow), null, options);
+            else
+                await context.NKloadPlugin(typeof(NKE_BrowserWindow), null, optionsMulti);
+
+            if (!multiProcess)
+                await context.NKloadPlugin(typeof(NKE_WebContents), null, options);
+            else
+                await context.NKloadPlugin(typeof(NKE_WebContents), null, optionsMulti);
+
+
+            // await context.NKloadPlugin(typeof(NKEDialog), "io.nodekit.electro.dialog", options);
+
+            // NKE_BrowserWindow.attachTo(context);
+            // NKE_WebContentsBase.attachTo(context);
+            // NKE_Dialog.attachTo(context);
+            // NKE_IpcMain.attachTo(context);
+            // NKE_Menu.attachTo(context);
+            // NKE_Protocol.attachTo(context);
+        }
+
+        public async static Task addElectroRemoteProxy(NKScriptContext context)
+        {
+            var options = new Dictionary<string, object>
+            {
+                ["NKS.PluginBridge"] = NKScriptExportType.NKScriptExport
+            };
+
             await context.NKloadPlugin(typeof(NKE_BrowserWindow), null, options);
+            await context.NKloadPlugin(typeof(NKE_WebContents), null, options);
 
             // await context.NKloadPlugin(typeof(NKEDialog), "io.nodekit.electro.dialog", options);
 

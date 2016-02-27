@@ -29,6 +29,8 @@ namespace io.nodekit.NKElectro
     public partial class NKE_BrowserWindow
     {
 
+        internal NKE_Window _window;
+
         private static TaskFactory syncContext;
 
         public static void setupSync()
@@ -36,17 +38,40 @@ namespace io.nodekit.NKElectro
             syncContext = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        internal void ensureOnUIThread(Action action)
+        internal Task ensureOnUIThread(Action action)
         {
-            syncContext.StartNew(action);
+            return syncContext.StartNew(action);
+        }
+
+        internal Task ensureOnUIThread(Func<Task> action)
+        {
+            return syncContext.StartNew(action).Unwrap();
         }
 
         internal void createWindow(Dictionary<string, object> options)
         {
             var window = new NKE_Window();
+            window.Closed += Window_Closed;
             window.Show();
             window.Activate();
             _window = window;
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            this.events.emit<string>("NKE.WindowClosed");
+
+            _window = null;
+            windowArray.Remove(_id);
+            context = null;
+            webView = null;
+            this.Dispose();
+        }
+
+
+        public void close()
+        {
+            _window.Close();
         }
 
         public void blurWebView()
@@ -64,14 +89,6 @@ namespace io.nodekit.NKElectro
             throw new NotImplementedException();
         }
 
-        public void close()
-        {
-            _window = null;
-            windowArray.Remove(_id);
-            context = null;
-            webView = null;
-            throw new NotImplementedException();
-        }
 
         public void destroy()
         {

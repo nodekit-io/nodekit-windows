@@ -153,7 +153,7 @@ var NKScripting = (function NKScriptingRunOnce(exports) {
         // Principal instance (which id is 0) is the prototype object.
         var proto = new NKScripting(channelName);
         ctor.prototype = proto;
-        ctor = ctor.bind(null, '+' + (type || '#p'));
+        ctor = ctor.bind(null, '+' + (type || '#s'));
         proto.constructor = ctor;
         ctor.prototype = proto;  // comment this line to hide prototype object
         ctor.$lastInstID = 0;
@@ -204,8 +204,12 @@ var NKScripting = (function NKScriptingRunOnce(exports) {
                    } } else
                    desc.set = NKScripting.invokeNative.bind(obj, prop);
                    } else {
-                   desc.value = value;
-                   desc.writable = false;
+                       if (value == null)
+                           desc.get = function () { return this.$properties[prop]; }
+                       else {
+                           desc.value = value;
+                           desc.writable = false;
+                       }
                    }
                    Object.defineProperty(obj, prop, desc);
                    }
@@ -215,6 +219,7 @@ var NKScripting = (function NKScriptingRunOnce(exports) {
             throw 'Invalid invocation';
 
         var args = Array.prototype.slice.call(arguments, 1);
+        var isSync = false;
         if (name.lastIndexOf('#') >= 0) {
             // Parse type coding
             var t = name.split('#');
@@ -230,6 +235,9 @@ var NKScripting = (function NKScriptingRunOnce(exports) {
                     };
                     NKScripting.invokeNative.apply(this, args);
                 }).bind(this, args));
+            }
+            if (t[1].slice(-1) == 's') {
+                isSync = true;
             }
         }
 
@@ -255,7 +263,7 @@ var NKScripting = (function NKScriptingRunOnce(exports) {
         if (NKScripting.serialize)
             payload = JSON.stringify(payload);
 
-        if ((name == "+") || (name.indexOf("Sync", operand.length - "Sync".length) !== -1))
+        if (isSync || (name == "+") || (name.indexOf("Sync", operand.length - "Sync".length) !== -1))
         {
             var result = this.$channel.postMessageSync(payload);
                   return JSON.parse(result, JSON.dateParser);

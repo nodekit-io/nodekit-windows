@@ -16,6 +16,8 @@
 * limitations under the License.
 */
 
+using System;
+
 namespace io.nodekit
 {
     public static class NKLogging
@@ -23,6 +25,9 @@ namespace io.nodekit
         public static void log(object value)
         {
             System.Diagnostics.Debug.WriteLine(value);
+#if WINDOWS_WIN32
+     //       Console.WriteLine(value);
+#endif
         }
     }
 }

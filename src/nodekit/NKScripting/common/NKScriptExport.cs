@@ -26,6 +26,7 @@ namespace io.nodekit.NKScripting
     public enum NKScriptExportType 
     {
          NKScriptExport,  // Default for most users!
+         NKScriptExportRemote, // Local Javascript Context, Remote Host Object
          JSExport,
          WinRT  // Universal Windows Component Projection directly to Chakra or ChakraCore scripting engines
     }
@@ -47,6 +48,8 @@ namespace io.nodekit.NKScripting
         private MethodInfo _isExcludedFromScript;
         private MethodInfo _initializeForContext;
         private MethodInfo _defaultNamespace;
+        private MethodInfo _events;
+
         private Type t;
 
         internal NKScriptExportProxy(T plugin)
@@ -69,7 +72,13 @@ namespace io.nodekit.NKScripting
             if (prop != null)
                 _defaultNamespace = prop.GetMethod;
             else
-                _defaultNamespace = null;          
+                _defaultNamespace = null;
+
+            var prop2 = ti.GetDeclaredProperty("events");
+            if (prop2 != null)
+                _events = prop2.GetMethod;
+            else
+                _events = null;
         }
 
         internal string rewriteGeneratedStub(string stub, string forKey)
@@ -112,6 +121,17 @@ namespace io.nodekit.NKScripting
                     return (string)_defaultNamespace.Invoke(instance, null);
                 else
                     return t.Namespace + "." + t.Name;
+            }
+        }
+
+        internal NKEventEmitter events
+        {
+            get
+            {
+                if (_events != null)
+                    return (NKEventEmitter)_events.Invoke(instance, null);
+                else
+                    return null;
             }
         }
 

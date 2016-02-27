@@ -1,4 +1,4 @@
-﻿#if WINDOWS_UWP
+﻿#if WINDOWS_WIN32
 namespace io.nodekit.NKScripting.Engines.Chakra
 {
     using System;
@@ -11,12 +11,150 @@ namespace io.nodekit.NKScripting.Engines.Chakra
     public static class Native
     {
         /// <summary>
+        ///     Event mask for profiling.
+        /// </summary>
+        public enum ProfilerEventMask
+        {
+            /// <summary>
+            ///     Trace calls to script functions.
+            /// </summary>
+            TraceScriptFunctionCall = 0x1,
+
+            /// <summary>
+            ///     Trace calls to built-in functions.
+            /// </summary>
+            TraceNativeFunctionCall = 0x2,
+
+            /// <summary>
+            ///     Trace calls to DOM methods.
+            /// </summary>
+            TraceDomFunctionCall = 0x4,
+
+            /// <summary>
+            ///     Trace all calls except DOM methods.
+            /// </summary>
+            TraceAll = (TraceScriptFunctionCall | TraceNativeFunctionCall),
+
+            /// <summary>
+            ///     Trace all calls.
+            /// </summary>
+            TraceAllWithDom = (TraceAll | TraceDomFunctionCall)
+        }
+
+        /// <summary>
+        ///     Profiled script type.
+        /// </summary>
+        public enum ProfilerScriptType
+        {
+            /// <summary>
+            ///     A user script.
+            /// </summary>
+            User,
+
+            /// <summary>
+            ///     A dynamic script.
+            /// </summary>
+            Dynamic,
+
+            /// <summary>
+            ///     A native script.
+            /// </summary>
+            Native,
+
+            /// <summary>
+            ///     A DOM-related script.
+            /// </summary>
+            Dom
+        }
+
+        /// <summary>
+        ///     IActiveScriptProfilerCallback COM interface.
+        /// </summary>
+        [Guid("740eca23-7d9d-42e5-ba9d-f8b24b1c7a9b")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IActiveScriptProfilerCallback
+        {
+            /// <summary>
+            ///     Called when the profile is started.
+            /// </summary>
+            /// <param name="context">The context provided when profiling was started.</param>
+            void Initialize(uint context);
+
+            /// <summary>
+            ///     Called when profiling is stopped.
+            /// </summary>
+            /// <param name="reason">The reason code provided when profiling was stopped.</param>
+            void Shutdown(uint reason);
+
+            /// <summary>
+            ///     Called when a script is compiled.
+            /// </summary>
+            /// <param name="scriptId">The ID of the script.</param>
+            /// <param name="type">The type of the script.</param>
+            /// <param name="debugDocumentContext">The debug document context, if any.</param>
+            void ScriptCompiled(int scriptId, ProfilerScriptType type, IntPtr debugDocumentContext);
+
+            /// <summary>
+            ///     Called when a function is compiled.
+            /// </summary>
+            /// <param name="functionId">The ID of the function.</param>
+            /// <param name="scriptId">The ID of the script.</param>
+            /// <param name="functionName">The name of the function.</param>
+            /// <param name="functionNameHint">The function name hint.</param>
+            /// <param name="debugDocumentContext">The debug document context, if any.</param>
+            void FunctionCompiled(int functionId, int scriptId, [MarshalAs(UnmanagedType.LPWStr)] string functionName, [MarshalAs(UnmanagedType.LPWStr)] string functionNameHint, IntPtr debugDocumentContext);
+
+            /// <summary>
+            ///     Called when a function is entered.
+            /// </summary>
+            /// <param name="scriptId">The ID of the script.</param>
+            /// <param name="functionId">The ID of the function.</param>
+            void OnFunctionEnter(int scriptId, int functionId);
+
+            /// <summary>
+            ///     Called when a function is exited.
+            /// </summary>
+            /// <param name="scriptId">The ID of the script.</param>
+            /// <param name="functionId">The ID of the function.</param>
+            void OnFunctionExit(int scriptId, int functionId);
+        }
+
+        /// <summary>
+        ///     IActiveScriptProfilerCallback2 COM interface.
+        /// </summary>
+        [Guid("31B7F8AD-A637-409C-B22F-040995B6103D")]
+        public interface IActiveScriptProfilerCallback2 : IActiveScriptProfilerCallback
+        {
+            /// <summary>
+            ///     Called when a function is entered by name.
+            /// </summary>
+            /// <param name="functionName">The name of the function.</param>
+            /// <param name="type">The type of the function.</param>
+            void OnFunctionEnterByName(string functionName, ProfilerScriptType type);
+
+            /// <summary>
+            ///     Called when a function is exited by name.
+            /// </summary>
+            /// <param name="functionName">The name of the function.</param>
+            /// <param name="type">The type of the function.</param>
+            void OnFunctionExitByName(string functionName, ProfilerScriptType type);
+        }
+
+        /// <summary>
+        ///     IActiveScriptProfilerHeapEnum COM interface.
+        /// </summary>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Name defined in COM.")]
+        [Guid("32E4694E-0D37-419B-B93D-FA20DED6E8EA")]
+        public interface IActiveScriptProfilerHeapEnum
+        {
+        }
+
+        /// <summary>
         /// Throws if a native method returns an error code.
         /// </summary>
         /// <param name="error">The error.</param>
         internal static void ThrowIfError(JavaScriptErrorCode error)
         {
-
             if (error != JavaScriptErrorCode.NoError)
             {
                 switch (error)
@@ -119,350 +257,267 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             }
         }
 
-        const string DllName = "Chakra.dll";
-
-        [DllImport(DllName)]
+        [DllImport("Chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateRuntime(JavaScriptRuntimeAttributes attributes, JavaScriptThreadServiceCallback threadService, out JavaScriptRuntime runtime);
 
-        [DllImport(DllName)]
+        [DllImport("Chakra.dll")]
         internal static extern JavaScriptErrorCode JsCollectGarbage(JavaScriptRuntime handle);
 
-        [DllImport(DllName)]
+        [DllImport("Chakra.dll")]
         internal static extern JavaScriptErrorCode JsDisposeRuntime(JavaScriptRuntime handle);
 
-        [DllImport(DllName)]
+        [DllImport("Chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetRuntimeMemoryUsage(JavaScriptRuntime runtime, out UIntPtr memoryUsage);
 
-        [DllImport(DllName)]
+        [DllImport("Chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetRuntimeMemoryLimit(JavaScriptRuntime runtime, out UIntPtr memoryLimit);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetRuntimeMemoryLimit(JavaScriptRuntime runtime, UIntPtr memoryLimit);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetRuntimeMemoryAllocationCallback(JavaScriptRuntime runtime, IntPtr callbackState, JavaScriptMemoryAllocationCallback allocationCallback);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetRuntimeBeforeCollectCallback(JavaScriptRuntime runtime, IntPtr callbackState, JavaScriptBeforeCollectCallback beforeCollectCallback);
 
-        [DllImport(DllName, EntryPoint = "JsAddRef")]
+        [DllImport("chakra.dll", EntryPoint = "JsAddRef")]
         internal static extern JavaScriptErrorCode JsContextAddRef(JavaScriptContext reference, out uint count);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsAddRef(JavaScriptValue reference, out uint count);
 
-        [DllImport(DllName, EntryPoint = "JsRelease")]
+        [DllImport("chakra.dll", EntryPoint = "JsRelease")]
         internal static extern JavaScriptErrorCode JsContextRelease(JavaScriptContext reference, out uint count);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsRelease(JavaScriptValue reference, out uint count);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateContext(JavaScriptRuntime runtime, out JavaScriptContext newContext);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetCurrentContext(out JavaScriptContext currentContext);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetCurrentContext(JavaScriptContext context);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetRuntime(JavaScriptContext context, out JavaScriptRuntime runtime);
-        
-        [DllImport(DllName)]
+
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsStartDebugging();
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsIdle(out uint nextIdleTick);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport("chakra.dll", CharSet = CharSet.Unicode)]
         internal static extern JavaScriptErrorCode JsParseScript(string script, JavaScriptSourceContext sourceContext, string sourceUrl, out JavaScriptValue result);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport("chakra.dll", CharSet = CharSet.Unicode)]
         internal static extern JavaScriptErrorCode JsRunScript(string script, JavaScriptSourceContext sourceContext, string sourceUrl, out JavaScriptValue result);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport("chakra.dll", CharSet = CharSet.Unicode)]
         internal static extern JavaScriptErrorCode JsSerializeScript(string script, byte[] buffer, ref ulong bufferSize);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport("chakra.dll", CharSet = CharSet.Unicode)]
         internal static extern JavaScriptErrorCode JsParseSerializedScript(string script, byte[] buffer, JavaScriptSourceContext sourceContext, string sourceUrl, out JavaScriptValue result);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport("chakra.dll", CharSet = CharSet.Unicode)]
         internal static extern JavaScriptErrorCode JsRunSerializedScript(string script, byte[] buffer, JavaScriptSourceContext sourceContext, string sourceUrl, out JavaScriptValue result);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport("chakra.dll", CharSet = CharSet.Unicode)]
         internal static extern JavaScriptErrorCode JsGetPropertyIdFromName(string name, out JavaScriptPropertyId propertyId);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport("chakra.dll", CharSet = CharSet.Unicode)]
         internal static extern JavaScriptErrorCode JsGetPropertyNameFromId(JavaScriptPropertyId propertyId, out string name);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetUndefinedValue(out JavaScriptValue undefinedValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetNullValue(out JavaScriptValue nullValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetTrueValue(out JavaScriptValue trueValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetFalseValue(out JavaScriptValue falseValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsBoolToBoolean(bool value, out JavaScriptValue booleanValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsBooleanToBool(JavaScriptValue booleanValue, out bool boolValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsConvertValueToBoolean(JavaScriptValue value, out JavaScriptValue booleanValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetValueType(JavaScriptValue value, out JavaScriptValueType type);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsDoubleToNumber(double doubleValue, out JavaScriptValue value);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsIntToNumber(int intValue, out JavaScriptValue value);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsNumberToDouble(JavaScriptValue value, out double doubleValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsConvertValueToNumber(JavaScriptValue value, out JavaScriptValue numberValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetStringLength(JavaScriptValue sringValue, out int length);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport("chakra.dll", CharSet = CharSet.Unicode)]
         internal static extern JavaScriptErrorCode JsPointerToString(string value, UIntPtr stringLength, out JavaScriptValue stringValue);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsStringToPointer(JavaScriptValue value, out IntPtr stringValue, out UIntPtr stringLength);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsConvertValueToString(JavaScriptValue value, out JavaScriptValue stringValue);
 
-        [DllImport(DllName)]
-#pragma warning disable CS0618 // Type or member is obsolete
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsVariantToValue([MarshalAs(UnmanagedType.Struct)] ref object var, out JavaScriptValue value);
-#pragma warning restore CS0618 // Type or member is obsolete
 
-        [DllImport(DllName)]
-#pragma warning disable CS0618 // Type or member is obsolete
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsValueToVariant(JavaScriptValue obj, [MarshalAs(UnmanagedType.Struct)] out object var);
-#pragma warning restore CS0618 // Type or member is obsolete
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetGlobalObject(out JavaScriptValue globalObject);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateObject(out JavaScriptValue obj);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateExternalObject(IntPtr data, JavaScriptObjectFinalizeCallback finalizeCallback, out JavaScriptValue obj);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsConvertValueToObject(JavaScriptValue value, out JavaScriptValue obj);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetPrototype(JavaScriptValue obj, out JavaScriptValue prototypeObject);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetPrototype(JavaScriptValue obj, JavaScriptValue prototypeObject);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetExtensionAllowed(JavaScriptValue obj, out bool value);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsPreventExtension(JavaScriptValue obj);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetProperty(JavaScriptValue obj, JavaScriptPropertyId propertyId, out JavaScriptValue value);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetOwnPropertyDescriptor(JavaScriptValue obj, JavaScriptPropertyId propertyId, out JavaScriptValue propertyDescriptor);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetOwnPropertyNames(JavaScriptValue obj, out JavaScriptValue propertyNames);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetProperty(JavaScriptValue obj, JavaScriptPropertyId propertyId, JavaScriptValue value, bool useStrictRules);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsHasProperty(JavaScriptValue obj, JavaScriptPropertyId propertyId, out bool hasProperty);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsDeleteProperty(JavaScriptValue obj, JavaScriptPropertyId propertyId, bool useStrictRules, out JavaScriptValue result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsDefineProperty(JavaScriptValue obj, JavaScriptPropertyId propertyId, JavaScriptValue propertyDescriptor, out bool result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsHasIndexedProperty(JavaScriptValue obj, JavaScriptValue index, out bool result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetIndexedProperty(JavaScriptValue obj, JavaScriptValue index, out JavaScriptValue result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetIndexedProperty(JavaScriptValue obj, JavaScriptValue index, JavaScriptValue value);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsDeleteIndexedProperty(JavaScriptValue obj, JavaScriptValue index);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsEquals(JavaScriptValue obj1, JavaScriptValue obj2, out bool result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsStrictEquals(JavaScriptValue obj1, JavaScriptValue obj2, out bool result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsHasExternalData(JavaScriptValue obj, out bool value);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetExternalData(JavaScriptValue obj, out IntPtr externalData);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetExternalData(JavaScriptValue obj, IntPtr externalData);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateArray(uint length, out JavaScriptValue result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCallFunction(JavaScriptValue function, JavaScriptValue[] arguments, ushort argumentCount, out JavaScriptValue result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsConstructObject(JavaScriptValue function, JavaScriptValue[] arguments, ushort argumentCount, out JavaScriptValue result);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateFunction(JavaScriptNativeFunction nativeFunction, IntPtr externalData, out JavaScriptValue function);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateError(JavaScriptValue message, out JavaScriptValue error);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateRangeError(JavaScriptValue message, out JavaScriptValue error);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateReferenceError(JavaScriptValue message, out JavaScriptValue error);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateSyntaxError(JavaScriptValue message, out JavaScriptValue error);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateTypeError(JavaScriptValue message, out JavaScriptValue error);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsCreateURIError(JavaScriptValue message, out JavaScriptValue error);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsHasException(out bool hasException);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsGetAndClearException(out JavaScriptValue exception);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsSetException(JavaScriptValue exception);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsDisableRuntimeExecution(JavaScriptRuntime runtime);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsEnableRuntimeExecution(JavaScriptRuntime runtime);
 
-        [DllImport(DllName)]
+        [DllImport("chakra.dll")]
         internal static extern JavaScriptErrorCode JsIsRuntimeExecutionDisabled(JavaScriptRuntime runtime, out bool isDisabled);
 
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsSetObjectBeforeCollectCallback(JavaScriptValue reference, IntPtr callbackState, JavaScriptObjectBeforeCollectCallback beforeCollectCallback);
+        [DllImport("chakra.dll")]
+        internal static extern JavaScriptErrorCode JsStartProfiling(IActiveScriptProfilerCallback callback, ProfilerEventMask eventMask, int context);
 
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsCreateNamedFunction(JavaScriptValue name, JavaScriptNativeFunction nativeFunction, IntPtr callbackState, out JavaScriptValue function);
+        [DllImport("chakra.dll")]
+        internal static extern JavaScriptErrorCode JsStopProfiling(int reason);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
-        internal static extern JavaScriptErrorCode JsProjectWinRTNamespace(string namespaceName);
+        [DllImport("chakra.dll")]
+        internal static extern JavaScriptErrorCode JsEnumerateHeap(out IActiveScriptProfilerHeapEnum enumerator);
 
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsInspectableToObject([MarshalAs(UnmanagedType.IInspectable)] System.Object inspectable, out JavaScriptValue value);
-        
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsSetProjectionEnqueueCallback(JavaScriptProjectionEnqueueCallback projectionEnqueueCallback, IntPtr context);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsSetPromiseContinuationCallback(JavaScriptPromiseContinuationCallback promiseContinuationCallback, IntPtr callbackState);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsCreateArrayBuffer(uint byteLength, out JavaScriptValue result);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsCreateTypedArray(JavaScriptTypedArrayType arrayType, JavaScriptValue arrayBuffer, uint byteOffset,
-            uint elementLength, out JavaScriptValue result);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsCreateDataView(JavaScriptValue arrayBuffer, uint byteOffset, uint byteOffsetLength, out JavaScriptValue result);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetArrayBufferStorage(JavaScriptValue arrayBuffer, out byte[] buffer, out uint bufferLength);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetTypedArrayStorage(JavaScriptValue typedArray, out byte[] buffer, out uint bufferLength, out JavaScriptTypedArrayType arrayType, out int elementSize);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetDataViewStorage(JavaScriptValue dataView, out byte[] buffer, out uint bufferLength);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetPropertyIdType(JavaScriptPropertyId propertyId, out JavaSciptPropertyIdType propertyIdType);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsCreateSymbol(JavaScriptValue description, out JavaScriptValue symbol);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetSymbolFromPropertyId(JavaScriptPropertyId propertyId, out JavaScriptValue symbol);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetPropertyIdFromSymbol(JavaScriptValue symbol, out JavaScriptPropertyId propertyId);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetOwnPropertySymbols(JavaScriptValue obj, out JavaScriptValue propertySymbols);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsNumberToInt(JavaScriptValue value, out int intValue);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsSetIndexedPropertiesToExternalData(JavaScriptValue obj, IntPtr data, JavaScriptTypedArrayType arrayType, uint elementLength);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetIndexedPropertiesExternalData(JavaScriptValue obj, IntPtr data, out JavaScriptTypedArrayType arrayType, out uint elementLength);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsHasIndexedPropertiesExternalData(JavaScriptValue obj, out bool value);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsInstanceOf(JavaScriptValue obj, JavaScriptValue constructor, out bool result);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsCreateExternalArrayBuffer(IntPtr data, uint byteLength, JavaScriptObjectFinalizeCallback finalizeCallback, IntPtr callbackState, out bool result);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetTypedArrayInfo(JavaScriptValue typedArray, out JavaScriptTypedArrayType arrayType, out JavaScriptValue arrayBuffer, out uint byteOffset, out uint byteLength);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetContextOfObject(JavaScriptValue obj, out JavaScriptContext context);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsGetContextData(JavaScriptContext context, out IntPtr data);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsSetContextData(JavaScriptContext context, IntPtr data);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsParseSerializedScriptWithCallback(JavaScriptSerializedScriptLoadSourceCallback scriptLoadCallback,
-            JavaScriptSerializedScriptUnloadCallback scriptUnloadCallback, byte[] buffer, JavaScriptSourceContext sourceContext, string sourceUrl, out JavaScriptValue result);
-
-        [DllImport(DllName)]
-        internal static extern JavaScriptErrorCode JsRunSerializedScriptWithCallback(JavaScriptSerializedScriptLoadSourceCallback scriptLoadCallback,
-            JavaScriptSerializedScriptUnloadCallback scriptUnloadCallback, byte[] buffer, JavaScriptSourceContext sourceContext, string sourceUrl, out JavaScriptValue result);
+        [DllImport("chakra.dll")]
+        internal static extern JavaScriptErrorCode JsIsEnumeratingHeap(out bool isEnumeratingHeap);
     }
+
 }
 #endif

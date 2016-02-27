@@ -20,8 +20,8 @@
 // Bindings
 // func ipcSend(channel: String, replyId: String, arg: [AnyObject]) -> Void {
 // func ipcReply(dest: Int, channel: String, replyId: String, result: AnyObject) -> Void {
-// event "emit", withArguments: ["nk.IPCtoRenderer", item.sender, item.channel, item.replyId, item.arg], completionHandler: nil)
-// evet "emit", withArguments: ["nk.IPCReplytoRenderer", item.sender, item.channel, item.replyId, item.arg[0]],
+// event "emit", withArguments: ["NKE.IPCtoRenderer", item.sender, item.channel, item.replyId, item.arg], completionHandler: nil)
+// evet "emit", withArguments: ["NKE.IPCReplytoRenderer", item.sender, item.channel, item.replyId, item.arg[0]],
 
 var ipcRenderer = io.nodekit.electro.ipcRenderer
 
@@ -30,12 +30,12 @@ ipcRenderer._init = function() {
     this.callbacks = {};
     this.counter = 0;
 
-    this.on('nk.IPCReplytoRenderer', function(sender, channel, replyId, result) {
+    this.on('NKE.IPCReplytoRenderer', function(sender, channel, replyId, result) {
             this.callbacks[replyId].call(this, null, result);
             delete this.callbacks[replyId];
             });
     
-    this.on('nk.IPCtoRenderer', function(sender, channel, replyId, result) {
+    this.on('NKE.IPCtoRenderer', function(sender, channel, replyId, result) {
             
             var event = { 'sender': this }
             

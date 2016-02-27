@@ -36,19 +36,19 @@ namespace io.nodekit.NKElectro
             _window = NKE_BrowserWindow.fromId(id);
 
 
-            _window.events.on<NKE_IPC_Event>("nk.IPCtoRenderer", (item) =>
+            _window.events.on<NKEvent>("NKE.IPCtoRenderer", (e, item) =>
             {
-                this.getNKScriptValue().invokeMethod("emit", new object[] { "nk.IPCtoRenderer", item.sender, item.channel, item.replyId, item.arg });
+                this.getNKScriptValue().invokeMethod("emit", new object[] { "NKE.IPCtoRenderer", item.sender, item.channel, item.replyId, item.arg });
             });
 
-            _window.events.on<NKE_IPC_Event>("nk.IPCReplytoRenderer", (item) =>
+            _window.events.on<NKEvent>("NKE.IPCReplytoRenderer", (e, item) =>
             {
-                this.getNKScriptValue().invokeMethod("emit", new object[] { "nk.IPCReplytoRenderer", item.sender, item.channel, item.replyId, item.arg });
+                this.getNKScriptValue().invokeMethod("emit", new object[] { "NKE.IPCReplytoRenderer", item.sender, item.channel, item.replyId, item.arg });
             });
 
-            globalEvents.on<NKE_IPC_Event>("nk.IPCtoMain", (item) =>
+            globalEvents.on<NKEvent>("NKE.IPCtoMain", (e, item) =>
             {
-                this.getNKScriptValue().invokeMethod("emit", new object[] { "nk.IPCtoMain", item.sender, item.channel, item.replyId, item.arg });
+                this.getNKScriptValue().invokeMethod("emit", new object[] { "NKE.IPCtoMain", item.sender, item.channel, item.replyId, item.arg });
             });
 
         }
@@ -56,15 +56,15 @@ namespace io.nodekit.NKElectro
         // Messages to main are sent to the global events queue
         public void ipcSend(string channel, string replyId, object[] arg)
         {
-            var payload = new NKE_IPC_Event(0, channel, replyId, arg);
-            globalEvents.emit("nk.IPCtoMain", payload);
+            var payload = new NKEvent(0, channel, replyId, arg);
+            globalEvents.emit("NKE.IPCtoMain", payload);
         }
 
         // Replies to main are sent directly to the webContents window that sent the original message
         public void ipcReply(int dest, string channel, string replyId, object result)
         {
-            var payload = new NKE_IPC_Event(0, channel, replyId, new[] { result });
-            _window.events.emit("nk.IPCReplytoMain", payload);
+            var payload = new NKEvent(0, channel, replyId, new[] { result });
+            _window.events.emit("NKE.IPCReplytoMain", payload);
         }
 
         #region NKScriptExport

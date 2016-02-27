@@ -20,18 +20,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace io.nodekit.NKScripting
 {
-    internal interface INKScriptTypeInfo : IList<NKScriptTypeInfoMemberInfo>
+    public interface INKScriptTypeInfo : IList<NKScriptTypeInfoMemberInfo>
     {
         bool hasSettableProperties { get; }
         Type pluginType { get; }
     }
 
-    internal class NKScriptTypeInfo<T> : List<NKScriptTypeInfoMemberInfo>, INKScriptTypeInfo where T : class
+    public class NKScriptTypeInfo<T> : List<NKScriptTypeInfoMemberInfo>, INKScriptTypeInfo where T : class
     {
         private Type _pluginType;
         private bool _hasSettableProperties;
@@ -170,14 +168,14 @@ namespace io.nodekit.NKScripting
     }
 
 
-    internal enum MemberType
+    public enum MemberType
     {
         Method,
         Property,
         Constructor
     }
 
-    internal class NKScriptTypeInfoMemberInfo
+    public class NKScriptTypeInfoMemberInfo
     {
         internal NKScriptTypeInfoMemberInfo(ConstructorInfo constructor)
         {
@@ -188,6 +186,7 @@ namespace io.nodekit.NKScripting
             arity = constructor.GetParameters().Length;
             _getter = null;
             _setter = null;
+            isVoid = false;
             memberType = MemberType.Constructor;
         }
 
@@ -200,6 +199,7 @@ namespace io.nodekit.NKScripting
             arity = param.Length;
             _getter = null;
             _setter = null;
+            isVoid = (method.ReturnType == typeof(void));
             memberType = MemberType.Method;
         }
 
@@ -214,6 +214,7 @@ namespace io.nodekit.NKScripting
             if (_setter != null && !_setter.IsPublic) _setter = null;
             _method = null;
             arity = 0;
+            isVoid = false;
             memberType = MemberType.Property;
         }
 
@@ -222,6 +223,7 @@ namespace io.nodekit.NKScripting
         private MethodInfo _getter;
         private MethodInfo _setter;
         internal Int32 arity;
+        internal bool isVoid;
         internal string name;
         internal string key;
 
@@ -237,31 +239,24 @@ namespace io.nodekit.NKScripting
         {
             get
             {
-                bool promise;
                 Int32 _arity = arity;
                 switch (this.memberType)
                 {
                     case MemberType.Method:
-                        promise = _method.Name.EndsWith(":promiseObject");
-                        _arity = this.arity;
                         break;
                     case MemberType.Constructor:
-                        promise = false; // Initializers no longer default to promise
-                        _arity = (arity < 0) ? arity : arity + 1;
                         break;
                     default:
-                        promise = false;
                         arity = -1;
                         break;
                 }
-                if (!promise && (_arity < 0))
+                if (isVoid && (_arity < 0))
                     return "";
                 else
-                    return "#" + (_arity >= 0 ? _arity.ToString() : "") + (promise ? "p" : "a");
+                    return "#" + (_arity >= 0 ? _arity.ToString() : "") + (isVoid ? "a" : "s");
             }
         }
     }
-
 }
 
 namespace io.nodekit.NKScripting

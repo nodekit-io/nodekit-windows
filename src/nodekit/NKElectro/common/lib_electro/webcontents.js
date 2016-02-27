@@ -19,7 +19,7 @@
 
 // Bindings
 // func ipcSend(channel: String, replyId: String, arg: [AnyObject]) -> Void {
-//  event "emit", withArguments: ["nk.IPCReplytoMain", item.sender, item.channel, item.replyId, item.arg[0]])
+//  event "emit", withArguments: ["NKE.IPCReplytoMain", item.sender, item.channel, item.replyId, item.arg[0]])
 
 var WebContentsUI = io.nodekit.electro.WebContentsUI
 var WebContentsWK = io.nodekit.electro.WebContentsWK
@@ -28,14 +28,14 @@ WebContentsWK.prototype._init = WebContentsUI.prototype._init = function() {
     this.callbacks = {};
     this.counter = 0;
     
-    this.on('nk.IPCReplytoMain', function(sender, channel, replyId, result) {
+    this.on('NKE.IPCReplytoMain', function(sender, channel, replyId, result) {
             callbacks[replyId].call(self, result);
             delete callbacks[replyId];
             });
 }
 
 WebContentsWK.prototype._deinit = WebContentsUI.prototype._deinit = function() {
-    this.removeAllListeners('nk.IPCReplytoMain');
+    this.removeAllListeners('NKE.IPCReplytoMain');
 }
 
 //send(channel [[,arg]...] [,callback])

@@ -30,7 +30,7 @@ namespace io.nodekit.NKScripting
         public string ns;
         private bool injected;
 
-        private WeakReference<NKScriptContext> _context;
+        private NKScriptContext _context;
     
         public NKScriptSource(string source, string asFilename, string ns = null, string cleanup = null)
         {
@@ -67,7 +67,7 @@ namespace io.nodekit.NKScripting
         internal void registerInject(NKScriptContext context)
         {
             this.injected = true;
-            this._context = new WeakReference<NKScriptContext>(context);
+            this._context = context;
         }
 
         public void eject()
@@ -75,10 +75,9 @@ namespace io.nodekit.NKScripting
             if (!injected)
                return;
 
-            NKScriptContext context;
-            if (_context.TryGetTarget(out context)) return;
+             if (_context == null) return;
 
-            context.NKevaluateJavaScript(cleanup);
+            _context.NKevaluateJavaScript(cleanup);
         }
 
         #region IDisposable Support
@@ -92,7 +91,7 @@ namespace io.nodekit.NKScripting
                 source = null;
                 cleanup = null;
                 filename = null;
-                _context.SetTarget(null);
+                _context = null;
                 _context = null;
 
                 disposedValue = true;

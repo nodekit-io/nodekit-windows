@@ -73,7 +73,7 @@ namespace io.nodekit.NKScripting
         {
             ParameterInfo[] paramInfos = m.GetParameters();
 
-            if (args.Length > paramInfos.Length)
+            if (args != null && args.Length > paramInfos.Length)
                 throw new ArgumentException(String.Format("Too many js arguments passed to plugin method {0};  expected {1} got {2}", m.Name, paramInfos.Length, args.Length));
 
             object[] newArgs = new object[paramInfos.Length];

@@ -33,9 +33,9 @@ namespace io.nodekit.NKElectro
             var jsValue = typeof(NKE_IpcMain).getNKScriptValue();
             var events = NKEventEmitter.global;
 
-            globalEvents.on<NKE_IPC_Event>("nk.IPCtoMain", (item) =>
+            globalEvents.on<NKEvent>("NKE.IPCtoMain", (e, item) =>
             {
-                jsValue.invokeMethod("emit", new object[] { "nk.IPCtoMain", item.sender, item.channel, item.replyId, item.arg });
+                jsValue.invokeMethod("emit", new object[] { "NKE.IPCtoMain", item.sender, item.channel, item.replyId, item.arg });
             });
 
             return Task.FromResult<object>(null);
@@ -44,10 +44,10 @@ namespace io.nodekit.NKElectro
         // Replies to renderer to the window events queue for that renderer
         public static void ipcReply(int dest, string channel, string replyId, object result)
         {
-            var payload = new NKE_IPC_Event(0, channel, replyId, new [] { result });
+            var payload = new NKEvent(0, channel, replyId, new [] { result });
             var window = NKE_BrowserWindow.fromId(dest) as NKE_BrowserWindow;
             if (window == null) return;
-            window.events.emit("nk.IPCReplytoRenderer", payload);
+            window.events.emit("NKE.IPCReplytoRenderer", payload);
         }
 
         public static void ipcSend(string channel, string replyId, object[] arg)

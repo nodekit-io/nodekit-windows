@@ -66,9 +66,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\JavaScriptValueType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\Native_uwp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\Engine\Native_win32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraContextFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\chakra\NKSChakraScriptDelegate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)engines\nkremoting\NKSNKRemotingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\trident-win32\NKSMSWebBrowserCallback.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\trident-win32\NKSMSWebBrowserContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)engines\trident-win32\NKSMSWebBrowserScriptDelegate.cs" />
@@ -78,6 +80,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NKLogging.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptChannel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKScriptChannelRemote.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptContextBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptContextFactory.cs" />
@@ -89,8 +92,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKScriptValueNative.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)util\platform-uwp\NKData-platform-uwp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)util\platform-uwp\NKRemotingProxy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)util\platform-uwp\NKStorage-platform-uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)util\platform-win32\NKData-platform-win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)util\platform-win32\NKRemotingProxy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)util\platform-win32\NKStorage-platform-win32.cs" />
   </ItemGroup>
   <ItemGroup>

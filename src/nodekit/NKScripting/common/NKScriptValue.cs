@@ -27,38 +27,40 @@ namespace io.nodekit.NKScripting
     public class NKScriptValue : IDisposable
     {
         public string ns;
-    
-    //    protected WeakReference<NKScriptChannel> _channel;
-  //      public NKScriptChannel channel { get { NKScriptChannel c; _channel.TryGetTarget(out c); return c; } }
 
-  //      public NKScriptContext getContext() {  return channel.context; }
+        [ThreadStatic]
+        internal static NKScriptContext _currentContext;
 
-        protected WeakReference<NKScriptContext> _context;
-        public NKScriptContext getContext() { NKScriptContext c; _context.TryGetTarget(out c); return c; }
+        public static NKScriptContext currentContext()
+        {
+            return _currentContext;
+        }
 
+        protected NKScriptContext _context;
+        public NKScriptContext context { get { return _context; } }
 
-        protected WeakReference<NKScriptValue> _origin;
-        public NKScriptValue origin { get { NKScriptValue o; _origin.TryGetTarget(out o); return o; } }
+        protected NKScriptValue _origin;
+        public NKScriptValue origin { get { return _origin; } }
 
         internal NKScriptValue() {}
 
         internal NKScriptValue(string ns, NKScriptContext context, NKScriptValue origin)
         {
             this.ns = ns;
-            _context = new WeakReference<NKScriptContext>(context);
+            _context = context;
             if (origin != null)
-                _origin = new WeakReference<NKScriptValue>(origin);
+                _origin = origin;
             else
-                _origin = new WeakReference<NKScriptValue>(this);
+                _origin = this;
         }
 
         // The object is a stub for a JavaScript object which was retained as an argument.
         private int reference = 0;
         internal NKScriptValue(int reference, NKScriptContext context, NKScriptValue origin)
         {
-            this.ns = String.Format("{0}.$references[{$1}]", origin.ns, reference);
+            this.ns = String.Format("{0}.$references[{1}]", origin.ns, reference);
             this.reference = reference;
-            _context = new WeakReference<NKScriptContext>(context);
+            _context = context;
         }
 
         public Task<object> constructWithArguments(object[] args)
@@ -93,9 +95,7 @@ namespace io.nodekit.NKScripting
 
         public Task defineProperty(string property, object descriptor)
         {
-            var context = this.getContext();
-
-            string exp = String.Format("Object.defineProperty({0}, {1}, {2})", ns, property, context.NKserialize(descriptor));
+            string exp = String.Format("Object.defineProperty({0}, {1}, {2})", ns, property, _context.NKserialize(descriptor));
             return evaluateExpression(exp, false);
         }
 
@@ -118,22 +118,18 @@ namespace io.nodekit.NKScripting
 
         public virtual Task setValue(object value, string property)
         {
-            var context = this.getContext();
-
-            return evaluateExpression(scriptForUpdatingProperty(property, context.NKserialize(value)), false);
+            return evaluateExpression(scriptForUpdatingProperty(property, _context.NKserialize(value)), false);
         }
 
         public Task<object> valueAtIndex(int index)
         {
-            string exp = String.Format("{0}[{$1]", ns, index);
+            string exp = String.Format("{0}[{1}]", ns, index);
             return evaluateExpression(exp);
         }
 
         public Task setValue(object value, int index)
         {
-            var context = this.getContext();
-
-            string exp = String.Format("{0}[{$1] = {$2}", ns, index, context.NKserialize(value));
+            string exp = String.Format("{0}[{1}] = {2}", ns, index, _context.NKserialize(value));
             return evaluateExpression(exp);
         }
 
@@ -141,11 +137,9 @@ namespace io.nodekit.NKScripting
 
         async private Task<object> evaluateExpression(string expression, bool retain = true)
         {
-            var context = this.getContext();
-
             if (retain)
             {
-                var result = await context.NKevaluateJavaScript(expression);
+                var result = await _context.NKevaluateJavaScript(expression);
                 if (result != null)
                 {
                     var wrapped = wrapScriptObject(result);
@@ -154,7 +148,7 @@ namespace io.nodekit.NKScripting
                 return null;
             } else
             {
-                return context.NKevaluateJavaScript(expression);
+                return _context.NKevaluateJavaScript(expression);
             }
         }
 
@@ -174,7 +168,7 @@ namespace io.nodekit.NKScripting
                 bool isNumeric = int.TryParse(name, out idx);
 
                 if (isNumeric)
-                    return String.Format("{0}[{$1}]", ns, idx);
+                    return String.Format("{0}[{1}]", ns, idx);
                 else
                     return String.Format("{0}.{1}", ns, name);
             }
@@ -182,16 +176,12 @@ namespace io.nodekit.NKScripting
 
         private string scriptForUpdatingProperty(string name, object value)
         {
-            var context = this.getContext();
-
-            return scriptForFetchingProperty(name) + " = " + context.NKserialize(value);
+           return scriptForFetchingProperty(name) + " = " + _context.NKserialize(value);
         }
 
         private string scriptForCallingMethod(string name, object[] args)
         {
-            var context = this.getContext();
-
-            string[] argsSerialized = args.Select(arg => context.NKserialize(arg)).ToArray<string>();
+           string[] argsSerialized = args.Select(arg => _context.NKserialize(arg)).ToArray<string>();
 
             string script = scriptForFetchingProperty(name) + "(" + String.Join(", ", argsSerialized) + ")";
             return "(function line_eval(){ try { return " + script + "} catch(ex) { console.log(ex.toString()); return ex} })()";
@@ -205,19 +195,17 @@ namespace io.nodekit.NKScripting
 
         protected object wrapScriptObject(object obj)
         {
-            var context = this.getContext();
-
             var dict = obj as Dictionary<string, object>;
             if ((dict != null) && dict.ContainsKey("$sig") && (Convert.ToInt32(dict["$sig"]) == 0x5857574F))
             {
                 var num = Convert.ToInt32(dict["$ref"]);
-                return new NKScriptValue(num, context, this);
+                return new NKScriptValue(num, _context, this);
             }
             if (dict.ContainsKey("$ns"))
             {
                 var ns = dict["$ns"] as String;
                 if (ns != null)
-                    return new NKScriptValue(ns, context, this);
+                    return new NKScriptValue(ns, _context, this);
             }
             return obj;
         }
@@ -228,15 +216,9 @@ namespace io.nodekit.NKScripting
 
         protected virtual void Dispose(bool disposing)
         {
-            var context = this.getContext();
-
             if (!disposedValue)
             {
-                if (disposing)
-                {
-                    ns = null;
-                }
-
+              
                 string script;
                 if (reference == 0)
                 {
@@ -249,12 +231,13 @@ namespace io.nodekit.NKScripting
                         script = string.Format("{0}.$releaseObject(${1})", origin.ns, reference);
                     else return;
                 }
-                var ignoreTask = context.NKevaluateJavaScript(script);
-                _context.SetTarget(null);
-                _origin.SetTarget(null);
+                var _ = _context.NKevaluateJavaScript(script);
+                _context = null;
+                _origin = null;
                 _context = null;
                 _origin = null;
                 reference = 0;
+                ns = null;
 
                 disposedValue = true;
             }
@@ -271,9 +254,5 @@ namespace io.nodekit.NKScripting
             GC.SuppressFinalize(this);
         }
         #endregion
-
- 
-
-      
     }
 }

@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:io.nodekit.NKElectro"
         mc:Ignorable="d"
-        Title="Window1" Height="300" Width="300">
-    <Grid>
-        <WebBrowser x:Name="webView" HorizontalAlignment="Left" Height="259" Margin="0,10,0,0" VerticalAlignment="Top" Width="292"/>
-    </Grid>
+        Title="NodeKit" Height="768" Width="1200">
+    <DockPanel LastChildFill="True">
+        <WebBrowser x:Name="webView" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" />
+    </DockPanel>
 </Window>

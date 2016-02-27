@@ -22,42 +22,62 @@ using System;
 using System.Collections.Generic;
 using io.nodekit.NKScripting;
 using Windows.UI.Xaml.Controls;
+using System.Threading.Tasks;
+using io.nodekit.NKScripting.Engines.MSWebView;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
 
 namespace io.nodekit.NKElectro
 {
-    public class NKE_WebContentsMS : NKE_WebContentsBase
+    public partial class NKE_WebContents
     {
         internal WebView webView;
         private bool _isLoading;
-    
-        public NKE_WebContentsMS(NKE_BrowserWindow browserWindow)
+
+        internal Task createWebView(Dictionary<string, object> options)
         {
-            this._browserWindow = browserWindow;
-            this._id = browserWindow.id;
 
-            // Event:  'did-fail-load'
-            // Event:  'did-finish-load'
-
-            browserWindow.events.on<int>("did-finish-load", (id) =>
+            return CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
             {
-                this.getNKScriptValue().invokeMethod("emit", new[] { "did-finish-load" });
-            });
-   
-            browserWindow.events.on<Tuple<int, string>>("did-fail-loading", (item) =>
-            {
-                this.getNKScriptValue().invokeMethod("emit", new[] { "did-fail-loading", item.Item2 });
-            });
+                _browserWindow._window = await _browserWindow.createWindow(options);
 
-            webView = (WebView)_browserWindow.webView;
-            webView.NavigationStarting += WebView_NavigationStarting;
-            webView.NavigationCompleted += WebView_NavigationCompleted;
+               string url;
+               if (options.ContainsKey(NKEBrowserOptions.kPreloadURL))
+                   url = (string)options[NKEBrowserOptions.kPreloadURL];
+               else
+                   url = NKEBrowserDefaults.kPreloadURL;
 
-            this.init_IPC();
+               WebView webView = new WebView(WebViewExecutionMode.SeparateThread);
+               this.webView = webView;
+                _browserWindow.webView = webView;
+
+                _browserWindow._window.controls.Add(webView);
+                webView.Navigate(new Uri(url));
+                 _browserWindow.context = await NKSMSWebViewContext.getScriptContext(_id, webView, options);
+
+                webView.NavigationStarting += WebView_NavigationStarting;
+                webView.NavigationCompleted += this.WebView_NavigationCompleted;
+
+                this.init_IPC();
+
+                this._type = NKEBrowserType.MSWebView.ToString();
+               if (options.itemOrDefault<bool>("nk.InstallElectro", true))
+                   await Renderer.addElectro(_browserWindow.context);
+               NKLogging.log(string.Format("+E{0} Renderer Ready", _id));
+
+              _browserWindow.events.emit("NKE.DidFinishLoad", _id);
+
+           }).AsTask();
         }
 
         private void WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
             _isLoading = false;
+
+            if (args.IsSuccess)
+                _browserWindow.events.emit("NKE.DidFinishLoad", _id);
+            else
+                _browserWindow.events.emit("NKE.DidFailLoading", new Tuple<int, string>(_id, args.WebErrorStatus.ToString()));
         }
 
         private void WebView_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
@@ -68,8 +88,8 @@ namespace io.nodekit.NKElectro
         // Messages to renderer are sent to the window events queue for that renderer
         public void ipcSend(string channel, string replyId, object[] arg)
         {
-            var payload = new NKE_IPC_Event(0, channel, replyId, arg);
-            _browserWindow.events.emit("nk.IPCtoRenderer", payload);
+            var payload = new NKEvent(0, channel, replyId, arg);
+            _browserWindow.events.emit("NKE.IPCtoRenderer", payload);
 
             throw new NotImplementedException();
         }
@@ -77,8 +97,8 @@ namespace io.nodekit.NKElectro
         // Replies to renderer to the window events queue for that renderer
         public void ipcReply(int dest, string channel, string replyId, object result)
         {
-            var payload = new NKE_IPC_Event(0, channel, replyId, new[] { result });
-            _browserWindow.events.emit("nk.IPCReplytoRenderer", payload);
+            var payload = new NKEvent(0, channel, replyId, new[] { result });
+            _browserWindow.events.emit("NKE.IPCReplytoRenderer", payload);
         }
 
         public void loadURL(string url, Dictionary<string, object> options)
@@ -117,7 +137,8 @@ namespace io.nodekit.NKElectro
 
         public string getTitle()
         {
-            return webView.DocumentTitle;
+            return "HELLO TITLE";
+        //    return webView.DocumentTitle;
         }
 
         public bool isLoading()
@@ -178,13 +199,9 @@ namespace io.nodekit.NKElectro
         /* ****************************************************************** *
          *               REMAINDER OF ELECTRO API NOT IMPLEMENTED             *
          * ****************************************************************** */
-
-        public NKScriptValue session
+        public NKScriptValue getSession()
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
 
         public void addWorkSpace(string path)

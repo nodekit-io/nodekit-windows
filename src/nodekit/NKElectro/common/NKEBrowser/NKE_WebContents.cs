@@ -18,30 +18,47 @@
 */
 
 using System;
-using System.Collections.Generic;
 using io.nodekit.NKScripting;
-using System.Threading.Tasks;
 
 namespace io.nodekit.NKElectro
 {
-    public abstract class NKE_WebContentsBase : NKScriptExport
+    public partial class NKE_WebContents : NKScriptExport, IDisposable
     {
         protected NKE_BrowserWindow _browserWindow;
         protected int _id;
         protected string _type;
         protected NKEventEmitter globalEvents = NKEventEmitter.global;
-     
+
+        public NKE_WebContents(NKE_BrowserWindow browserWindow)
+        {
+            this._browserWindow = browserWindow;
+            this._id = browserWindow.id;
+
+            // Event:  'did-fail-load'
+            // Event:  'did-finish-load'
+
+            browserWindow.events.on<int>("NKE.DidFinishLoad", (e, id) =>
+            {
+                this.getNKScriptValue().invokeMethod("emit", new[] { "did-finish-load" });
+            });
+
+            browserWindow.events.on<Tuple<int, string>>("NKE.DidFailLoading", (e, item) =>
+            {
+                this.getNKScriptValue().invokeMethod("emit", new[] { "did-fail-loading", item.Item2 });
+            });
+        }
+
         protected void init_IPC()
         {
-            _browserWindow.events.on<NKE_IPC_Event>("nk.IPCReplytoMain", (item) =>
+            _browserWindow.events.on<NKEvent>("NKE.IPCReplytoMain", (e, item) =>
             {
-                this.getNKScriptValue().invokeMethod("emit", new[] { "nk.IPCReplytoMain", item.sender, item.channel, item.replyId, item.arg[0] });
+                this.getNKScriptValue().invokeMethod("emit", new[] { "NKE.IPCReplytoMain", item.sender, item.channel, item.replyId, item.arg[0] });
 
             });
         }
 
         #region NKScriptExport
-        private static string defaultNamespace { get { return "io.nodekit.electro.BrowserWindow"; } }
+        private static string defaultNamespace { get { return "io.nodekit.electro.WebContents"; } }
 
         private static string rewriteGeneratedStub(string stub, string forKey)
         {
@@ -59,6 +76,27 @@ namespace io.nodekit.NKElectro
         {
             return key == ".ctor:browserWindow" ? "" : name;
         }
+        #endregion
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                var item = this.getNKScriptValue();
+                if (item != null)
+                    item.Dispose();
+
+                disposedValue = true;
+            }
+        }
+
+         public void Dispose()
+        {
+            Dispose(true);
+         }
         #endregion
     }
 }

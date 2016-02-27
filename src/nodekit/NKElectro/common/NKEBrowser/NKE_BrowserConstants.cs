@@ -94,8 +94,8 @@ namespace io.nodekit.NKElectro
         public const string kNodeIntegration = "nodeIntegration";
         // Instancd ID of guest WebContents.
         public const string kGuestInstanceID = "guestInstanceId";
-        // Enable DirectWrite on Windows.
-        public const string kDirectWrite = "directWrite";
+        // Enable DirecNKRemotingMessage on Windows.
+        public const string kDirecNKRemotingMessage = "direcNKRemotingMessage";
         // Web runtime features.
         public const string kExperimentalFeatures = "experimentalFeatures";
         public const string kExperimentalCanvasFeatures = "experimentalCanvasFeatures";

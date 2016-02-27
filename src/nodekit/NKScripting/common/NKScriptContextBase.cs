@@ -85,7 +85,6 @@ namespace io.nodekit.NKScripting
                 if (scriptValueObject != null)
                     return scriptValueObject.ns;
                 var newScriptValueObject = new NKScriptValueNative(obj, (NKScriptContext)this);
-           //     obj.setNKScriptValue(newScriptValueObject);
                 return newScriptValueObject.ns;
             }
 
@@ -98,26 +97,26 @@ namespace io.nodekit.NKScripting
             if (obj is DateTime)
                 return "\"" + ((DateTime)obj).ToString("u") + "\"";
 
-            if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(ti))
-                return "[" + ((IEnumerable<dynamic>)obj).Select(o => NKserialize(o)).Aggregate("", (prod, next) => prod + ", " + next) + "]";
-
-
-            if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(ti))
+             if (typeof(IDictionary).GetTypeInfo().IsAssignableFrom(ti))
             {
-                var genericKey = ti.GenericTypeParameters[0];
+                var genericKey = ti.GenericTypeArguments[0];
                 if (typeof(string).GetTypeInfo().IsAssignableFrom(genericKey.GetTypeInfo()))
                 {
                     var dict = (IDictionary<string, dynamic>)obj;
-                    return "{" + dict.Keys.Select(k => "\"" + k + "\":" + NKserialize(dict[k])).Aggregate("", (prod, next) => prod + ", " + next) + "}";
+                    return "{" + string.Join(", ", dict.Keys.Select(k => "\"" + k + "\":" + NKserialize(dict[k]))) + "}";
                 }
             }
+
+            if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(ti))
+                return "[" + string.Join(", ", ((IEnumerable<dynamic>)obj).Select(o => NKserialize(o))) + "]";
 
             return Convert.ToString(obj, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         public virtual object NKdeserialize(string json)
         {
-            return NKData.jsonDeserialize(json);
+            var obj = NKData.jsonDeserialize(json);
+             return obj;
         }
 
         protected List<NKScriptValue> _injectedPlugins = new List<NKScriptValue>();
@@ -133,26 +132,26 @@ namespace io.nodekit.NKScripting
                 options = new Dictionary<string, object>();
 
             bool mainThread;
-            if (options.ContainsKey("MainThread"))
-                mainThread = (bool)options["MainThread"];
+            if (options.ContainsKey("NKS.MainThread"))
+                mainThread = (bool)options["NKS.MainThread"];
             else
             {
                 mainThread = false;
-                options["MainThread"] = mainThread;
+                options["NKS.MainThread"] = mainThread;
             }
 
             NKScriptExportType bridge;
-            if (options.ContainsKey("PluginBridge"))
-                bridge = (NKScriptExportType)options["PluginBridge"];
+            if (options.ContainsKey("NKS.PluginBridge"))
+                bridge = (NKScriptExportType)options["NKS.PluginBridge"];
             else if (plugin == null)
             {
                 bridge = NKScriptExportType.WinRT;
-                options["PluginBridge"] = bridge;
+                options["NKS.PluginBridge"] = bridge;
             }
             else
             {
                 bridge = NKScriptExportType.NKScriptExport;
-                options["PluginBridge"] = bridge;
+                options["NKS.PluginBridge"] = bridge;
             }
 
             switch (bridge)
@@ -166,22 +165,35 @@ namespace io.nodekit.NKScripting
 
         protected async Task LoadPluginBase<T>(T plugin, string ns, Dictionary<string, object> options) where T : class
         {
-            bool mainThread = (bool)options["MainThread"];
-            NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
+            bool mainThread = (bool)options["NKS.MainThread"];
+            bool remoteProcess = NKOptions.itemOrDefault(options, "NKS.RemoteProcess", false);
+
+            NKScriptExportType bridge = (NKScriptExportType)options["NKS.PluginBridge"];
+            NKScriptChannelProtocol channel;
 
             switch (bridge)
             {
                 case NKScriptExportType.NKScriptExport:
-                    NKScriptChannel channel;
-                    if (mainThread)
+                    if (remoteProcess)
+                        channel = new NKScriptChannelRemote((NKScriptContext)this);
+                    else if (mainThread)
                         channel = new NKScriptChannel((NKScriptContext)this, TaskScheduler.FromCurrentSynchronizationContext());
                     else
                         channel = new NKScriptChannel((NKScriptContext)this);
-                    var ns1 = ns;
                     var scriptValue = await channel.bindPlugin<T>(plugin, ns);
                     _injectedPlugins.Add(scriptValue);
 
-                    NKLogging.log("+NKScripting Plugin loaded at " + ns1);
+                    NKLogging.log("+NKScripting Plugin loaded at " + ns);
+                    break;
+                case NKScriptExportType.NKScriptExportRemote:
+                     if (mainThread)
+                        channel = new NKScriptChannelRemote((NKScriptContext)this, TaskScheduler.FromCurrentSynchronizationContext());
+                    else
+                        channel = new NKScriptChannelRemote((NKScriptContext)this);
+                     var scriptValueRemote = await channel.bindPlugin<T>(plugin, ns);
+                    _injectedPlugins.Add(scriptValueRemote);
+
+                    NKLogging.log("+NKScripting Remote Plugin loaded at " + ns);
                     break;
                 default:
                     throw new InvalidOperationException("Load Plugin Base called for non-handled bridge type");
@@ -219,7 +231,7 @@ namespace io.nodekit.NKScripting
                 {
                     await PrepareEnvironment();
                     preparationComplete = true;
-                });
+                }).Unwrap();
             }
             catch
             {
@@ -253,7 +265,7 @@ namespace io.nodekit.NKScripting
             return new NKScriptValue(key, this, null);
         }
 
-        public Task<Task<object>> ensureOnEngineThread(Func<Task<object>> t)
+        public virtual Task<Task<object>> ensureOnEngineThread(Func<Task<object>> t)
         {
            if (_thread_id != Environment.CurrentManagedThreadId)
                 return Task.Factory.StartNew(t,
@@ -262,7 +274,7 @@ namespace io.nodekit.NKScripting
                 return Task.FromResult<Task<object>>(t.Invoke());
         }
 
-        public Task<Task> ensureOnEngineThread(Func<Task> t)
+        public virtual Task<Task> ensureOnEngineThread(Func<Task> t)
         {
             if (_thread_id != Environment.CurrentManagedThreadId)
                 return Task.Factory.StartNew(t,
@@ -271,7 +283,7 @@ namespace io.nodekit.NKScripting
                 return Task.FromResult<Task>(t.Invoke());
         }
 
-        public Task<object> ensureOnEngineThread(Func<object> t)
+        public virtual  Task<object> ensureOnEngineThread(Func<object> t)
         {
             if (_thread_id != Environment.CurrentManagedThreadId)
                 return Task.Factory.StartNew(t,
@@ -280,7 +292,7 @@ namespace io.nodekit.NKScripting
                 return Task.FromResult<object>(t.Invoke());
         }
 
-        public Task ensureOnEngineThread(Action t)
+        public virtual Task ensureOnEngineThread(Action t)
         {
             if (_thread_id != Environment.CurrentManagedThreadId)
                 return Task.Factory.StartNew(t,

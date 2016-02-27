@@ -25,30 +25,50 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Threading;
+using System.Diagnostics;
 
 namespace io.nodekit.NKElectro
 {
     public partial class NKE_BrowserWindow
     {
+        private NKE_Window _window;
+   
         private static TaskFactory syncContext;
-  
+
         public static void setupSync()
         {
             syncContext = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
         }
-   
-        internal void ensureOnUIThread(Action action)
+
+        internal Task ensureOnUIThread(Action action)
         {
-            syncContext.StartNew(action);
+             return syncContext.StartNew(action);
+        }
+
+        internal Task ensureOnUIThread(Func<Task> action)
+        {
+            return syncContext.StartNew(action).Unwrap();
         }
 
         internal void createWindow(Dictionary<string, object> options, Control customWebView)
         {
             var window = new NKE_Window(customWebView);
+            window.FormClosed += Window_FormClosed;
             window.Show();
             window.Activate();
             _window = window;
-       }
+        }
+
+        private void Window_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            this.events.emit<string>("NKE.WindowClosed");
+            
+            _window = null;
+            windowArray.Remove(_id);
+            context = null;
+            webView = null;
+            this.Dispose();
+        }
 
         public void blurWebView()
         {
@@ -67,11 +87,7 @@ namespace io.nodekit.NKElectro
 
         public void close()
         {
-            _window = null;
-            windowArray.Remove(_id);
-            context = null;
-            webView = null;
-            throw new NotImplementedException();
+            _window.Close();
         }
 
         public void destroy()
@@ -372,8 +388,6 @@ namespace io.nodekit.NKElectro
         // void setMenu(menu); //LINUX WINDOWS
         // void setOverlayIcon(overlay, description); //WINDOWS 7+
         // void setThumbarButtons(buttons); //WINDOWS 7+
-
-
     }
 }
 #endif

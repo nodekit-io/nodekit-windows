@@ -32,9 +32,5 @@ namespace io.nodekit.NKElectro
             this.ResumeLayout(false);
         }
 
-        private void NKE_Window_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 }

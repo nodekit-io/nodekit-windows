@@ -15,10 +15,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-debugger;
 var BrowserWindow = io.nodekit.electro.BrowserWindow;
-
+//debugger;
 io.nodekit.electro.app.on("ready", function () {
     var p = new BrowserWindow({ 'preloadURL': 'http://bing.com' });
+    p.on("did-finish-load", function () {
+        console.log(p.webContents.getTitle());
+    });
 });
-    

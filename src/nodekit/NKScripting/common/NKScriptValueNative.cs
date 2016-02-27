@@ -24,58 +24,79 @@ using System.Threading.Tasks;
 
 namespace io.nodekit.NKScripting
 {
+    public interface NKScriptValueNativeProtocol
+    {
+        Task<object> invokeNativeMethod(string method, object[] args);
+        object invokeNativeMethodSync(string method, object[] args);
+        void updateNativeProperty(string key, object value);
+        object valueForPropertyNative(string key);
+    }
+
     public class NKScriptValueNative : NKScriptValue
     {
         private NKScriptInvocation proxy;
         internal object plugin { get { return proxy.target; } }
-        private WeakReference<object> _nativeObject;
-        private object _nativeObjectStrong;
+        protected object _nativeObject;
+  
+        public object nativeObject { get { return _nativeObject; } }
 
-        public object nativeObject { get { object o; _nativeObject.TryGetTarget(out o); return o; } }
+        protected NKScriptChannelProtocol _channel;
+        protected int _instanceid;
 
-        protected WeakReference<NKScriptChannel> _channel;
-        public NKScriptChannel getChannel() { NKScriptChannel c; _channel.TryGetTarget(out c); return c; }
+        public NKScriptChannelProtocol channel { get { return _channel; }  }
 
-        internal NKScriptValueNative(string ns, NKScriptChannel channel, object obj) : base(ns, channel.context, null)
+        internal NKScriptValueNative(string ns, NKScriptChannelProtocol channel, int instanceid, object obj) : base(ns, channel.context, null)
         {
-            this._channel = new WeakReference<NKScriptChannel>(channel);
-            this.proxy = bindObject(obj);
+            this._channel = channel;
+             this._instanceid = instanceid;
+             this.proxy = bindObject(obj);
+        }
+
+        protected NKScriptValueNative(string ns, NKScriptChannelProtocol channel) : base(ns, channel.context, null)
+        { 
         }
 
         internal NKScriptValueNative(object value, NKScriptContext context) : base()
         {
 
             Type t = value.GetType();
-            NKScriptChannel channel = value.getNKScriptChannel();
-            string pluginNS = channel.principal.ns;
-            int id = NKScriptChannel.nativeFirstSequence++;
-            string ns = string.Format("{0}[{1}]", pluginNS, id);
-            this._channel = new WeakReference<NKScriptChannel>(channel);
+            NKScriptChannelProtocol channel = t.getNKScriptChannel();
+            if (channel == null)
+            {
+                channel = t.GetTypeInfo().BaseType.getNKScriptChannel();
+                if (channel == null)
+                    throw new MissingFieldException("Cannot find channel for NKScriptExport member " + t.Name);
+            }
 
+            string pluginNS = channel.ns;
+            int id = channel.getNativeSeq();
+            _instanceid = id;
+            string ns = string.Format("{0}[{1}]", pluginNS, id);
+            this._channel = channel;
+          
             // super.init(ns: ns, context: channel, origin: nil)
-            _context = new WeakReference<NKScriptContext>(context);
+            _context = context;
 
             this.ns = ns;
-            _channel = new WeakReference<NKScriptChannel>(channel);
             if (origin != null)
-                _origin = new WeakReference<NKScriptValue>(origin);
+                _origin = origin;
             else
-                _origin = new WeakReference<NKScriptValue>(this);
+                _origin = this;
             // end super init
 
-            channel.instances[id] = this;
+            channel.addInstance(id, this);
             proxy = bindObject(value);
             syncCreationWithProperties();
         }
 
- 
         // Create new instance of plugin for given channel
-        internal NKScriptValueNative(string ns, NKScriptChannel channel, object[] args, bool create) : base(ns, channel.context, null)
+        internal NKScriptValueNative(string ns, NKScriptChannelProtocol channel, int instanceid, object[] args, bool create) : base(ns, channel.context, null)
         {
             if (create != true)
                 throw new ArgumentException();
 
-            this._channel = new WeakReference<NKScriptChannel>(channel);
+            this._channel = channel;
+            this._instanceid = instanceid;
 
             Type cls = channel.typeInfo.pluginType;
             var constructor = channel.typeInfo.DefaultConstructor();
@@ -103,8 +124,6 @@ namespace io.nodekit.NKScripting
 
             if (instance == null)
                 throw new ArgumentException(String.Format("!Failed to create instance for plugin class {0}"), cls.Name);
-            _nativeObjectStrong = instance;
-
             proxy = bindObject(instance);
             syncProperties();
             if (promise != null)
@@ -112,12 +131,11 @@ namespace io.nodekit.NKScripting
         }
 
         private NKScriptInvocation bindObject(object obj) {
-            var channel = getChannel();
-            _nativeObject = new WeakReference<object>(obj);
-             var queue = channel.queue;
+            _nativeObject = obj;
+             var queue = _channel.queue;
             var proxy = new NKScriptInvocation(obj, queue);
             obj.setNKScriptValue(this);
-            var typeinfo = channel.typeInfo;
+            var typeinfo = _channel.typeInfo;
             if (typeinfo.hasSettableProperties)
             {
                 var observable = obj as System.ComponentModel.INotifyPropertyChanged;
@@ -129,17 +147,14 @@ namespace io.nodekit.NKScripting
             }
             return proxy;
         }
-
     
         private void unbindObject(object obj)
         {
-            var channel = getChannel();
-            if (_nativeObject != null)
-                _nativeObject.SetTarget(null);
-            _nativeObject = null;
+            _channel.removeInstance(_instanceid);
+             _nativeObject = null;
             obj.setNKScriptValue(null);
 
-            var typeinfo = channel.typeInfo;
+            var typeinfo = _channel.typeInfo;
             if (typeinfo.hasSettableProperties)
             {
                 var observable = obj as System.ComponentModel.INotifyPropertyChanged;
@@ -154,61 +169,51 @@ namespace io.nodekit.NKScripting
 
         private void syncProperties()
         {
-            var channel = getChannel();
-            var context = getContext();
-
+        
             var script = "";
-            foreach (var member in channel.typeInfo.Where(m => m.isProperty()))
+            foreach (var member in _channel.typeInfo.Where(m => m.isProperty()))
             {
                 object value = proxy.call(member.getter, null);
-                script += String.Format("{$0}.$properties[{$1}] = {$2};\n", ns, member.name, context.NKserialize(value));
+                script += String.Format("{0}.$properties['{1}'] = {2};\n", ns, member.name, _context.NKserialize(value));
             }
-            context.NKevaluateJavaScript(script);
+            //         if (script != "")
+            _context.NKevaluateJavaScript(script);
         }
 
         private void syncCreationWithProperties()
         {
-            var channel = getChannel();
-            var context = getContext();
-
-
             var nsComponents = ns.Split('[');
             var nsPlugin = nsComponents[0];
             var id = nsComponents[1].Split(']')[0];
 
             string script = "";
 
-            script += String.Format("var instance = {$0}.NKcreateForNative({$1});\n", nsPlugin, id);
-            foreach (var member in channel.typeInfo.Where(m => m.isProperty()))
+            script += String.Format("var instance = {0}.NKcreateForNative({1});\n", nsPlugin, id);
+            foreach (var member in _channel.typeInfo.Where(m => m.isProperty()))
             {
                 object value = proxy.call(member.getter, null);
-                script += String.Format("instance.$properties[{$1}] = {$2};\n", member.name, context.NKserialize(value));
+                script += String.Format("instance.$properties['{1}'] = {2};\n", member.name, _context.NKserialize(value));
             }
-            context.NKevaluateJavaScript(script);
+            _context.NKevaluateJavaScript(script);
         }
 
 
         private void Observable_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            var channel = getChannel();
-            var context = getContext();
-
             var prop = e.PropertyName;
-            var ti = channel.typeInfo.Item(prop);
+            var ti = _channel.typeInfo.Item(prop);
             if (ti != null)
             {
                 object value = proxy.call(ti.getter, null);
-                string script = String.Format("{$0}.$properties[{$1}] = {$2}", ns, prop, context.NKserialize(value));
-                context.NKevaluateJavaScript(script);
+                string script = String.Format("{0}.$properties['{1}'] = {2}", ns, prop, _context.NKserialize(value));
+                _context.NKevaluateJavaScript(script);
             }     
         }
 
-        internal Task<object> invokeNativeMethod(string method, object[] args)
+        internal virtual Task<object> invokeNativeMethod(string method, object[] args)
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
-            var channel = getChannel();
-        
-            var member = channel.typeInfo.Item(method);
+            var member = _channel.typeInfo.Item(method);
             if (member != null)
             {
                 var mi = member.method;
@@ -218,12 +223,10 @@ namespace io.nodekit.NKScripting
             return Task.FromResult<object>(null);
         }
 
-        internal object invokeNativeMethodSync(string method, object[] args)
+        internal virtual object invokeNativeMethodSync(string method, object[] args)
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
-            var channel = getChannel();
-            
-            var member = channel.typeInfo.Item(method);
+             var member = _channel.typeInfo.Item(method);
             if (member != null)
             {
                 var mi = member.method;
@@ -233,13 +236,10 @@ namespace io.nodekit.NKScripting
             return null;
         }
 
-        internal void updateNativeProperty(string key, object value)
+        internal virtual void updateNativeProperty(string key, object value)
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
-            var channel = getChannel();
-
-
-            var member = channel.typeInfo.Item(key);
+            var member = _channel.typeInfo.Item(key);
             if (member != null)
             {
                 var mi = member.setter;
@@ -248,13 +248,10 @@ namespace io.nodekit.NKScripting
             }
         }
 
-        internal object valueForPropertyNative(string key)
+        internal virtual object valueForPropertyNative(string key)
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
-            var channel = getChannel();
-
-
-            var member = channel.typeInfo.Item(key);
+             var member = _channel.typeInfo.Item(key);
             if (member != null)
             {
                 var mi = member.getter;
@@ -267,10 +264,7 @@ namespace io.nodekit.NKScripting
         public override Task invokeMethod(string method, object[] args)
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
-            var channel = getChannel();
-
-
-            var member = channel.typeInfo.Item(method);
+            var member = _channel.typeInfo.Item(method);
             if (member != null)
             {
                 var mi = member.method;
@@ -284,10 +278,7 @@ namespace io.nodekit.NKScripting
         public override Task<object> invokeMethodWithResult(string method, object[] args)
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
-            var channel = getChannel();
-
-
-            var member = channel.typeInfo.Item(method);
+            var member = _channel.typeInfo.Item(method);
             if (member != null)
             {
                 var mi = member.method;
@@ -301,10 +292,7 @@ namespace io.nodekit.NKScripting
         public override Task<object> valueForProperty(string key)
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
-            var channel = getChannel();
-
-
-            var member = channel.typeInfo.Item(key);
+            var member = _channel.typeInfo.Item(key);
             if (member != null)
             {
                 var mi = member.getter;
@@ -319,10 +307,7 @@ namespace io.nodekit.NKScripting
         {
 
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
-            var channel = getChannel();
-
-
-            var member = channel.typeInfo.Item(key);
+            var member = _channel.typeInfo.Item(key);
             if (member != null)
             {
                 var mi = member.setter;
@@ -339,11 +324,12 @@ namespace io.nodekit.NKScripting
 
         protected override void Dispose(bool disposing)
         {
-
             if (!disposedValue)
-                unbindObject(plugin);
+                unbindObject(_nativeObject);
 
-            base.Dispose(disposing);
+             base.Dispose(disposing);
+            _channel = null;
+
             disposedValue = true;
         }
 
@@ -366,7 +352,7 @@ namespace io.nodekit.NKScripting
 
         public static NKScriptValue getNKScriptValue(this object obj)
         {
-            return dictionary[obj];
+             return dictionary.ContainsKey(obj) ? dictionary[obj] : null;
         }
 
         internal static void setNKScriptValue(this object obj, NKScriptValue value)
@@ -377,4 +363,5 @@ namespace io.nodekit.NKScripting
                 dictionary.Remove(obj);
         }
     }
+
 }

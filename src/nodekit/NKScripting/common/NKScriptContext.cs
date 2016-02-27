@@ -32,6 +32,14 @@ namespace io.nodekit.NKScripting
         NKScriptValue NKgetScriptValue(string key);
     }
 
+    public interface NKScriptContextRemotingProxy : NKScriptContentController
+    {
+        int NKid { get; }
+        void NKevaluateJavaScript(string javaScriptString, string filename = null);
+        void NKready();
+        NKScriptContext context { get; set; }
+    }
+
     public interface NKScriptContentController
     {
         void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name);

@@ -20,12 +20,12 @@
 // Binding Protocol
 // func ipcSend(channel: String, replyId: String, arg: [AnyObject]) -> Void
 // func ipcReply(dest: Int, channel: String, replyId: String, result: AnyObject) -> Void
-// event "nk.IPCtoMain": item.sender, item.channel, item.replyId, item.arg
-// event "nk.IPCReplytoMain": item.sender, item.channel, item.replyId, item.arg[0]
+// event "NKE.IPCtoMain": item.sender, item.channel, item.replyId, item.arg
+// event "NKE.IPCReplytoMain": item.sender, item.channel, item.replyId, item.arg[0]
 
 var ipcMain = io.nodekit.electro.ipcMain
 
-ipcMain.on('nk.IPCtoMain', function (sender, channel, replyId, arg) {
+ipcMain.on('NKE.IPCtoMain', function (sender, channel, replyId, arg) {
     var webContents = io.nodekit.electro.BrowserWindow.fromId(sender).webContents;
 
     var event = { 'sender': webContents }
@@ -45,7 +45,7 @@ ipcMain.on('nk.IPCtoMain', function (sender, channel, replyId, arg) {
     this.emit(channel, event, arg)
 });
 
-ipcMain.on('nk.IPCReplytoMain', function (sender, channel, replyId, result) {
+ipcMain.on('NKE.IPCReplytoMain', function (sender, channel, replyId, result) {
     var webContents = io.nodekit.electro.BrowserWindow.fromId(sender).webContents;
 
     var event = { 'sender': webContents }

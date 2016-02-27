@@ -49,17 +49,17 @@ namespace io.nodekit.NKElectro
             var events = NKEventEmitter.global;
 
             // Event: 'ready'
-            events.once<string>("nk.jsApplicationReady", (data) =>
+            events.once<string>("NK.AppReady", (e, data) =>
             {
                 jsValue.invokeMethod("emit", new[] { "ready" });
             });
 
-            events.once<string>("nk.ApplicationDidFinishLaunching", (data) =>
+            events.once<string>("NK.AppDidFinishLaunching", (e, data) =>
             {
                 jsValue.invokeMethod("emit", new[] { "will-finish-launching" });
             });
 
-            events.once<string>("nk.ApplicationWillTerminate", (data) =>
+            events.once<string>("NK.AppWillTerminate", (e, data) =>
             {
                 jsValue.invokeMethod("emit", new[] { "will-quit" });
                 jsValue.invokeMethod("emit", new[] { "quit" });

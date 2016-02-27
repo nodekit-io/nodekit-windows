@@ -71,7 +71,7 @@ namespace io.nodekit.Samples.nodekit_sample
                 Window.Current.Content = rootFrame;
             }
 
-            var ignoreTask = startNodeKit();
+            var _ = startNodeKit();
                
         }
 
@@ -85,8 +85,7 @@ namespace io.nodekit.Samples.nodekit_sample
             var script = "function loadapp(){\n" + appjs + "\n}\n" + "loadapp();" + "\n";
             await context.NKevaluateJavaScript(script, "io.nodekit.electro.main");
      
-            NKEventEmitter.global.emit<string>("nk.jsApplicationReady");
-      //      var bw = new io.nodekit.NKElectro.NKE_BrowserWindow(null);
+            NKEventEmitter.global.emit<string>("NK.AppReady");
         }
 
         /// <summary>

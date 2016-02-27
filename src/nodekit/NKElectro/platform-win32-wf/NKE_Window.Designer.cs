@@ -34,7 +34,6 @@
             // 
             this.ClientSize = new System.Drawing.Size(1008, 729);
             this.Name = "NKE_Window";
-            this.Load += new System.EventHandler(this.NKE_Window_Load);
             this.ResumeLayout(false);
 
         }

@@ -32,6 +32,8 @@ namespace io.nodekit.NKElectro
 {
     public partial class NKE_BrowserWindow
     {
+
+        internal NKE_Window _window;
         private int _thread_id;
         private Windows.UI.Core.CoreDispatcher _dispatcher;
 
@@ -63,7 +65,7 @@ namespace io.nodekit.NKElectro
                 Window.Current.Content = rootFrame;
             }
 
-            globalEvents.once<NKE_Window>("nk.window." + this._id, (window) =>
+            globalEvents.once<NKE_Window>("NKE.WindowCreated." + this._id, (e, window) =>
             {
                 //     this._window = window;
                 tcs.TrySetResult(window);

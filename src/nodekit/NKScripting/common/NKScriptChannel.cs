@@ -23,40 +23,61 @@ using System.Threading.Tasks;
 
 namespace io.nodekit.NKScripting
 {
-    public class NKScriptChannel : NKScriptMessageHandler
+    public interface NKScriptChannelProtocol : NKScriptMessageHandler
     {
-        private string id;
-        private bool isFactory = false;
-        private static int sequenceNumber = 0;
+        Task<NKScriptValue> bindPlugin<T>(T obj, string ns) where T : class;
+        void addInstance(int id, NKScriptValueNative instance);
+        void removeInstance(int id);
+        int getNativeSeq();
+        bool singleInstance { get; set;  }
+        NKScriptContext context { get; }
+        string ns { get; }
+        INKScriptTypeInfo typeInfo { get; }
+        TaskScheduler queue { get; }
+
+        // NKScriptChannelProtocol(NKScriptContext context);
+        // NKScriptChannelProtocol(NKScriptContext context, TaskScheduler taskScheduler);
+        // void didReceiveScriptMessage(NKScriptMessage message)
+        // object didReceiveScriptMessageSync(NKScriptMessage message)
+    }
+
+     public class NKScriptChannel : NKScriptChannelProtocol
+    {
+        protected string id;
+        protected bool isFactory = false;
+        protected bool isRemote = false;
+        protected NKScriptContext _context = null;
+        protected NKScriptValueNative _principal;
+        protected Dictionary<int, NKScriptValueNative> _instances = new Dictionary<int, NKScriptValueNative>();
+        protected static Dictionary<string, NKScriptChannel> _channels = new Dictionary<string, NKScriptChannel>();
+        protected static Dictionary<int, NKScriptChannel> _instanceChannels = new Dictionary<int, NKScriptChannel>();
+
+        // Internal variables and helpers
         internal static int nativeFirstSequence = Int32.MaxValue;
+        internal static int sequenceNumber = 0;
+  
+        // Public properties
+        public NKScriptContext context { get { return _context; } }
+        public string ns { get { return _principal.ns; } }
+        public INKScriptTypeInfo typeInfo { get { return _typeInfo;  } }
+        public TaskScheduler queue { get { return _queue; } }
+        public bool singleInstance { get { return _singleInstance; } set { _singleInstance = value; } }
+        protected bool _singleInstance = false;
 
-        private WeakReference<NKScriptContext> _context = null;
-        internal NKScriptContext context { get { NKScriptContext o; _context.TryGetTarget(out o); return o; } }
+        protected INKScriptTypeInfo _typeInfo;
+        protected TaskScheduler _queue;
 
-        private NKScriptValueNative _principal;
-        internal NKScriptValueNative principal { get { return _principal; } }
-
-        internal INKScriptTypeInfo typeInfo;
-        internal TaskScheduler queue;
-        internal Dictionary<int, NKScriptValueNative> instances = new Dictionary<int, NKScriptValueNative>();
-
-        [ThreadStatic]
-        private static NKScriptContext _currentContext;
-   
+        // Public constructors
         public NKScriptChannel(NKScriptContext context) : this(context, TaskScheduler.Default) { }
 
         public NKScriptChannel(NKScriptContext context, TaskScheduler taskScheduler)
         {
-            _context = new WeakReference<NKScriptContext>(context);
-             this.queue = taskScheduler;
-         }
-
-        public static NKScriptContext currentContext()
-        {
-            return _currentContext;
+            _context = context;
+            _queue = taskScheduler;
         }
 
-        public async Task<NKScriptValue> bindPlugin<T>(T obj, string ns) where T : class
+       // Public methods
+       public virtual async Task<NKScriptValue> bindPlugin<T>(T obj, string ns) where T : class
         {
             var context = this.context;
             context.setNKScriptChannel(this);
@@ -71,7 +92,7 @@ namespace io.nodekit.NKScripting
            {
                 // Class, not instance, passed to bindPlugin -- to be used in Factory constructor/instance pattern in js
                 isFactory = true;
-                typeInfo = new NKScriptTypeInfo<T>(obj);
+                _typeInfo = new NKScriptTypeInfo<T>(obj);
                 name = (obj as Type).Name;
                 // Need to store the channel on the class itself so it can be found when native construct requests come in from other plugins
                 obj.setNKScriptChannel(this);
@@ -81,11 +102,12 @@ namespace io.nodekit.NKScripting
                 name = (typeof(T)).Name;
                 // Instance of Princpal passed to bindPlugin -- to be used in singleton/static pattern in js
                 isFactory = false;
-                typeInfo = new NKScriptTypeInfo<T>(obj);
+                _typeInfo = new NKScriptTypeInfo<T>(obj);
             }
 
-            _principal = new NKScriptValueNative(ns, this, obj);
-            this.instances[0] = _principal;
+            _principal = new NKScriptValueNative(ns, this, 0, obj);
+            this._instances[0] = _principal;
+            _channels[ns] = this;
             obj.setNKScriptValue(_principal);
 
             var export = new NKScriptExportProxy<T>(obj);
@@ -96,40 +118,74 @@ namespace io.nodekit.NKScripting
             return _principal;
         }
 
-        internal void unbind()
+        public static NKScriptChannel getChannel(string ns)
+        {
+            return _channels[ns];
+        }
+
+        public int getNativeSeq()
+        {
+            int id = NKScriptChannel.nativeFirstSequence--;
+            _instanceChannels[id] = this;
+            return id;
+        }
+
+        public static NKScriptChannel getNative(int id)
+        {
+            if (_instanceChannels.ContainsKey(id))
+                return _instanceChannels[id];
+            else
+                return null;
+        }
+
+        public virtual void addInstance(int id, NKScriptValueNative instance) { _instances[id] = instance; }
+        public virtual void removeInstance(int id) {
+            if (_instances.ContainsKey(id))
+                _instances.Remove(id);
+
+            if (_instanceChannels.ContainsKey(id))
+               _instanceChannels.Remove(id);
+
+            if (_singleInstance)
+                NKEventEmitter.global.emit<string>("NKS.SingleInstanceComplete", ns);
+
+        }
+
+        protected virtual void unbind()
         {
             var context = this.context;
-
+            if (_channels.ContainsKey(ns))
+               _channels.Remove(ns);
             if (id == null) return;
             id = null;
-            instances.Clear();
+            _instances.Clear();
             if (isFactory)
              _principal.nativeObject.setNKScriptChannel(null);
             _principal = null;
             context.NKremoveScriptMessageHandlerForName(id);
-            _context.SetTarget(null);
-            typeInfo = null;
-            queue = null;
-            instances = null;
+            _context = null;
+            _typeInfo = null;
+            _queue = null;
+            _instances = null;
             context = null;
         }
    
-     public void didReceiveScriptMessage(NKScriptMessage message)
+     public virtual void didReceiveScriptMessage(NKScriptMessage message)
         {
             // A workaround for when postMessage(undefined)
             if (message.body == null) return;
 
             // thread static
-            NKScriptChannel._currentContext = this.context;
+            NKScriptValue._currentContext = this.context;
 
             var body = message.body as Dictionary<string, object>;
             if (body != null && body.ContainsKey("$opcode"))
             {
                 string opcode = body["$opcode"] as String;
                 int target = Int32.Parse(body["$target"].ToString());
-                if (instances.ContainsKey(target))
+                if (_instances.ContainsKey(target))
                 {
-                    var obj = instances[target];
+                    var obj = _instances[target];
                     if (opcode == "-")
                     {
                         if (target == 0)
@@ -137,13 +193,10 @@ namespace io.nodekit.NKScripting
                             // Dispose plugin
                             this.unbind();
                         }
-                        else if (instances.ContainsKey(target))
+                        else 
                         {
                             obj.setNKScriptValue(null);
-                        }
-                        else
-                        {
-                            NKLogging.log(String.Format("!Invalid instance id: {0}", target));
+                            _instances.Remove(target);
                         }
                     }
                     else if (typeInfo.ContainsProperty(opcode))
@@ -164,13 +217,13 @@ namespace io.nodekit.NKScripting
                 {
                     // Create instance
                     var args = body["$operand"] as object[];
-                    var ns = String.Format("{0}[{1}]", principal.ns, target);
-                    instances[target] = new NKScriptValueNative(ns, this, args, true);
+                     var nsInstance = String.Format("{0}[{1}]", ns, target);
+                    _instances[target] = new NKScriptValueNative(nsInstance, this, target, args, true);
                 }
                 else
                 {
                     // else Unknown opcode
-                    var obj = principal.plugin as NKScriptMessageHandler;
+                    var obj = _principal.plugin as NKScriptMessageHandler;
                     if (obj != null)
                     {
                         obj.didReceiveScriptMessage(message);
@@ -188,17 +241,16 @@ namespace io.nodekit.NKScripting
             }
 
             //thread static
-            NKScriptChannel._currentContext = null;
+            NKScriptValue._currentContext = null;
         }
 
-
-        public object didReceiveScriptMessageSync(NKScriptMessage message)
+        public virtual object didReceiveScriptMessageSync(NKScriptMessage message)
         {
             // A workaround for when postMessage(undefined)
             if (message.body == null) return false;
 
             // thread static
-            NKScriptChannel._currentContext = this.context;
+            NKScriptValue._currentContext = this.context;
             object result;
 
             var body = message.body as Dictionary<string, object>;
@@ -206,9 +258,9 @@ namespace io.nodekit.NKScripting
             {
                 string opcode = body["$opcode"] as String;
                 int target = Int32.Parse(body["$target"].ToString());
-                if (instances.ContainsKey(target))
+                if (_instances.ContainsKey(target))
                 {
-                    var obj = instances[target];
+                    var obj = _instances[target];
                     if (opcode == "-")
                     {
                         if (target == 0)
@@ -217,7 +269,7 @@ namespace io.nodekit.NKScripting
                             this.unbind();
                             result = true;
                         }
-                        else if (instances.ContainsKey(target))
+                        else if (_instances.ContainsKey(target))
                         {
                             obj.setNKScriptValue(null);
                             result = true;
@@ -248,14 +300,14 @@ namespace io.nodekit.NKScripting
                 {
                     // Create instance
                     var args = body["$operand"] as object[];
-                    var ns = String.Format("{0}[{1}]", principal.ns, target);
-                    instances[target] = new NKScriptValueNative(ns, this, args, true);
+                    var nsInstance = String.Format("{0}[{1}]", this.ns, target);
+                    _instances[target] = new NKScriptValueNative(nsInstance, this, target, args, true);
                     result = true;
                 }
                 else
                 {
                     // else Unknown opcode
-                    var obj = principal.plugin as NKScriptMessageHandler;
+                    var obj = _principal.plugin as NKScriptMessageHandler;
                     if (obj != null)
                     {
                         result = obj.didReceiveScriptMessageSync(message);
@@ -275,16 +327,17 @@ namespace io.nodekit.NKScripting
             }
 
             //thread static
-            NKScriptChannel._currentContext = null;
+            NKScriptValue._currentContext = null;
             return result;
         }
+
 
         private string _generateMethod(string key, string item, bool prebind)
         {
             string stub = String.Format("NKScripting.invokeNative.bind({0}, '{1}')", item, key);
             return prebind ? String.Format("{0};", stub) : "function(){return " + stub + ".apply(null, arguments);}";
         }
-        
+
         private string _generateStubs<T>(NKScriptExportProxy<T> export, string name) where T : class
         {
             bool prebind = !typeInfo.ContainsConstructor("");
@@ -305,8 +358,8 @@ namespace io.nodekit.NKScripting
                     }
                     else
                     {
-                        var value = context.NKserialize(principal.valueForPropertyNative(member.name));
-                        stub = string.Format("NKScripting.defineProperty(exports, '{0}', {1}, {1});", member.name, value, (member.setter != null).ToString().ToLower());
+                        var value = context.NKserialize(_principal.valueForPropertyNative(member.name));
+                        stub = string.Format("NKScripting.defineProperty(exports, '{0}', {1}, {2});", member.name, value, (member.setter != null).ToString().ToLower());
                     }
                 }
                 else
@@ -327,23 +380,24 @@ namespace io.nodekit.NKScripting
             }
 
             var localstub = export.rewriteGeneratedStub(stubs, ".local");
-            var globalstubber = "(function(exports) {\n" + localstub + "})(NKScripting.createPlugin('" + id + "', '" + principal.ns + "', " + basestub + "));\n";
+            var globalstubber = "(function(exports) {\n" + localstub + "})(NKScripting.createPlugin('" + id + "', '" + ns + "', " + basestub + "));\n";
 
             return export.rewriteGeneratedStub( globalstubber, ".global");
         }
      
     }
 
+    // Object extensions for NKScriptChannel
     internal static class objectNKScriptChannelExtension
     {
-        private static Dictionary<object, NKScriptChannel> dictionary = new Dictionary<object, NKScriptChannel>();
+        private static Dictionary<object, NKScriptChannelProtocol> dictionary = new Dictionary<object, NKScriptChannelProtocol>();
 
-        public static NKScriptChannel getNKScriptChannel(this object obj)
+        public static NKScriptChannelProtocol getNKScriptChannel(this object obj)
         {
-            return dictionary[obj];
+            return dictionary.ContainsKey(obj) ? dictionary[obj] : null;
         }
 
-        internal static void setNKScriptChannel(this object obj, NKScriptChannel value)
+        internal static void setNKScriptChannel(this object obj, NKScriptChannelProtocol value)
         {
             if (value != null)
                 dictionary[obj] = value;

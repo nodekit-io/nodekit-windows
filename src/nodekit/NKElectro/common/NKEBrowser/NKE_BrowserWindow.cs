@@ -35,7 +35,8 @@ namespace io.nodekit.NKElectro
 
         private int _id = 0;
         private string _type = "";
-        private NKE_WebContentsBase _webContents;
+        private NKE_WebContents _webContents;
+        protected NKEventEmitter globalEvents = NKEventEmitter.global;
 
         public NKE_BrowserWindow() { }
 
@@ -47,11 +48,24 @@ namespace io.nodekit.NKElectro
                 options = new Dictionary<string, object>();
 
             windowArray[_id] = this;
-
-            createBrowserWindow(options);
+            try
+            {
+                _webContents = new NKE_WebContents(this);
+                var _ = createBrowserWindow(options);  
+            }
+            catch (Exception ex)
+            {
+                NKLogging.log("!Error Creating Window" + ex.Message);
+                NKLogging.log(ex.StackTrace);
+            }
+            events.on<int>("NKE.DidFinishLoad", (e, id) =>
+            {
+                this.getNKScriptValue().invokeMethod("emit", new[] { "did-finish-load" });
+            });
+   
         }
 
-        private void createBrowserWindow(Dictionary<string, object> options)
+        private async Task createBrowserWindow(Dictionary<string, object> options)
         {
             // PARSE & STORE OPTIONS
             if (options.ContainsKey(NKEBrowserOptions.nkBrowserType))
@@ -66,14 +80,9 @@ namespace io.nodekit.NKElectro
                 case NKEBrowserType.UIWebView:
                     throw new PlatformNotSupportedException();
                 case NKEBrowserType.MSWebView:
-                    NKLogging.log("+creating Edge Renderer");
-                   createWebView(options);
-                   _type = NKEBrowserType.MSWebView.ToString();
-               //     _webContents = new NKE_WebContentsMS(this);
-                //    if (options.itemOrDefault<bool>("nk.InstallElectro", true))
-                //        await Renderer.addElectro(context);
-                     NKLogging.log(string.Format("+E{0} Renderer Ready", _id));        
-                    break;
+                     NKLogging.log("+creating Native (Edge/Trident) Renderer");
+                 await _webContents.createWebView(options);
+                        break;
                 default:
                     break;
             }
@@ -84,7 +93,7 @@ namespace io.nodekit.NKElectro
 
         internal int id { get { return _id; } }
         internal string type { get { return _type; } }
-        internal NKE_WebContentsBase webContents { get { return _webContents; } }
+        public NKE_WebContents webContents { get { return _webContents; } }
 
         #region NKScriptExport
         private static string defaultNamespace { get { return "io.nodekit.electro.BrowserWindow"; } }
@@ -105,42 +114,34 @@ namespace io.nodekit.NKElectro
         {
             return key == ".ctor:options" ? "" : name;
         }
+        #endregion
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
-            NKLogging.log("DISPOSING BROWSERWINDOW");
             if (!disposedValue)
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    if (_webContents != null)
+                    {
+                        _webContents.Dispose();
+                        _webContents = null;
+                    }
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
+                this.getNKScriptValue().Dispose();
 
                 disposedValue = true;
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~NKE_BrowserWindow() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
         }
-        #endregion
         #endregion
 
     }

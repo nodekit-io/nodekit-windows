@@ -28,7 +28,7 @@ var protocol = io.nodekit.electro.protocol
 
 protocol._init = function() {
     this.callbacks = {}
-    this.on('nk.IPCReplytoRenderer', function(sender, channel, replyId, result) {
+    this.on('NKE.IPCReplytoRenderer', function(sender, channel, replyId, result) {
             callbacks[replyId].call(self, result);
             delete callbacks[replyId];
             });

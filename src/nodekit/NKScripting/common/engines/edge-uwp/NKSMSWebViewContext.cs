@@ -65,7 +65,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
 
         private void _webView_DOMContentLoaded(WebView sender, WebViewDOMContentLoadedEventArgs args)
         {
-            var ignore = this.completeInitialization();
+            var _ = this.completeInitialization();
         }
 
         protected override Task InjectScript(NKScriptSource script)
@@ -121,8 +121,8 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
 
         protected override async Task LoadPlugin<T>(T plugin, string ns, Dictionary<string, object> options) 
         {
-            bool mainThread = (bool)options["MainThread"];
-            NKScriptExportType bridge = (NKScriptExportType)options["PluginBridge"];
+            bool mainThread = (bool)options["NKS.MainThread"];
+            NKScriptExportType bridge = (NKScriptExportType)options["NKS.PluginBridge"];
 
             switch (bridge)
             {

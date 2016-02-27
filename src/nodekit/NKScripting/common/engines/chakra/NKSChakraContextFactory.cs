@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 #if WINDOWS_UWP
 namespace io.nodekit.NKScripting.Engines.Chakra
 #elif WINDOWS_WIN32
-namespace io.nodekit.NKScripting.Engines.ChakraCore
+namespace io.nodekit.NKScripting.Engines.Chakra
 #endif
 {
     public class NKSChakraContextFactory
@@ -23,19 +23,14 @@ namespace io.nodekit.NKScripting.Engines.ChakraCore
 
             syncContext = new SingleThreadSynchronizationContext();
 
-            Task.Factory.StartNew(() => {syncContext.RunOnCurrentThread(); }, TaskCreationOptions.LongRunning );
-            var tcs = new TaskCompletionSource<NKScriptContext>();
-
+            Task.Factory.StartNew(() => { syncContext.RunOnCurrentThread(); }, TaskCreationOptions.LongRunning);
             var oldSyncContext = SynchronizationContext.Current;
             SynchronizationContext.SetSynchronizationContext(syncContext);
             var taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(oldSyncContext);
 
-            syncContext.Post((state) =>
-            {
-               
-            }, null);
-           
+            syncContext.Post((s) => { }, null);
+
             return Task.Factory.StartNew(() =>
              {
                  if (options == null)
@@ -56,11 +51,13 @@ namespace io.nodekit.NKScripting.Engines.ChakraCore
                  item["JSVirtualMachine"] = runtime;  // if future non-shared runtimes required;
                  item["context"] = context;
 
-                return context.completeInitialization();
+                 return context.completeInitialization();
              }, Task.Factory.CancellationToken, TaskCreationOptions.LongRunning, taskScheduler).Unwrap();
         }
     }
+}
 
+namespace io.nodekit.NKScripting { 
 
     /// <summary>Provides a SynchronizationContext that's single-threaded.</summary>
     internal sealed class SingleThreadSynchronizationContext : SynchronizationContext
