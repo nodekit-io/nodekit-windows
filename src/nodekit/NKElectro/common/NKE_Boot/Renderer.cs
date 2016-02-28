@@ -32,7 +32,13 @@ namespace io.nodekit.NKElectro
             var scriptsource = new NKScriptSource(script, "io.nodekit.electro/lib-electro/_nke_renderer.js", "io.nodekit.electro.renderer");
             await context.NKinjectScript(scriptsource);
 
-            // NKE_IpcRenderer.attachTo(context);
+            var optionsDefault = new Dictionary<string, object>
+            {
+                ["NKS.PluginBridge"] = NKScriptExportType.NKScriptExport
+            };
+
+            await NKE_IpcRenderer.attachToContext(context, optionsDefault);
+
         }
     }
 }

@@ -41,13 +41,11 @@ namespace io.nodekit.NKElectro
             return Task.FromResult<object>(null);
         }
 
-        // Replies to renderer to the window events queue for that renderer
+        // Forward replies to renderer to the events queue for that renderer, using global queue since we may be cross process
         public static void ipcReply(int dest, string channel, string replyId, object result)
         {
             var payload = new NKEvent(0, channel, replyId, new [] { result });
-            var window = NKE_BrowserWindow.fromId(dest) as NKE_BrowserWindow;
-            if (window == null) return;
-            window.events.emit("NKE.IPCReplytoRenderer", payload);
+            globalEvents.emit("NKE.IPCReplytoRenderer." + dest.ToString(), payload, true);
         }
 
         public static void ipcSend(string channel, string replyId, object[] arg)
@@ -57,6 +55,11 @@ namespace io.nodekit.NKElectro
 
 
         #region NKScriptExport
+        internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
+        {
+            return context.NKloadPlugin(typeof(NKE_IpcMain), null, options);
+        }
+
         private static string defaultNamespace { get { return "io.nodekit.electro.ipcMain"; } }
 
         private static string rewriteGeneratedStub(string stub, string forKey)
@@ -64,7 +67,7 @@ namespace io.nodekit.NKElectro
             switch (forKey)
             {
                 case ".global":
-                    var appjs = NKStorage.getResource(typeof(NKE_IpcMain), "ipc-main.js", "lib_electro");
+                    var appjs = NKStorage.getResource(typeof(NKE_IpcMain), "ipcMain.js", "lib_electro");
                     return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
                 default:
                     return stub;

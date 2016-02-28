@@ -65,6 +65,20 @@ namespace io.nodekit.NKElectro
             });
         }
 
+        // Messages to renderer are sent to the window events queue for that renderer which will be in same process as ipcRenderer
+        public void ipcSend(string channel, string replyId, object[] arg)
+        {
+            var payload = new NKEvent(0, channel, replyId, arg);
+            _browserWindow.events.emit("NKE.IPCtoRenderer", payload);
+        }
+
+        // Replies to renderer to the window events queue for that renderer
+        public void ipcReply(int dest, string channel, string replyId, object result)
+        {
+            var payload = new NKEvent(0, channel, replyId, new[] { result });
+            _browserWindow.events.emit("NKE.IPCReplytoRenderer", payload);
+        }
+
         #region NKScriptExport
         private static string defaultNamespace { get { return "io.nodekit.electro.WebContents"; } }
 

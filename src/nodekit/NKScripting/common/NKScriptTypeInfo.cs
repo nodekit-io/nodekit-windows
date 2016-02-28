@@ -281,7 +281,7 @@ namespace io.nodekit.NKScripting
 
         public static bool ContainsMethod(this IList<NKScriptTypeInfoMemberInfo> list, string item)
         {
-            return (list.Where(p => { return ((p.isMethod()) && (p.name == item)); }).Count() > 0);
+            return (list.Where(p => { return ((p.isMethod()) && (p.key == item)); }).Count() > 0);
         }
 
         public static bool ContainsConstructor(this IList<NKScriptTypeInfoMemberInfo> list, string item)

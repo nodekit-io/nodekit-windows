@@ -30,6 +30,11 @@ namespace io.nodekit.NKElectro
 
         #region NKScriptExport
 
+        internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
+        {
+             return context.NKloadPlugin(typeof(NKE_App), null, options);
+        }
+
         private static string defaultNamespace { get { return "io.nodekit.electro.app";  } }
         private static int windowCount;
 
@@ -196,14 +201,11 @@ namespace io.nodekit.NKElectro
         {
             throw new NotImplementedException();
         }
-
     
         public static string getLocale()
         {
             throw new NotImplementedException();
         }
-
-   
    
         public static void makeSingleInstance()
         {
@@ -226,9 +228,6 @@ namespace io.nodekit.NKElectro
             throw new NotImplementedException();
         }
 
-
-
-        // Event: 'window-all-closed'
         // Event: 'before-quit'
         // Event: 'will-quit'
         // Event: 'quit'

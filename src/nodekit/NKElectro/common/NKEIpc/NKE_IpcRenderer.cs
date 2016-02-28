@@ -29,45 +29,49 @@ namespace io.nodekit.NKElectro
         private static NKEventEmitter globalEvents = NKEventEmitter.global;
         internal NKE_BrowserWindow _window;
         internal int _id;
-     
+       
         public NKE_IpcRenderer(int id)
         {
             _id = id;
+            // IPC Renderer runs in same process as NKE BrowserWindow so can get actual host object
             _window = NKE_BrowserWindow.fromId(id);
 
+            string ids = id.ToString();
 
+            // Renderer IPC messags coem in on WebContents object running in same process
             _window.events.on<NKEvent>("NKE.IPCtoRenderer", (e, item) =>
             {
                 this.getNKScriptValue().invokeMethod("emit", new object[] { "NKE.IPCtoRenderer", item.sender, item.channel, item.replyId, item.arg });
             });
 
-            _window.events.on<NKEvent>("NKE.IPCReplytoRenderer", (e, item) =>
+            // Main process replies to renderer come in on global events queue which can run cross channel
+            globalEvents.on<NKEvent>("NKE.IPCReplytoRenderer." + ids, (e, item) =>
             {
                 this.getNKScriptValue().invokeMethod("emit", new object[] { "NKE.IPCReplytoRenderer", item.sender, item.channel, item.replyId, item.arg });
             });
-
-            globalEvents.on<NKEvent>("NKE.IPCtoMain", (e, item) =>
-            {
-                this.getNKScriptValue().invokeMethod("emit", new object[] { "NKE.IPCtoMain", item.sender, item.channel, item.replyId, item.arg });
-            });
-
         }
 
-        // Messages to main are sent to the global events queue
+        // Messages to main are sent to the global events queue, potentially cross-process
         public void ipcSend(string channel, string replyId, object[] arg)
         {
             var payload = new NKEvent(0, channel, replyId, arg);
-            globalEvents.emit("NKE.IPCtoMain", payload);
+            globalEvents.emit("NKE.IPCtoMain", payload, true);
         }
 
-        // Replies to main are sent directly to the webContents window that sent the original message
+        // Replies to main are sent directly to the webContents window in this local process that sent the original message
         public void ipcReply(int dest, string channel, string replyId, object result)
         {
             var payload = new NKEvent(0, channel, replyId, new[] { result });
-            _window.events.emit("NKE.IPCReplytoMain", payload);
+            _window.events.emit("NKE.IPCReplytoMain", payload, false);
         }
 
         #region NKScriptExport
+        internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
+        {
+            var principal = new  NKE_IpcRenderer(context.NKid);
+            return context.NKloadPlugin(principal, null, options);
+        }
+
         private static string defaultNamespace { get { return "io.nodekit.electro.ipcRenderer"; } }
 
         private static string rewriteGeneratedStub(string stub, string forKey)
@@ -75,7 +79,7 @@ namespace io.nodekit.NKElectro
             switch (forKey)
             {
                 case ".global":
-                    var appjs = NKStorage.getResource(typeof(NKE_IpcRenderer), "ipc-renderer.js", "lib_electro");
+                    var appjs = NKStorage.getResource(typeof(NKE_IpcRenderer), "ipcRenderer.js", "lib_electro");
                     return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
                 default:
                     return stub;

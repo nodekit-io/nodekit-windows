@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-win32\NKE_BrowserWindow_win32_wpf.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-win32\NKE_BrowserWindow_win32_wf.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEBrowser\platform-win32\NKE_WebContents_win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKEDialog\NKEDialog_win32_wf.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEDialog\NKEDialog_win32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEDialog\NKEDialog_uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKEIpc\NKE_IpcMain.cs" />

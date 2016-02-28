@@ -65,13 +65,9 @@ namespace io.nodekit.NKElectro
             else
                 await NKE_WebContents.attachToContext(context, optionsMulti);
 
-  
-            // await context.NKloadPlugin(typeof(NKEDialog), "io.nodekit.electro.dialog", options);
+            await NKE_Dialog.attachToContext(context, optionsMain);
+            await NKE_IpcMain.attachToContext(context, optionsDefault);
 
-            // NKE_BrowserWindow.attachTo(context);
-            // NKE_WebContentsBase.attachTo(context);
-            // NKE_Dialog.attachTo(context);
-            // NKE_IpcMain.attachTo(context);
             // NKE_Menu.attachTo(context);
             // NKE_Protocol.attachTo(context);
         }

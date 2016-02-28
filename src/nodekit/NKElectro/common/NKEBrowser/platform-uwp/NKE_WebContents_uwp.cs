@@ -81,22 +81,6 @@ namespace io.nodekit.NKElectro
             _isLoading = true;
         }
 
-        // Messages to renderer are sent to the window events queue for that renderer
-        public void ipcSend(string channel, string replyId, object[] arg)
-        {
-            var payload = new NKEvent(0, channel, replyId, arg);
-            _browserWindow.events.emit("NKE.IPCtoRenderer", payload);
-
-            throw new NotImplementedException();
-        }
-
-        // Replies to renderer to the window events queue for that renderer
-        public void ipcReply(int dest, string channel, string replyId, object result)
-        {
-            var payload = new NKEvent(0, channel, replyId, new[] { result });
-            _browserWindow.events.emit("NKE.IPCReplytoRenderer", payload);
-        }
-
         public void loadURL(string url, Dictionary<string, object> options)
         {
             var httpReferrer = options.itemOrDefault<string>("httpReferrer");

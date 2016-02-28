@@ -1,4 +1,4 @@
-﻿#if WINDOWS_WIN32_WPF
+﻿#if WINDOWS_WIN32_WF
 /*
 * nodekit.io
 *
@@ -21,7 +21,7 @@
 using System;
 using System.Collections.Generic;
 using io.nodekit.NKScripting;
-using System.Windows;
+using System.Windows.Forms;
 using System.Threading.Tasks;
 
 namespace io.nodekit.NKElectro
@@ -30,7 +30,7 @@ namespace io.nodekit.NKElectro
     {
         private NKEventEmitter events = NKEventEmitter.global;
 
-#region 
+#region NKScriptExport
         internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
         {
             return context.NKloadPlugin(new NKE_Dialog(), null, options);
@@ -44,52 +44,56 @@ namespace io.nodekit.NKElectro
             throw new NotImplementedException();
         }
 
-        public void showSaveDialog(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
+       public void showSaveDialog(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
         {
             throw new NotImplementedException();
         }
 
-        public void showMessageBox(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
+       public void showMessageBox(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
         {
             string caption = NKOptions.itemOrDefault(options, "title", "");
             string message = NKOptions.itemOrDefault(options, "message", "");
             string [] buttonArray = NKOptions.itemOrDefault(options, "buttons", new string[] { "OK" });
             string detail = NKOptions.itemOrDefault(options, "detail", "");
 
-            MessageBoxImage icon;
+            MessageBoxIcon icon;
             switch (detail)
             {
                 case "info":
-                    icon = MessageBoxImage.Information;
+                    icon = MessageBoxIcon.Information;
                     break;
                 case "warning":
-                    icon = MessageBoxImage.Warning;
+                    icon = MessageBoxIcon.Warning;
                     break;
                 case "error":
-                    icon = MessageBoxImage.Error;
+                    icon = MessageBoxIcon.Error;
                     break;
                 default:
-                    icon = MessageBoxImage.None;
+                    icon = MessageBoxIcon.None;
                     break;
             }
             
-            MessageBoxButton buttons = buttons = MessageBoxButton.OK;
+            MessageBoxButtons buttons = buttons = MessageBoxButtons.OK;
 
             if ((Array.IndexOf(buttonArray, "OK") > -1) && (Array.IndexOf(buttonArray, "Cancel") > -1))
-                buttons = MessageBoxButton.OKCancel;
+                buttons = MessageBoxButtons.OKCancel;
             else if (Array.IndexOf(buttonArray, "OK") > -1)
-                   buttons = MessageBoxButton.OK;
-              else if ((Array.IndexOf(buttonArray, "Yes") > -1) && (Array.IndexOf(buttonArray, "No") > -1) && (Array.IndexOf(buttonArray, "Cancel") > -1))
-                buttons = MessageBoxButton.YesNoCancel;
+                   buttons = MessageBoxButtons.OK;
+            else if ((Array.IndexOf(buttonArray, "Abort") > -1) && (Array.IndexOf(buttonArray, "Retry") > -1) && (Array.IndexOf(buttonArray, "Ignore") > -1))
+                buttons = MessageBoxButtons.AbortRetryIgnore;
+            else if ((Array.IndexOf(buttonArray, "Yes") > -1) && (Array.IndexOf(buttonArray, "No") > -1) && (Array.IndexOf(buttonArray, "Cancel") > -1))
+                buttons = MessageBoxButtons.YesNoCancel;
             else if ((Array.IndexOf(buttonArray, "Yes") > -1) && (Array.IndexOf(buttonArray, "No") > -1))
-                buttons = MessageBoxButton.YesNo;
-      
-            MessageBoxResult result = MessageBox.Show(message, caption, buttons, icon);
+                buttons = MessageBoxButtons.YesNo;
+            else if ((Array.IndexOf(buttonArray, "Retry") > -1) && (Array.IndexOf(buttonArray, "Cancel") > -1))
+                buttons = MessageBoxButtons.RetryCancel;
+
+            DialogResult result = MessageBox.Show(message, caption, buttons, icon);
             if (callback != null)
                  callback.callWithArguments(new object[] { result.ToString() });
         }
 
-        public void showErrorBox(string title, string content)
+       public void showErrorBox(string title, string content)
         {
             showMessageBox(null, new Dictionary<string, object> { ["title"] = title, ["message"] = content, ["detail"] = "error" }, null);
         }

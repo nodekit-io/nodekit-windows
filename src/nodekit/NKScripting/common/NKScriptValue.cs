@@ -201,7 +201,7 @@ namespace io.nodekit.NKScripting
                 var num = Convert.ToInt32(dict["$ref"]);
                 return new NKScriptValue(num, _context, this);
             }
-            if (dict.ContainsKey("$ns"))
+            if ((dict != null) && dict.ContainsKey("$ns"))
             {
                 var ns = dict["$ns"] as String;
                 if (ns != null)

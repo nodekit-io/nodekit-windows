@@ -21,8 +21,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using io.nodekit;
 using io.nodekit.NKScripting;
+using Windows.UI.Popups;
 
 namespace io.nodekit.NKElectro
 {
@@ -31,27 +31,49 @@ namespace io.nodekit.NKElectro
         private NKEventEmitter events = NKEventEmitter.global;
 
         #region NKScriptExport
+
+        internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
+        {
+            return context.NKloadPlugin(new NKE_Dialog(), null, options);
+        }
+
         private static string defaultNamespace { get { return "io.nodekit.electro.dialog"; } }
         #endregion
 
-        void showOpenDialog(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
+        public void showOpenDialog(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
         {
             throw new NotImplementedException();
         }
 
-        void showSaveDialog(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
+        public void showSaveDialog(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
         {
             throw new NotImplementedException();
         }
 
-        void showMessageBox(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
+        public void showMessageBox(NKE_BrowserWindow browserWindow, Dictionary<string, object> options, NKScriptValue callback)
         {
-            throw new NotImplementedException();
+            string title = NKOptions.itemOrDefault(options, "title", "");
+            string message = NKOptions.itemOrDefault(options, "message", "");
+            string[] buttonArray = NKOptions.itemOrDefault(options, "buttons", new string[] { "OK" });
+            string detail = NKOptions.itemOrDefault(options, "detail", "");
+
+            MessageDialog msgbox = new MessageDialog(message, title);
+
+            msgbox.Commands.Clear();
+            int count = 0;
+            foreach (var item in buttonArray)
+            {
+                msgbox.Commands.Add(new UICommand { Label = item, Id = count++ });
+            }
+
+            var t = msgbox.ShowAsync();
+            if (callback != null)
+                t.AsTask().ContinueWith((u) => callback.callWithArguments(new object[] { u.Result.Label }));
         }
 
-        void showErrorBox(string title, string content)
+        public void showErrorBox(string title, string content)
         {
-            throw new NotImplementedException();
+            showMessageBox(null, new Dictionary<string, object> { ["title"] = title, ["message"] = content, ["detail"] = "error" }, null);
         }
     }
 }
