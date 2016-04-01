@@ -58,7 +58,7 @@ namespace io.nodekit.NKElectro
             this.init_IPC();
 
             this._type = NKEBrowserType.MSWebView.ToString();
-            if (options.itemOrDefault<bool>("nk.InstallElectro", true))
+            if (options.itemOrDefault<bool>("NKE.InstallElectro", true))
                 await Renderer.addElectro(_browserWindow.context, options);
             NKLogging.log(string.Format("+E{0} Renderer Ready", _id));
 

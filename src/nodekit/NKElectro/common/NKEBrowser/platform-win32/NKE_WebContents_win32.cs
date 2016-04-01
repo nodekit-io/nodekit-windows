@@ -69,7 +69,14 @@ namespace io.nodekit.NKElectro
                 this.init_IPC();
 
                 _browserWindow.context = await NKSMSWebBrowserContext.getScriptContext(_id, webView, options);
+
+                this._type = NKEBrowserType.MSWebView.ToString();
+                if (options.itemOrDefault<bool>("NKE.InstallElectro", true))
+                    await Renderer.addElectro(_browserWindow.context, options);
+                NKLogging.log(string.Format("+E{0} Renderer Ready", _id));
+
                 _browserWindow.events.emit("NKE.DidFinishLoad", _id);
+      
             }
             catch (Exception ex)
             {

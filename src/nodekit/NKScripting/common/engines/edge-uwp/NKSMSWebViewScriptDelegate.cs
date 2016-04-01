@@ -38,7 +38,7 @@ namespace io.nodekit.NKScripting.Engines.MSWebView
         public void NKaddScriptMessageHandler(NKScriptMessageHandler scriptMessageHandler, string name)
         {
             msgHandlers.Add(name, scriptMessageHandler);
-            var script = "NKScripting.messageHandlers." + name + " = NKScripting.getMessageHandlers('" + name + "');";
+            var script = "NKScripting.messageHandlers['" + name + "'] = NKScripting.getMessageHandlers('" + name + "');";
             context.NKevaluateJavaScript(script, "");
         }
 

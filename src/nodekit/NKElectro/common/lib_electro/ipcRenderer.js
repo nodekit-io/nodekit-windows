@@ -23,7 +23,7 @@
 // event "emit", withArguments: ["NKE.IPCtoRenderer", item.sender, item.channel, item.replyId, item.arg], completionHandler: nil)
 // evet "emit", withArguments: ["NKE.IPCReplytoRenderer", item.sender, item.channel, item.replyId, item.arg[0]],
 
-var ipcRenderer = io.nodekit.electro.ipcRenderer
+var ipcRenderer = io.nodekit.electro.ipcRenderer;
 
 ipcRenderer._init = function() {
     
@@ -47,7 +47,7 @@ ipcRenderer._init = function() {
             Object.defineProperty(event, 'returnValue', {
                                   set: function(result) { this.sendReply(result); },
                                   enumerable: true,
-                                  configurable: true,
+                                  configurable: true
                                   });
             }
             
