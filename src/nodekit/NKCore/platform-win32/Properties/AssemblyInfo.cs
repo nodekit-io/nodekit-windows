@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("io.nodekit.NKElectro")]
+[assembly: AssemblyTitle("io.nodekit.NKCore")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("io.nodekit.NKElectro")]
+[assembly: AssemblyProduct("io.nodekit.NKCore")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("3710751b-a98d-41f2-b07c-ee0963f103e7")]
+[assembly: Guid("e3132b0d-de16-4bc5-bcee-71927c711a37")]
 
 // Version information for an assembly consists of the following four values:
 //
