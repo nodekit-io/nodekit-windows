@@ -24,8 +24,8 @@ process.platform = process.platform || "darwin"
 process.type = "renderer"
 process.versions = {}
 
-process.waitFor = function(signal) {
-    console.log(window.prompt("nk.Signal", signal));
+process.waitFor = function (signal) {
+     window.prompt("nk.Signal", signal);
 }
 
 var _require = this.require || function(){}

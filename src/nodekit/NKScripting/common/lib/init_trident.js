@@ -27,8 +27,8 @@ NKScripting.serialize = true;
 
 NKScripting.getMessageHandlers = function (name) {
     return {
-        'postMessage': window.external.didReceiveScriptMessage.bind(null, name),
-        'postMessageSync': window.external.didReceiveScriptMessageSync.bind(null, name)
+        'postMessage': function (message) { window.external.didReceiveScriptMessage(name, message) },
+        'postMessageSync': function (message) { window.external.didReceiveScriptMessageSync(name, message) }
     };
 }
 

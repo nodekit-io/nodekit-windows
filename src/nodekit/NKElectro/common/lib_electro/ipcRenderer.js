@@ -95,4 +95,4 @@ ipcRenderer.send = function() {
     // TO DO: expire callback table entry in case of non response
 };
 
-ipcRenderer._init();
+//ipcRenderer._init();
