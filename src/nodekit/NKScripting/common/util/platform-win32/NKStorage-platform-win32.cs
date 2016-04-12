@@ -17,6 +17,7 @@
 * limitations under the License.
 */
 
+using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -27,14 +28,55 @@ namespace io.nodekit
     {
         public static string getResource(System.Type t, string name, string folder)
         {
-            string source = null;
-            var resourceNamespace = t.Namespace;
+            return getResource(t, null, name, folder);
+        }
 
-            var assembly = t.GetTypeInfo().Assembly;
-            var resources = assembly.GetManifestResourceNames();
+        public static Task<string> getResourceAsync(Type t, string name, string folder)
+        {
+            return getResourceAsync(t, null, name, folder);
+        }
 
-            // try embedded resources
-            var stream = assembly.GetManifestResourceStream(resourceNamespace + "." + folder + "." + name);
+        public async static Task<string> getResourceAsync(Type t1, Type t2, string name, string folder)
+        {
+            string source;
+            // First try embedded resources
+            var stream = t1.GetTypeInfo().Assembly.GetManifestResourceStream(t1.Namespace + "." + folder + "." + name);
+
+            if (stream == null && t2 != null)
+                stream = t2.GetTypeInfo().Assembly.GetManifestResourceStream(t2.Namespace + "." + folder + "." + name);
+
+            if (stream != null)
+            {
+                using (StreamReader streamReader = new StreamReader(stream))
+                {
+                    source = await streamReader.ReadToEndAsync();
+                }
+            }
+            else
+            {
+
+                // Else get from content folder in installed location
+                var root = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var lib = System.IO.Path.Combine(root, folder);
+                var file = System.IO.Path.Combine(root, name);
+
+                using (StreamReader streamReader = new StreamReader(file))
+                {
+                    source = await streamReader.ReadToEndAsync();
+                }
+            }
+
+            return source;
+        }
+
+        public static string getResource(Type t1, Type t2, string name, string folder)
+        {
+            string source;
+            // First try embedded resources
+            var stream = t1.GetTypeInfo().Assembly.GetManifestResourceStream(t1.Namespace + "." + folder + "." + name);
+
+            if (stream == null && t2 != null)
+                stream = t2.GetTypeInfo().Assembly.GetManifestResourceStream(t2.Namespace + "." + folder + "." + name);
 
             if (stream != null)
             {
@@ -43,14 +85,23 @@ namespace io.nodekit
                     source = streamReader.ReadToEnd();
                 }
             }
-      
+            else
+            {
+
+                // Else get from content folder in installed location
+                var root = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var lib = System.IO.Path.Combine(root, folder);
+                var file = System.IO.Path.Combine(root, name);
+
+                using (StreamReader streamReader = new StreamReader(file))
+                {
+                    source = streamReader.ReadToEnd();
+                }
+            }
+
             return source;
         }
-
-        public static Task<string> getResourceAsync(System.Type t, string name, string folder)
-        {
-            return Task.FromResult(getResource(t, name, folder));
-        }
     }
+
 }
 #endif

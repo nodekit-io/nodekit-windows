@@ -348,7 +348,19 @@ namespace io.nodekit.NKScripting
                 if ((member.isMethod()) && (member.name != ""))
                 {
                     var methodStr = _generateMethod(String.Format("{0}{1}", member.key, member.NKScriptingjsType), prebind ? "exports" : "this", prebind);
-                    stub = string.Format("exports.{0} = {1}", member.name, methodStr);
+                    if (member.isTask)
+                    {
+                        stub = string.Format("exports.{0} = {1}", member.name + "Sync", methodStr);
+                        stubs += export.rewriteGeneratedStub(stub, member.name + "Sync") + "\n";
+
+                        stub = string.Format("exports.{0} = {1}", member.name + "Async", methodStr);
+                        stubs += export.rewriteGeneratedStub(stub, member.name + "Async") + "\n";
+                    }
+                    else
+                    {
+                        stub = string.Format("exports.{0} = {1}", member.name, methodStr);
+                        stubs += export.rewriteGeneratedStub(stub, member.name) + "\n";
+                    }
                 }
                 else if (member.isProperty())
                 {
@@ -361,12 +373,12 @@ namespace io.nodekit.NKScripting
                         var value = context.NKserialize(_principal.valueForPropertyNative(member.name));
                         stub = string.Format("NKScripting.defineProperty(exports, '{0}', {1}, {2});", member.name, value, (member.setter != null).ToString().ToLower());
                     }
+                    stubs += export.rewriteGeneratedStub(stub, member.name) + "\n";
                 }
                 else
                     continue;
 
-                stubs += export.rewriteGeneratedStub(stub, member.name) + "\n";
-            }
+             }
 
             string basestub;
             if (typeInfo.ContainsConstructor(""))

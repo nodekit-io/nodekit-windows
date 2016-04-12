@@ -187,6 +187,7 @@ namespace io.nodekit.NKScripting
             _getter = null;
             _setter = null;
             isVoid = false;
+            isTask = false;
             memberType = MemberType.Constructor;
         }
 
@@ -200,6 +201,7 @@ namespace io.nodekit.NKScripting
             _getter = null;
             _setter = null;
             isVoid = (method.ReturnType == typeof(void));
+            isTask = (typeof(System.Threading.Tasks.Task).IsAssignableFrom(method.ReturnType));
             memberType = MemberType.Method;
         }
 
@@ -215,6 +217,7 @@ namespace io.nodekit.NKScripting
             _method = null;
             arity = 0;
             isVoid = false;
+            isTask = false;
             memberType = MemberType.Property;
         }
 
@@ -224,6 +227,7 @@ namespace io.nodekit.NKScripting
         private MethodInfo _setter;
         internal Int32 arity;
         internal bool isVoid;
+        internal bool isTask;
         internal string name;
         internal string key;
 

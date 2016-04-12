@@ -110,6 +110,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\NKCore_platform_universal.rd.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NKScripting\platform-universal\NKScripting-platform-universal.csproj">
+      <Project>{594c5df0-10b2-4afd-b378-5e07901655c9}</Project>
+      <Name>NKScripting-platform-universal</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\common\io.nodekit.NKCore.shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

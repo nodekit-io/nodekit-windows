@@ -214,11 +214,22 @@ namespace io.nodekit.NKScripting
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
             var member = _channel.typeInfo.Item(method);
+            if (member == null)
+                member = _channel.typeInfo.Item(method + "Async");
+
             if (member != null)
             {
                 var mi = member.method;
                 object[] argsWrapped = args.Select(wrapScriptObject).ToArray<object>();
-                return proxy.callAsync(mi, argsWrapped);
+
+                if (member.isTask)
+                {
+                    return proxy.callAsync(mi, argsWrapped).ContinueWith<object>((t) => null);
+                }
+                else
+                {
+                    return proxy.callAsync(mi, argsWrapped);
+                }
             }
             return Task.FromResult<object>(null);
         }
@@ -227,11 +238,29 @@ namespace io.nodekit.NKScripting
         {
             if (proxy == null) { throw new InvalidOperationException("Already disposed"); };
              var member = _channel.typeInfo.Item(method);
+            if (member == null)
+                member = _channel.typeInfo.Item(method + "Sync");
+
             if (member != null)
             {
                 var mi = member.method;
                 object[] argsWrapped = args.Select(wrapScriptObject).ToArray<object>();
-                return proxy.call(mi, argsWrapped);
+
+                if (member.isTask)
+                {
+                    Task t = (Task)proxy.call(mi, argsWrapped);
+                    t.Wait();
+                    if (t.IsFaulted)
+                        return null;
+                    else
+                    {
+                        return t.GetType().GetProperty("Result").GetValue(t);
+                    }
+                }
+                else
+                {
+                    return proxy.call(mi, argsWrapped);
+                }
             }
             return null;
         }
