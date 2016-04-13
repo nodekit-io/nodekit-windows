@@ -134,11 +134,11 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_core\platform\udp.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_core\_nodekit_bootstrapper.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_core\_nodekit_third_party_main.js" />
-    <None Include="$(MSBuildThisFileDirectory)NKCSocket\NKC_SocketUDP.swift" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)NKCConsole\NKC_Console.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKCCrypto\NKC_Crypto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKCFileSystem\NKC_FileStorageManifestResources.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKCFileSystem\NKC_FileSystem_win32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKCFileSystem\NKC_FileSystem_uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKCProcess\NKC_Process.cs" />
@@ -146,7 +146,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)NKCSocket\NKC_SocketUDP_uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKCSocket\NKC_SocketTCP_uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKCSocket\NKC_SocketTCP_win32.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NKCTimer\NKC_Timer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKCTimer\NKC_Timer_win32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKCTimer\NKC_Timer_uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKC_Boot\NKC_BootCore.cs" />
   </ItemGroup>
 </Project>

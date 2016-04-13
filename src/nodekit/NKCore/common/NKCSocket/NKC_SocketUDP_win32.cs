@@ -155,32 +155,45 @@ namespace io.nodekit.NKCore
         
         public void addMembership(string mcastAddr, string ifaceAddr)
         {
-            throw new NotImplementedException();
+
+            MulticastOption mcastOpt = new MulticastOption(IPAddress.Parse(mcastAddr));
+
+            // TO DO ICommsInterface 
+            if (ifaceAddr != string.Empty && ifaceAddr != null)
+                throw new NotImplementedException();
+
+            _socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mcastOpt);
         }
 
         public void dropMembership(string mcastAddr, string ifaceAddr)
         {
-            throw new NotImplementedException();
+            MulticastOption mcastOpt = new MulticastOption(IPAddress.Parse(mcastAddr));
+
+            // TO DO ICommsInterface 
+            if (ifaceAddr != string.Empty && ifaceAddr != null)
+                throw new NotImplementedException();
+
+            _socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DropMembership, mcastOpt);
         }
 
         public void setMulticastTTL(Int32 ttl)
         {
-            throw new NotImplementedException();
+            _socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, ttl);
         }
 
         public void setMulticastLoopback(bool flag)
         {
-            throw new NotImplementedException();
+            _socket.MulticastLoopback = flag;
         }
 
         public void setTTL(Int32 ttl)
         {
-            throw new NotImplementedException();
+            _socket.Ttl = (short)ttl;
         }
 
         public void setBroadcast(bool flag)
         {
-            throw new NotImplementedException();
+            _socket.EnableBroadcast = flag;
         }
 
         public void disconnect()

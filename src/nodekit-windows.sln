@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.25123.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NKCore", "NKCore", "{5AA1F381-D9B9-4906-B9A0-D9F1592F7A13}"
 EndProject
@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKCore-platform-win32", "no
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NKCore-common", "nodekit\NKCore\common\NKCore-common.shproj", "{D2BCC7E9-1B21-4E14-AB4F-D95FECB4D6F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKCore-platform-win32-wf", "nodekit\NKCore\platform-win32-wf\NKCore-platform-win32-wf.csproj", "{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		nodekit\NKElectro\common\io.nodekit.NKElectro.shared.projitems*{5c60b8bc-84d4-433b-901d-4bb7749418c5}*SharedItemsImports = 13
@@ -62,6 +64,7 @@ Global
 		nodekit\NKScripting\common\io.nodekit.NKScripting.shared.projitems*{9ce711af-7ef7-40b6-87f9-c0b70a908358}*SharedItemsImports = 13
 		nodekit\NKElectro\common\io.nodekit.NKElectro.shared.projitems*{67d51785-f307-4fe5-96fa-b8d660800d7e}*SharedItemsImports = 4
 		nodekit\NKCore\common\io.nodekit.NKCore.shared.projitems*{e3132b0d-de16-4bc5-bcee-71927c711a37}*SharedItemsImports = 4
+		nodekit\NKCore\common\io.nodekit.NKCore.shared.projitems*{9ecffb16-d877-48de-a9ef-170a89f9d12a}*SharedItemsImports = 4
 		nodekit\NKElectro\common\io.nodekit.NKElectro.shared.projitems*{97a5c81d-cff8-45c4-ba45-3465a8c6fe5e}*SharedItemsImports = 4
 		nodekit\NKElectro\common\io.nodekit.NKElectro.shared.projitems*{3710751b-a98d-41f2-b07c-ee0963f103e7}*SharedItemsImports = 4
 	EndGlobalSection
@@ -292,6 +295,22 @@ Global
 		{E3132B0D-DE16-4BC5-BCEE-71927C711A37}.Release|x64.Build.0 = Release|Any CPU
 		{E3132B0D-DE16-4BC5-BCEE-71927C711A37}.Release|x86.ActiveCfg = Release|Any CPU
 		{E3132B0D-DE16-4BC5-BCEE-71927C711A37}.Release|x86.Build.0 = Release|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Debug|ARM.Build.0 = Debug|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Debug|x64.Build.0 = Debug|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Debug|x86.Build.0 = Debug|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Release|ARM.ActiveCfg = Release|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Release|ARM.Build.0 = Release|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Release|x64.ActiveCfg = Release|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Release|x64.Build.0 = Release|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Release|x86.ActiveCfg = Release|Any CPU
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -319,5 +338,6 @@ Global
 		{2B5FC55D-6030-4CFF-A06F-9C2F47087356} = {5AA1F381-D9B9-4906-B9A0-D9F1592F7A13}
 		{E3132B0D-DE16-4BC5-BCEE-71927C711A37} = {5AA1F381-D9B9-4906-B9A0-D9F1592F7A13}
 		{D2BCC7E9-1B21-4E14-AB4F-D95FECB4D6F8} = {5AA1F381-D9B9-4906-B9A0-D9F1592F7A13}
+		{9ECFFB16-D877-48DE-A9EF-170A89F9D12A} = {5AA1F381-D9B9-4906-B9A0-D9F1592F7A13}
 	EndGlobalSection
 EndGlobal

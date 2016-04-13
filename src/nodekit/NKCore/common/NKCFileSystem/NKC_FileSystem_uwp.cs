@@ -23,18 +23,15 @@ using System.Threading.Tasks;
 using io.nodekit.NKScripting;
 using Windows.Storage;
 using System.Linq;
+using System.Reflection;
 
 namespace io.nodekit.NKCore
 {
     public sealed class NKC_FileSystem
     {
-        //  private NKEventEmitter events = NKEventEmitter.global;
-
       internal static NKC_FileSystem current = new NKC_FileSystem();
  
-
 #region NKScriptExport
-
         internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
         {
             return context.NKloadPlugin(current, null, options);
@@ -54,13 +51,33 @@ namespace io.nodekit.NKCore
             }
         }
 #endregion
-        private StorageFolder _root = Windows.ApplicationModel.Package.Current.InstalledLocation;
-        
+
+        NKC_FileStorageAdpater appResources;
+        NKC_FileStorageAdpater localResources;
+
+        public NKC_FileSystem()
+        {
+            appResources = new NKC_FileStorageManifestResources(Main.entryType);
+            localResources = new NKC_FileStorageManifestResources(typeof(NKC_FileSystem));
+        }
+
         public async Task<Dictionary<string, object>> stat(string path)
         {
+
+            if (appResources.exists(path))
+                return appResources.stat(path);
+
+            if (localResources.exists(path))
+                return localResources.stat(path);
+
             Dictionary<string, object> storageItem = new Dictionary<string, object>();
 
-            var item = await _root.TryGetItemAsync(path);
+            var foldername = System.IO.Path.GetDirectoryName(path);
+            var filename = System.IO.Path.GetFileName(path);
+
+            var folder = await StorageFolder.GetFolderFromPathAsync(foldername);
+
+            var item = await folder.TryGetItemAsync(filename);
             if (item != null)
             {
                 storageItem["birthtime"] = item.DateCreated;
@@ -86,13 +103,30 @@ namespace io.nodekit.NKCore
 
         public async Task<bool> exists(string path)
         {
-            var item = await _root.TryGetItemAsync(path);
+            if (appResources.exists(path))
+                return true;
+
+            if (localResources.exists(path))
+                return true;
+
+            var foldername = System.IO.Path.GetDirectoryName(path);
+            var filename = System.IO.Path.GetFileName(path);
+
+            var folder = await StorageFolder.GetFolderFromPathAsync(foldername);
+
+            var item = await folder.TryGetItemAsync(filename);
             return (item != null);
         }
 
         public async Task<string[]> getDirectory(string path)
         {
-            var folder = await _root.GetFolderAsync(path);
+            if (appResources.exists(path))
+                return appResources.getDirectory(path);
+
+            if (localResources.exists(path))
+                return localResources.getDirectory(path);
+
+            var folder = await StorageFolder.GetFolderFromPathAsync(path);
             var items = await folder.GetFilesAsync();
             return items.Select(t => t.Name).ToArray();
         }
@@ -105,6 +139,13 @@ namespace io.nodekit.NKCore
         public async Task<string> getContent(Dictionary<string, object> storageItem)
         {
             var path = storageItem["path"] as string;
+
+            if (appResources.exists(path))
+                return await appResources.getContent(path);
+
+            if (localResources.exists(path))
+                return await localResources.getContent(path);
+
             var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
             var source = await FileIO.ReadTextAsync(file);
 
@@ -128,16 +169,26 @@ namespace io.nodekit.NKCore
                 return false;
             }
         }
-        public async Task<string> getSource(string module)
+
+        public async Task<string> getSource(string path)
         {
-            var folder = System.IO.Path.GetDirectoryName(module);
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(module);
-            var fileExtension = System.IO.Path.GetExtension(module);
+            var foldername = System.IO.Path.GetDirectoryName(path);
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+            var fileExtension = System.IO.Path.GetExtension(path);
             if (fileExtension == String.Empty)
                 fileExtension = ".js";
 
-            var source = await NKStorage.getResourceAsync(Main.entryType, typeof(Main), fileName + fileExtension, folder);
-            
+            var pathAdjusted = System.IO.Path.Combine(foldername, fileName + fileExtension);
+
+            if (appResources.exists(pathAdjusted))
+                return await appResources.getContent(pathAdjusted);
+
+            if (localResources.exists(pathAdjusted))
+                return await localResources.getContent(pathAdjusted);
+
+            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(pathAdjusted);
+            var source = await FileIO.ReadTextAsync(file);
+
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(source);
             return System.Convert.ToBase64String(plainTextBytes);
         }
@@ -198,11 +249,6 @@ namespace io.nodekit.NKCore
             }
         }
 
-        public string getFullPathSync(string parentModule, string module)
-        {
-            var folder = System.IO.Path.GetDirectoryName(parentModule);
-            return System.IO.Path.Combine(folder, module);
-        }
     }
 }
 #endif

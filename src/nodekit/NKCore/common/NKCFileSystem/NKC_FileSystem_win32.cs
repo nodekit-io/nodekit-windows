@@ -53,9 +53,24 @@ namespace io.nodekit.NKCore
             }
         }
         #endregion
- 
+
+        NKC_FileStorageAdpater appResources;
+        NKC_FileStorageAdpater localResources;
+
+        public NKC_FileSystem()
+        {
+            appResources = new NKC_FileStorageManifestResources(Main.entryType);
+            localResources = new NKC_FileStorageManifestResources(typeof(NKC_FileSystem));
+        }
+
         public Task<Dictionary<string, object>> stat(string path)
         {
+            if (appResources.exists(path))
+                return Task.FromResult(appResources.stat(path));
+
+            if (localResources.exists(path))
+                return Task.FromResult(localResources.stat(path));
+
             Dictionary<string, object> storageItem = new Dictionary<string, object>();
 
             FileSystemInfo fsi;
@@ -87,11 +102,23 @@ namespace io.nodekit.NKCore
 
         public Task<bool> exists(string path)
         {
+            if (appResources.exists(path))
+                return Task.FromResult(true);
+
+            if (localResources.exists(path))
+                return Task.FromResult(true);
+
             return Task.FromResult(File.Exists(path));
         }
 
         public Task<string[]> getDirectory(string path)
         {
+            if (appResources.exists(path))
+                return Task.FromResult(appResources.getDirectory(path));
+
+            if (localResources.exists(path))
+                return Task.FromResult(localResources.getDirectory(path));
+
             var dsi = new DirectoryInfo(path);
             var items = dsi.EnumerateFileSystemInfos();
             return Task.FromResult(items.Select(t => t.Name).ToArray());
@@ -105,6 +132,13 @@ namespace io.nodekit.NKCore
         public async Task<string> getContent(Dictionary<string, object> storageItem)
         {
             var path = storageItem["path"] as string;
+        
+            if (appResources.exists(path))
+                return await appResources.getContent(path);
+
+            if (localResources.exists(path))
+                return await localResources.getContent(path);
+
             string source;
 
             using (StreamReader streamReader = new StreamReader(path))
@@ -137,15 +171,28 @@ namespace io.nodekit.NKCore
                 return false;
             }
         }
-        public async Task<string> getSource(string module)
+        public async Task<string> getSource(string path)
         {
-            var folder = System.IO.Path.GetDirectoryName(module);
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(module);
-            var fileExtension = System.IO.Path.GetExtension(module);
+            var foldername = System.IO.Path.GetDirectoryName(path);
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+            var fileExtension = System.IO.Path.GetExtension(path);
             if (fileExtension == String.Empty)
                 fileExtension = ".js";
 
-            var source = await NKStorage.getResourceAsync(Main.entryType, typeof(Main), fileName + fileExtension, folder);
+            var pathAdjusted = System.IO.Path.Combine(foldername, fileName + fileExtension);
+
+            if (appResources.exists(pathAdjusted))
+                return await appResources.getContent(pathAdjusted);
+
+            if (localResources.exists(pathAdjusted))
+                return await localResources.getContent(pathAdjusted);
+
+            string source;
+
+            using (StreamReader streamReader = new StreamReader(pathAdjusted))
+            {
+                source = await streamReader.ReadToEndAsync();
+            }
 
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(source);
             return System.Convert.ToBase64String(plainTextBytes);
@@ -207,11 +254,6 @@ namespace io.nodekit.NKCore
             }
         }
 
-        public string getFullPathSync(string parentModule, string module)
-        {
-            var folder = System.IO.Path.GetDirectoryName(parentModule);
-            return System.IO.Path.Combine(folder, module);
-        }
     }
 }
 #endif

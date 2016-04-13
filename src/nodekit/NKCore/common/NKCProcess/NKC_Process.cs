@@ -88,15 +88,20 @@ namespace io.nodekit.NKCore
             return script;
         }
 
-
+#if WINDOWS_UWP
+        static string root = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+#elif WINDOWS_WIN32
+        static string root = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+#endif
         private static void setNodePaths(Dictionary<string, object> process)
         {
             string webPath = "/";
             string appModulePath = "/node_modules";
+            string exePath = root;
             string resPaths;
 
             process["workingDirectory"] = "/";
-            resPaths = webPath + ":" + appModulePath;
+            resPaths = webPath + ":" + appModulePath + ":" + exePath;
             var env = new Dictionary<string, string>();
             env["NODE_PATH"] = resPaths;
             process["outputDirectory"] = env["OUTPUT_DIRECTORY"] ?? NKC_FileSystem.current.getTempDirectorySync();

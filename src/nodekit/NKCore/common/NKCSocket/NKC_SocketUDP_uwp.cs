@@ -133,36 +133,40 @@ namespace io.nodekit.NKCore
 
             var _ = _socket.OutputStream.WriteAsync(buffUTF8);
         }
-
        
         public void addMembership(string mcastAddr, string ifaceAddr)
         {
-            throw new NotImplementedException();
+            _socket.JoinMulticastGroup(new HostName(mcastAddr));
+
+            if (ifaceAddr != string.Empty && ifaceAddr != null)
+                throw new NotImplementedException();
+
+            // TO DO ICommsInterface 
         }
 
         public void dropMembership(string mcastAddr, string ifaceAddr)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("Multicast Leave Group not supported on Universal Windows Platform");
         }
 
         public void setMulticastTTL(Int32 ttl)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("Multicast TTL not supported on Universal Windows Platform");
         }
 
         public void setMulticastLoopback(bool flag)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("Multicast loopback not supported on Universal Windows Platform");
         }
 
         public void setTTL(Int32 ttl)
         {
-            throw new NotImplementedException();
+            _socket.Control.OutboundUnicastHopLimit = (byte) ttl;
         }
 
         public void setBroadcast(bool flag)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("UDP Broadcast not supported on Universal Windows Platform");
         }
 
         public void disconnect()

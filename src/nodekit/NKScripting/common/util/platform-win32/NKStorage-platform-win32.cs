@@ -26,24 +26,11 @@ namespace io.nodekit
 {
     public class NKStorage
     {
-        public static string getResource(System.Type t, string name, string folder)
-        {
-            return getResource(t, null, name, folder);
-        }
-
-        public static Task<string> getResourceAsync(Type t, string name, string folder)
-        {
-            return getResourceAsync(t, null, name, folder);
-        }
-
-        public async static Task<string> getResourceAsync(Type t1, Type t2, string name, string folder)
+        public async static Task<string> getResourceAsync(Type t, string name, string folder)
         {
             string source;
             // First try embedded resources
-            var stream = t1.GetTypeInfo().Assembly.GetManifestResourceStream(t1.Namespace + "." + folder + "." + name);
-
-            if (stream == null && t2 != null)
-                stream = t2.GetTypeInfo().Assembly.GetManifestResourceStream(t2.Namespace + "." + folder + "." + name);
+            var stream = t.GetTypeInfo().Assembly.GetManifestResourceStream(t.Namespace + "." + folder + "." + name);
 
             if (stream != null)
             {
@@ -69,15 +56,12 @@ namespace io.nodekit
             return source;
         }
 
-        public static string getResource(Type t1, Type t2, string name, string folder)
+
+        public static string getResource(Type t, string name, string folder)
         {
             string source;
             // First try embedded resources
-            var stream = t1.GetTypeInfo().Assembly.GetManifestResourceStream(t1.Namespace + "." + folder + "." + name);
-
-            if (stream == null && t2 != null)
-                stream = t2.GetTypeInfo().Assembly.GetManifestResourceStream(t2.Namespace + "." + folder + "." + name);
-
+            var stream = t.GetTypeInfo().Assembly.GetManifestResourceStream(t.Namespace + "." + folder + "." + name);
             if (stream != null)
             {
                 using (StreamReader streamReader = new StreamReader(stream))
@@ -87,7 +71,6 @@ namespace io.nodekit
             }
             else
             {
-
                 // Else get from content folder in installed location
                 var root = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 var lib = System.IO.Path.Combine(root, folder);

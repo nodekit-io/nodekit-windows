@@ -28,25 +28,11 @@ namespace io.nodekit
     public class NKStorage
     {
 
-        public static string getResource(Type t, string name, string folder)
+        public async static Task<string> getResourceAsync(Type t, string name, string folder)
         {
-            return getResource(t, null, name, folder);
-        }
-
-        public static Task<string> getResourceAsync(Type t, string name, string folder)
-        {
-            return getResourceAsync(t, null, name, folder);
-        }
-
-        public static async Task<string> getResourceAsync(Type t1, Type t2, string name, string folder)
-        {
-            string source;
+             string source;
              // First try embedded resources
-            var stream = t1.GetTypeInfo().Assembly.GetManifestResourceStream(t1.Namespace + "." + folder + "." + name);
-
-            if (stream == null && t2 != null)
-                stream = t2.GetTypeInfo().Assembly.GetManifestResourceStream(t2.Namespace + "." + folder + "." + name);
-
+            var stream = t.GetTypeInfo().Assembly.GetManifestResourceStream(t.Namespace + "." + folder + "." + name);
             if (stream != null)
             {
                 using (StreamReader streamReader = new StreamReader(stream))
@@ -56,20 +42,43 @@ namespace io.nodekit
             } else
             {
                 // Else get from content folder in installed location
-                StorageFolder root = Windows.ApplicationModel.Package.Current.InstalledLocation;
-                StorageFolder lib = await root.GetFolderAsync(folder);
-                var file = await lib.GetFileAsync(name);
-                source = await FileIO.ReadTextAsync(file);
+                source = await getAppResource(name, folder);
             }
 
             return source;
         }
 
-        public static string getResource(Type t1, Type t2, string name, string folder)
+        public static string getResource(Type t, string name, string folder)
         {
-            var t = getResourceAsync(t1, t2, name, folder);
-            t.Wait();
-            return t.Result;
+            string source;
+            // First try embedded resources
+            var stream = t.GetTypeInfo().Assembly.GetManifestResourceStream(t.Namespace + "." + folder + "." + name);
+            if (stream != null)
+            {
+                using (StreamReader streamReader = new StreamReader(stream))
+                {
+                    source = streamReader.ReadToEnd();
+                }
+            }
+            else
+            {
+                // Else get from content folder in installed location
+                var sourceTask = getAppResource(name, folder);
+                sourceTask.Wait();
+                source = sourceTask.Result;
+           }
+
+            return source; 
+        }
+
+        public async static Task<string> getAppResource(string name, string folder)
+        {
+            StorageFolder root = Windows.ApplicationModel.Package.Current.InstalledLocation;
+            StorageFolder lib = await root.GetFolderAsync(folder);
+            var file = await lib.GetFileAsync(name);
+            string source = await FileIO.ReadTextAsync(file);
+
+            return source;
         }
     }
 }

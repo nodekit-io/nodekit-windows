@@ -196,7 +196,7 @@ BootstrapModule.prototype.compile = function() {
     var reqFunc = function(id) {
         if (id[0] == ".")
         {
-            id = native.fs.getFullPathSync(self.filename, id.substr(1));
+            id = _getPath(self.filename, id.substr(1));
         }
         
         return BootstrapModule._load(id);
@@ -208,6 +208,17 @@ BootstrapModule.prototype.compile = function() {
     fn(this.exports, reqFunc, this, this.filename);
     this.loaded = true;
 };
+
+function _getPath(root, rel) {
+    var x;
+    x = root.lastIndexOf('/');
+    if (x >= 0) // Unix-based path
+        return str.substring(0, x + 1) + rel;
+    x = path.lastIndexOf('\\');
+    if (x >= 0) // Windows-based path
+        return str.substring(0, x + 1) + rel;
+    return rel;
+}
 
 BootstrapModule._nodeSource = {};
 

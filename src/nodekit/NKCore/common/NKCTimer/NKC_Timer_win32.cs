@@ -15,12 +15,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
+#if WINDOWS_WIN32
+using io.nodekit.NKScripting;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using io.nodekit.NKScripting;
-using Windows.System.Threading;
+using System.Timers;
 
 namespace io.nodekit.NKCore
 {
@@ -73,7 +73,7 @@ namespace io.nodekit.NKCore
         }
 
         private NKScriptValue _handler;
-        private ThreadPoolTimer _nsTimer;
+        private Timer _nsTimer;
         private Int32 _repeatPeriod;
 
         public NKScriptValue onTimeoutSync()
@@ -88,7 +88,8 @@ namespace io.nodekit.NKCore
 
         public void stop()
         {
-            _nsTimer.Cancel();
+            _nsTimer.Stop();
+            _nsTimer.Dispose();
             _nsTimer = null;
             _repeatPeriod = 0;
         }
@@ -97,7 +98,8 @@ namespace io.nodekit.NKCore
         {
             if (_nsTimer != null)
             {
-                _nsTimer.Cancel();
+                _nsTimer.Stop();
+                _nsTimer.Dispose();
                 _nsTimer = null;
             }
             _repeatPeriod = 0;
@@ -118,13 +120,15 @@ namespace io.nodekit.NKCore
 
         private void _scheduleTimeout(TimeSpan timeout)
         {
-            _nsTimer = ThreadPoolTimer.CreateTimer(handle, timeout);
-
+            _nsTimer = new Timer(timeout.TotalMilliseconds);
+            _nsTimer.Elapsed += _nsTimer_Elapsed;
+            _nsTimer.AutoReset = false;
+            _nsTimer.Enabled = true;
         }
 
-        private void handle(ThreadPoolTimer timer)
+        private void _nsTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            _handler.callWithArguments(new object[] { });
+             _handler.callWithArguments(new object[] { });
             if (_repeatPeriod > 0)
             {
                 var delaySpan = TimeSpan.FromMilliseconds(_repeatPeriod);
@@ -139,3 +143,4 @@ namespace io.nodekit.NKCore
 
     }
 }
+#endif
