@@ -71,26 +71,16 @@ namespace io.nodekit.Samples.nodekit_sample
                 Window.Current.Content = rootFrame;
             }
 
-            var _ = startNodeKit(e.Arguments.Split(' '));
-        }
+            var args = e.Arguments.Split(' ');
 
-        private NKScriptContext context;
-        private async Task startNodeKit(string[] args)
-        {
             var options = new Dictionary<string, object>
             {
-                ["NKS.MainThreadScheduler"] = TaskScheduler.FromCurrentSynchronizationContext(),
-                ["NKS.MainThreadId"] = Environment.CurrentManagedThreadId,
-                ["NKS.RemoteProcess"] = false
-            };
-            context = await NKScripting.NKScriptContextFactory.createContext(options);
-            await NKElectro.Main.addElectro(context, options);
+                ["NKS.Args"] = args,
+                ["NKS.Entry"] = typeof(App),
+                ["NKS.RemoteProcess"] = false,
+             };
 
-            var appjs = await NKStorage.getResourceAsync(typeof(App), "index.js", "app");
-            var script = "function loadapp(){\n" + appjs + "\n}\n" + "loadapp();" + "\n";
-            await context.NKevaluateJavaScript(script, "io.nodekit.electro.main");
-     
-            NKEventEmitter.global.emit<string>("NK.AppReady");
+            NKC_NodeKit.start(options);
         }
 
         /// <summary>

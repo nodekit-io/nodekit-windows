@@ -121,6 +121,10 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\nodekit\NKCore\platform-universal\NKCore-platform-universal.csproj">
+      <Project>{2b5fc55d-6030-4cff-a06f-9c2f47087356}</Project>
+      <Name>NKCore-platform-universal</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\nodekit\NKElectro\platform-universal\NKElectro-platform-universal.csproj">
       <Project>{67d51785-f307-4fe5-96fa-b8d660800d7e}</Project>
       <Name>NKElectro-platform-universal</Name>

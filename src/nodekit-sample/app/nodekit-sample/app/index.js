@@ -18,7 +18,7 @@
 var BrowserWindow = io.nodekit.electro.BrowserWindow;
 //debugger;
 io.nodekit.electro.app.on("ready", function () {
-    var p = new BrowserWindow({ 'preloadURL': 'http://google.com' });
+    var p = new BrowserWindow({ 'preloadURL': 'http://bing.com' });
     p.on("did-finish-load", function () {
         console.log(p.webContents.getTitle());
         io.nodekit.electro.dialog.showErrorBox("Hello", "World");

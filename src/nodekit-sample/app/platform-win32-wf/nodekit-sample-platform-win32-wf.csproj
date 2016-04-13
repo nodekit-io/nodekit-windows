@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>io.nodekit.Samples.nodekit_sample</RootNamespace>
     <AssemblyName>nodekit_sample-win32-wf</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -62,6 +63,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\nodekit\NKCore\platform-win32-wf\NKCore-platform-win32-wf.csproj">
+      <Project>{9ecffb16-d877-48de-a9ef-170a89f9d12a}</Project>
+      <Name>NKCore-platform-win32-wf</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\nodekit\NKElectro\platform-win32-wf\NKElectro-platform-win32-wf.csproj">
       <Project>{97a5c81d-cff8-45c4-ba45-3465a8c6fe5e}</Project>
       <Name>NKElectro-platform-win32-wf</Name>

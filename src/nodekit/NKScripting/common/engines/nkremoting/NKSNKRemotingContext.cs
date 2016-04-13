@@ -1,5 +1,4 @@
-﻿#if WINDOWS_WIN32
-/*
+﻿/*
 * nodekit.io
 *
 * Copyright (c) 2016 OffGrid Networks. All Rights Reserved.
@@ -109,4 +108,3 @@ namespace io.nodekit.NKScripting.Engines.NKRemoting
         }
     }
 }
-#endif

@@ -64,9 +64,16 @@ namespace io.nodekit
             {
                 // Else get from content folder in installed location
                 var sourceTask = getAppResource(name, folder);
-                sourceTask.Wait();
-                source = sourceTask.Result;
-           }
+                try
+                {
+                    sourceTask.Wait();
+                    source = sourceTask.Result;
+
+                } catch
+                {
+                    source = null;
+                }
+            }
 
             return source; 
         }
@@ -75,10 +82,17 @@ namespace io.nodekit
         {
             StorageFolder root = Windows.ApplicationModel.Package.Current.InstalledLocation;
             StorageFolder lib = await root.GetFolderAsync(folder);
-            var file = await lib.GetFileAsync(name);
-            string source = await FileIO.ReadTextAsync(file);
+            try
+            {
+                var file = await lib.GetFileAsync(name);
+                 var source = await FileIO.ReadTextAsync(file);
+                return source;
+            } catch (Exception)
+            {
+                return null;
+            }
 
-            return source;
+
         }
     }
 }

@@ -67,7 +67,7 @@ namespace io.nodekit.NKElectro
             switch (forKey)
             {
                 case ".global":
-                    var appjs = NKStorage.getResource(typeof(NKE_IpcMain), "ipcMain.js", "lib_electro");
+                    var appjs = NKStorage.getResource(typeof(NKE_IpcMain), "ipcmain.js", "lib_electro");
                     return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
                 default:
                     return stub;

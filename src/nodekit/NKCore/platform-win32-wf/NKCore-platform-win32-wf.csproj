@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS_WIN32</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS_WIN32; WINDOWS_WIN32_WF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -25,13 +25,14 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;WINDOWS_WIN32</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS_WIN32; WINDOWS_WIN32_WF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NKElectro\platform-win32-wf\NKElectro-platform-win32-wf.csproj">
+      <Project>{97a5c81d-cff8-45c4-ba45-3465a8c6fe5e}</Project>
+      <Name>NKElectro-platform-win32-wf</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\NKScripting\platform-win32-wf\NKScripting-platform-win32-wf.csproj">
       <Project>{2b23a0b9-3089-49fe-afb5-a9ce692acedd}</Project>
       <Name>NKScripting-platform-win32-wf</Name>

@@ -149,5 +149,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)NKCTimer\NKC_Timer_win32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKCTimer\NKC_Timer_uwp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NKC_Boot\NKC_BootCore.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NKC_NodeKit.cs" />
   </ItemGroup>
 </Project>

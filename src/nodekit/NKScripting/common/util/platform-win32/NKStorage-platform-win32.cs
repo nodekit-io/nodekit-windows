@@ -42,14 +42,24 @@ namespace io.nodekit
             else
             {
 
-                // Else get from content folder in installed location
-                var root = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                var lib = System.IO.Path.Combine(root, folder);
-                var file = System.IO.Path.Combine(root, name);
-
-                using (StreamReader streamReader = new StreamReader(file))
+                try
                 {
-                    source = await streamReader.ReadToEndAsync();
+
+
+                    // Else get from content folder in installed location
+                    var root = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                    var lib = System.IO.Path.Combine(root, folder);
+                    var file = System.IO.Path.Combine(root, name);
+
+                    using (StreamReader streamReader = new StreamReader(file))
+                    {
+                        source = await streamReader.ReadToEndAsync();
+                    }
+                }
+                catch (Exception)
+                {
+                    NKLogging.log("Could not find source file " + folder + "/" + name);
+                    source = null;
                 }
             }
 
@@ -71,16 +81,24 @@ namespace io.nodekit
             }
             else
             {
-                // Else get from content folder in installed location
-                var root = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                var lib = System.IO.Path.Combine(root, folder);
-                var file = System.IO.Path.Combine(root, name);
-
-                using (StreamReader streamReader = new StreamReader(file))
+                try
                 {
-                    source = streamReader.ReadToEnd();
+                    // Else get from content folder in installed location
+                    var root = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                    var lib = System.IO.Path.Combine(root, folder);
+                    var file = System.IO.Path.Combine(root, name);
+
+                    using (StreamReader streamReader = new StreamReader(file))
+                    {
+                        source = streamReader.ReadToEnd();
+                    }
+
+                } catch (Exception)
+                {
+                    NKLogging.log("Could not find source file " + folder + "/" + name);
+                    source = null;
                 }
-            }
+           }
 
             return source;
         }

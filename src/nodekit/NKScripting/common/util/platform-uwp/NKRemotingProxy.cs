@@ -49,7 +49,7 @@ namespace io.nodekit.NKRemoting
         }
 
         // RE-ENTRANT RENDERER PROCESS
-        public static NKRemotingProxy registerAsClient(string arg, CancellationToken cancelToken)
+        public static NKRemotingProxy registerAsClient(string arg)
         {
             throw new NotImplementedException();
         }

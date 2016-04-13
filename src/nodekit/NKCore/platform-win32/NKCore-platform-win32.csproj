@@ -46,6 +46,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NKElectro\platform-win32\NKElectro-platform-win32.csproj">
+      <Project>{3710751b-a98d-41f2-b07c-ee0963f103e7}</Project>
+      <Name>NKElectro-platform-win32</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\NKScripting\platform-win32\NKScripting-platform-win32.csproj">
       <Project>{481f65a3-b074-4df6-bd02-256af55710a7}</Project>
       <Name>NKScripting-platform-win32</Name>

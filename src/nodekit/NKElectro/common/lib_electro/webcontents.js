@@ -21,10 +21,9 @@
 // func ipcSend(channel: String, replyId: String, arg: [AnyObject]) -> Void {
 //  event "emit", withArguments: ["NKE.IPCReplytoMain", item.sender, item.channel, item.replyId, item.arg[0]])
 
-var WebContentsUI = io.nodekit.electro.WebContentsUI
-var WebContentsWK = io.nodekit.electro.WebContentsWK
+var WebContents = io.nodekit.electro.WebContents
 
-WebContentsWK.prototype._init = WebContentsUI.prototype._init = function() {
+WebContents.prototype._init = function () {
     this.callbacks = {};
     this.counter = 0;
     
@@ -34,12 +33,12 @@ WebContentsWK.prototype._init = WebContentsUI.prototype._init = function() {
             });
 }
 
-WebContentsWK.prototype._deinit = WebContentsUI.prototype._deinit = function() {
+WebContents.prototype._deinit = function () {
     this.removeAllListeners('NKE.IPCReplytoMain');
 }
 
 //send(channel [[,arg]...] [,callback])
-WebContentsWK.prototype.send = WebContentsUI.prototype.send = function() {
+WebContents.prototype.send = function () {
     var slice = Array.prototype.slice;
     var args, channel;
     channel = arguments[0]

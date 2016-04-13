@@ -13,5 +13,11 @@ namespace io.nodekit
             else
                 return defaultValue;
         }
+
+        public static void set<T>(this IDictionary<String, object> options, string key, T defaultValue = default(T))
+        {
+            if (!options.ContainsKey(key))
+                options[key] = defaultValue;
+        }
     }
 }

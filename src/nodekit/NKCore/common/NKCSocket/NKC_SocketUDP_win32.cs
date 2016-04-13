@@ -76,7 +76,7 @@ namespace io.nodekit.NKCore
 
         // local variables and init
          private Socket _socket;
-        private SocketFlags _socketFlags;
+        private SocketFlags _socketFlags = SocketFlags.None;
 
         public NKC_SocketUDP()
         {

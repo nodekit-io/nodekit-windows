@@ -11,8 +11,8 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\app.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\browserwindow.js" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipcMain.js" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipcRenderer.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipcmain.js" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\ipcrenderer.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\menu-item.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\menu.js" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)lib_electro\protocol.js" />
