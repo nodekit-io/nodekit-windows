@@ -37,11 +37,13 @@ namespace io.nodekit
          
             // SCRIPT ENGINE LOADED, ADD {NK} NODEKIT
             await NKElectro.Main.addElectro(context, options);
+            await NKCore.Main.addCorePlatform(context, options);
+            await NKCore.Main.bootCore(context, options);
 
             // {NK} NODEKIT ADDED, START APPLICATION 
-            var appjs = await NKStorage.getResourceAsync(entryClass, "index.js", "app");
-            var script = "function loadapp(){\n" + appjs + "\n}\n" + "loadapp();" + "\n";
-            await context.NKevaluateJavaScript(script, "io.nodekit.electro.main");
+    //        var appjs = await NKStorage.getResourceAsync(entryClass, "index.js", "app");
+   //         var script = "function loadapp(){\n" + appjs + "\n}\n" + "loadapp();" + "\n";
+    //        await context.NKevaluateJavaScript(script, "io.nodekit.electro.main");
 
             NKEventEmitter.global.emit<string>("NK.AppReady");
         }

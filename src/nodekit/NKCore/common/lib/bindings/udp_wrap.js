@@ -14,20 +14,7 @@
  * limitations under the License.
  */
 
-var _delegate;
-
-switch(process.platform) {
-    case 'darwin':
-    case 'ios':
-        _delegate = require('./_delegates/udp/_darwin_udp_wrap.js');
-        break;
-    case 'win32':
-        _delegate = require('./_delegates/udp/_winrt_udp_wrap.js');
-        break;
-    default:
-        _delegate = require('./_delegates/udp/_browser_udp.js');
-        break;
-}
+var _delegate = require('./_delegates/udp/_udp_wrap.js');
 
 exports.UDP = _delegate.UDP;
 exports.SendWrap = function SendWrap(){};

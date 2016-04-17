@@ -19,10 +19,10 @@ var Fsystem;
 switch(process.platform) {
     case 'darwin':
     case 'ios':
-        Fsystem = require('./_delegates/filesystem/_darwin_filesystem.js');
+        Fsystem = require('./_delegates/filesystem/_filesystem.js');
         break;
     case 'win32':
-        Fsystem = require('./_delegates/filesystem/_winrt_filesystem.js');
+        Fsystem = require('./_delegates/filesystem/_filesystem.js');
         break;
      default:
         Fsystem = require('./_delegates/filesystem/_browser_filesystem.js');

@@ -42,7 +42,7 @@ namespace io.nodekit.NKCore
             switch (forKey)
             {
                 case ".global":
-                    var appjs = NKStorage.getResource(typeof(NKC_Timer), "timer.js", "lib_core/platform");
+                    var appjs = NKStorage.getResource(typeof(NKC_Timer), "timer.js", "lib/platform");
                     return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
                 default:
                     return stub;

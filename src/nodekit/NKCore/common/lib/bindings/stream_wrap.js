@@ -16,20 +16,7 @@
 
 "use strict";
 
-var _delegate;
-
-switch(process.platform) {
-    case 'darwin':
-    case 'ios':
-        _delegate = require('./_delegates/stream/_darwin_stream_wrap.js');
-        break;
-    case 'win32':
-        _delegate = require('./_delegates/tcp/_winrt_stream_wrap.js');
-        break;
-    default:
-        _delegate = require('./_delegates/tcp/_browser_stream_wrap.js');
-        break;
-}
+var _delegate = require('./_delegates/stream/_stream_wrap.js');
 
 exports.Stream = _delegate.Stream;
 exports.ShutdownWrap = function ShutdownWrap(){};

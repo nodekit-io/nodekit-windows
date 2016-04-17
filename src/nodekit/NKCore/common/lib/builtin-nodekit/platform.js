@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+
 var platform = {
     'console': io.nodekit.platform.console,
     'crypto': io.nodekit.platform.crypto,

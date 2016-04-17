@@ -29,16 +29,16 @@ var Startup = function Startup() {
     
     BootstrapModule.loadNodeSource(process.binding('natives'));
     
-    console.log = native.console.log;
+ //   console.log = native.console.log;
     
     // run vanilla node.js startup
     BootstrapModule.bootstrap('lib/node.js');
     
     global.setImmediate = function(fn){ process.nextTick(fn.bind.apply(fn, arguments)) }
         
-    console.log = native.console.log;
-    console.warn = console.log;
-    native.console.error = BootstrapModule.error;
+  //  console.log = native.console.log;
+  //  console.warn = console.log;
+  //  native.console.error = BootstrapModule.error;
    try
     {
        process._tickCallback();
@@ -213,10 +213,10 @@ function _getPath(root, rel) {
     var x;
     x = root.lastIndexOf('/');
     if (x >= 0) // Unix-based path
-        return str.substring(0, x + 1) + rel;
+        return root.substring(0, x + 1) + rel;
     x = path.lastIndexOf('\\');
     if (x >= 0) // Windows-based path
-        return str.substring(0, x + 1) + rel;
+        return root.substring(0, x + 1) + rel;
     return rel;
 }
 
@@ -234,8 +234,10 @@ BootstrapModule.getNodeSource = function(id) {
     return BootstrapModule._nodeSource[id];
 }
 
-Startup();
 
 // Polyfill for atob and btoa
 // Copyright (c) 2011..2012 David Chambers <dc@hashify.me>
-!function(){function t(t){this.message=t}var r="undefined"!=typeof exports?exports:this,e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";t.prototype=new Error,t.prototype.name="InvalidCharacterError",r.btoa||(r.btoa=function(r){for(var o,n,a=String(r),i=0,c=e,d="";a.charAt(0|i)||(c="=",i%1);d+=c.charAt(63&o>>8-i%1*8)){if(n=a.charCodeAt(i+=.75),n>255)throw new t("'btoa' failed: The string to be encoded contains characters outside of the Latin1 range.");o=o<<8|n}return d}),r.atob||(r.atob=function(r){var o=String(r).replace(/=+$/,"");if(o.length%4==1)throw new t("'atob' failed: The string to be decoded is not correctly encoded.");for(var n,a,i=0,c=0,d="";a=o.charAt(c++);~a&&(n=i%4?64*n+a:a,i++%4)?d+=String.fromCharCode(255&n>>(-2*i&6)):0)a=e.indexOf(a);return d})}();
+!function () { function t(t) { this.message = t } var r = "undefined" != typeof exports ? exports : this, e = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="; t.prototype = new Error, t.prototype.name = "InvalidCharacterError", r.btoa || (r.btoa = function (r) { for (var o, n, a = String(r), i = 0, c = e, d = ""; a.charAt(0 | i) || (c = "=", i % 1) ; d += c.charAt(63 & o >> 8 - i % 1 * 8)) { if (n = a.charCodeAt(i += .75), n > 255) throw new t("'btoa' failed: The string to be encoded contains characters outside of the Latin1 range."); o = o << 8 | n } return d }), r.atob || (r.atob = function (r) { var o = String(r).replace(/=+$/, ""); if (o.length % 4 == 1) throw new t("'atob' failed: The string to be decoded is not correctly encoded."); for (var n, a, i = 0, c = 0, d = ""; a = o.charAt(c++) ; ~a && (n = i % 4 ? 64 * n + a : a, i++ % 4) ? d += String.fromCharCode(255 & n >> (-2 * i & 6)) : 0) a = e.indexOf(a); return d }) }();
+
+
+Startup();

@@ -16,19 +16,7 @@
 
 "use strict";
 
-var _delegate;
-switch(process.platform) {
-    case 'darwin':
-    case 'ios':
-        _delegate = require('./_delegates/tcp/_darwin_tcp_wrap.js');
-        break;
-    case 'win32':
-        _delegate = require('./_delegates/tcp/_winrt_tcp_wrap.js');
-        break;
-    default:
-        _delegate = require('./_delegates/tcp/_browser_tcp_wrap.js');
-        break;
-}
-
+var _delegate = require('./_delegates/tcp/_tcp_wrap.js');
+ 
 exports.TCP = _delegate.TCP;
 exports.TCPConnectWrap = function TCPConnectWrap(){};

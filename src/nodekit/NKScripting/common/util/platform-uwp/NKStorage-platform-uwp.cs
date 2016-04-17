@@ -32,7 +32,7 @@ namespace io.nodekit
         {
              string source;
              // First try embedded resources
-            var stream = t.GetTypeInfo().Assembly.GetManifestResourceStream(t.Namespace + "." + folder + "." + name);
+            var stream = t.GetTypeInfo().Assembly.GetManifestResourceStream(t.Namespace + "." + folder.Replace("/", ".") + "." + name);
             if (stream != null)
             {
                 using (StreamReader streamReader = new StreamReader(stream))
@@ -52,7 +52,7 @@ namespace io.nodekit
         {
             string source;
             // First try embedded resources
-            var stream = t.GetTypeInfo().Assembly.GetManifestResourceStream(t.Namespace + "." + folder + "." + name);
+            var stream = t.GetTypeInfo().Assembly.GetManifestResourceStream(t.Namespace + "." + folder.Replace("/", ".") + "." + name);
             if (stream != null)
             {
                 using (StreamReader streamReader = new StreamReader(stream))

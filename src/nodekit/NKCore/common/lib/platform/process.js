@@ -18,6 +18,7 @@
  */
 
 process.native = io.nodekit.platform.process;
+io.nodekit.platform.console = console;
 
 this.global = this;
 

@@ -34,7 +34,7 @@ namespace io.nodekit.NKCore
 
         internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
         {
-            return context.NKloadPlugin(typeof(NKC_Process), null, options);
+            return context.NKloadPlugin(new NKC_Process(), null, options);
         }
 
         private static string defaultNamespace { get { return "io.nodekit.platform.process"; } }
@@ -44,8 +44,12 @@ namespace io.nodekit.NKCore
             switch (forKey)
             {
                 case ".global":
-                    var appjs = NKStorage.getResource(typeof(NKC_Process), "console.js", "lib_core/platform");
-                    return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
+                    var appjs = NKStorage.getResource(typeof(NKC_Process), "process.js", "lib/platform");
+
+                    // UNIQUE SCRIPT FOR PROCESS 
+                    return "function loadplugin(){\n" + "this.process = this.process || Object.create(null);\n" + NKC_Process.syncProcessDictionary() + "\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
+
+      //              return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
                 default:
                     return stub;
             }
@@ -83,7 +87,7 @@ namespace io.nodekit.NKCore
             string script = "";
 
             foreach (var pair in process)
-                script += string.Format("process['{0}'] = {1};]n", pair.Key, serialize(pair.Value));
+                script += string.Format("process['{0}'] = {1};\n", pair.Key, serialize(pair.Value));
 
             return script;
         }
@@ -102,9 +106,9 @@ namespace io.nodekit.NKCore
 
             process["workingDirectory"] = "/";
             resPaths = webPath + ":" + appModulePath + ":" + exePath;
-            var env = new Dictionary<string, string>();
+            var env = new Dictionary<string, object>();
             env["NODE_PATH"] = resPaths;
-            process["outputDirectory"] = env["OUTPUT_DIRECTORY"] ?? NKC_FileSystem.current.getTempDirectorySync();
+            process["outputDirectory"] = env.ContainsKey("OUTPUT_DIRECTORY") ? env["OUTPUT_DIRECTORY"] : NKC_FileSystem.current.getTempDirectorySync();
             process["env"] = env;
         }
 
@@ -143,7 +147,7 @@ namespace io.nodekit.NKCore
                 var genericKey = ti.GenericTypeArguments[0];
                 if (typeof(string).GetTypeInfo().IsAssignableFrom(genericKey.GetTypeInfo()))
                 {
-                    var dict = (IDictionary<string, dynamic>)obj;
+                    var dict = (IDictionary<string, object>)obj;
                     return "{" + string.Join(", ", dict.Keys.Select(k => "\"" + k + "\":" + serialize(dict[k]))) + "}";
                 }
             }

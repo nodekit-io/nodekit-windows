@@ -111,7 +111,7 @@ namespace io.nodekit.NKCore
         // private helpers
         private string _getResourcePath(string path)
         {
-            return ns + "." + path.Replace(@"\", ".").Replace("/", ".");
+            return ns + "." + path.Replace(@"\", ".").Replace("/", ".").Replace("-","_");
         }
     }
 }

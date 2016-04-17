@@ -39,14 +39,14 @@ namespace io.nodekit.NKCore
             return context.NKloadPlugin(typeof(NKC_SocketUDP), null, options);
         }
 
-        private static string defaultNamespace { get { return "io.nodekit.platform.udp"; } }
+        private static string defaultNamespace { get { return "io.nodekit.platform.UDP"; } }
 
         private static string rewriteGeneratedStub(string stub, string forKey)
         {
             switch (forKey)
             {
                 case ".global":
-                    var appjs = NKStorage.getResource(typeof(NKC_SocketUDP), "udp.js", "lib_core/platform");
+                    var appjs = NKStorage.getResource(typeof(NKC_SocketUDP), "udp.js", "lib/platform");
                     return "function loadplugin(){\n" + appjs + "\n}\n" + stub + "\n" + "loadplugin();" + "\n";
                 default:
                     return stub;

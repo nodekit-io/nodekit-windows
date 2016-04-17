@@ -17,7 +17,18 @@
  * limitations under the License.
  */
 
-var console = io.nodekit.platform.console
+var consoleNative = io.nodekit.platform.console
 
-console.navigateTo = function navigateTo(url, title){}
-console.resize = function resize(width, height){}
+this.global = this;
+
+if (!global.console) {
+    global.console = {}
+}
+
+global.console.log = function (msg) { consoleNative.log(msg); };
+global.console.error = function (msg) { consoleNative.error(msg); };
+
+global.console.navigateTo = function navigateTo(url, title) { }
+global.console.resize = function resize(width, height) { }
+
+io.nodekit.platform.console = global.console;
