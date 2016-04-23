@@ -26,3 +26,4 @@ Tcp.prototype._init = function() {
        this.stream = new io.nodekit.NativeStream(this);
     
 };
+

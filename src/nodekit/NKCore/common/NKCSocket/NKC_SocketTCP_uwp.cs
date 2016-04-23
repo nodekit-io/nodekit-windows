@@ -234,7 +234,7 @@ namespace io.nodekit.NKCore
             string str = Windows.Security.Cryptography.CryptographicBuffer.EncodeToBase64String(data);
             var js = this.getNKScriptValue();
             if (js != null)
-                js.invokeMethod("emit", new object[] { "data2", str });
+                js.invokeMethod("emit", new object[] { "data", str });
             else
                 NKLogging.log("!TCP: Cannot find NKScriptValue");
         }
