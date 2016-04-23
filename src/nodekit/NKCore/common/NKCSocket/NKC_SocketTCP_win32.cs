@@ -25,10 +25,10 @@ using System.Net;
 
 namespace io.nodekit.NKCore
 {
-    public sealed class NKC_SocketTCP
+    public sealed class NKC_SocketTCP : NKScriptExport
     {
    
-        #region NKScriptExport
+#region NKScriptExport
 
         internal static Task attachToContext(NKScriptContext context, Dictionary<string, object> options)
         {
@@ -53,7 +53,7 @@ namespace io.nodekit.NKCore
         {
             return key == ".ctor" ? "" : name;
         }
-        #endregion
+#endregion
 
         /*
        * Creates _tcp javascript value that inherits from EventEmitter
@@ -73,7 +73,7 @@ namespace io.nodekit.NKCore
        */
 
         // local variables and init
-        private List<NKC_SocketTCP> connections;
+        private List<NKC_SocketTCP> connections = new List<NKC_SocketTCP>();
          private Socket _socket;
         private NKC_SocketTCP _server;
 
@@ -86,7 +86,6 @@ namespace io.nodekit.NKCore
         {
             _socket = socket;
             _server = server;
-            _receiveData();
         }
 
         // public methods
@@ -137,6 +136,7 @@ namespace io.nodekit.NKCore
             var socketConnection = new NKC_SocketTCP(newSocket, this);
             connections.Add(socketConnection);
             _emitConnection(socketConnection);
+            socketConnection._receiveData();
         }
 
         public Int32 fdSync()

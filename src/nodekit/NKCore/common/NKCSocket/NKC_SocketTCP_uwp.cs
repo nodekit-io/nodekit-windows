@@ -28,7 +28,7 @@ using Windows.Storage.Streams;
 
 namespace io.nodekit.NKCore
 {
-    public sealed class NKC_SocketTCP
+    public sealed class NKC_SocketTCP : NKScriptExport
     {
         //  private NKEventEmitter events = NKEventEmitter.global;
 
@@ -77,7 +77,7 @@ namespace io.nodekit.NKCore
        */
 
         // local variables and init
-        private List<NKC_SocketTCP> connections;
+        private List<NKC_SocketTCP> connections = new List<NKC_SocketTCP>();
         private StreamSocketListener _socketListener;
         private String _socketListenerLocalAddress;
         private StreamSocket _socket;
@@ -92,7 +92,6 @@ namespace io.nodekit.NKCore
         {
             _socket = socket;
             _server = server;
-            var _ = _receiveData();
         }
 
         // public methods
@@ -174,7 +173,8 @@ namespace io.nodekit.NKCore
             connections.Add(socketConnection);
             // args.Socket.setDelegate(socketConnection, delegateQueue: NKScriptChannel.defaultQueue
 
-            _emitConnection(socketConnection);  
+            _emitConnection(socketConnection);
+            var _ = socketConnection._receiveData();
         }
 
         // incoming data receive loop 
@@ -219,7 +219,9 @@ namespace io.nodekit.NKCore
 
         private void _emitConnection(NKC_SocketTCP tcp)
         {
-            this.getNKScriptValue().invokeMethod("emit", new object[] { "connection", tcp });
+            var js = this.getNKScriptValue();
+
+           js.invokeMethod("emit", new object[] { "connection", tcp });
         }
 
         private void _emitAfterConnect(string host, Int32 port)
@@ -230,7 +232,11 @@ namespace io.nodekit.NKCore
         private void _emitData(IBuffer data)
         {
             string str = Windows.Security.Cryptography.CryptographicBuffer.EncodeToBase64String(data);
-            this.getNKScriptValue().invokeMethod("emit", new object[] { "data", str });
+            var js = this.getNKScriptValue();
+            if (js != null)
+                js.invokeMethod("emit", new object[] { "data2", str });
+            else
+                NKLogging.log("!TCP: Cannot find NKScriptValue");
         }
 
         private void _emitEnd()

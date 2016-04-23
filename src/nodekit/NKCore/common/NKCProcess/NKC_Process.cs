@@ -99,13 +99,15 @@ namespace io.nodekit.NKCore
 #endif
         private static void setNodePaths(Dictionary<string, object> process)
         {
-            string webPath = "/";
-            string appModulePath = "/node_modules";
+            string webPath = @"\";
+            string appPath = @"\app\";
+
+       //     string appModulePath = @"\app\node_modules";
             string exePath = root;
             string resPaths;
 
-            process["workingDirectory"] = "/";
-            resPaths = webPath + ":" + appModulePath + ":" + exePath;
+            process["workingDirectory"] = @"\";
+            resPaths = (appPath + ";" + webPath + ";" + exePath);
             var env = new Dictionary<string, object>();
             env["NODE_PATH"] = resPaths;
             process["outputDirectory"] = env.ContainsKey("OUTPUT_DIRECTORY") ? env["OUTPUT_DIRECTORY"] : NKC_FileSystem.current.getTempDirectorySync();

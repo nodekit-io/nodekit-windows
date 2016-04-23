@@ -89,6 +89,26 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <EmbeddedResource Include="app\LICENSE" />
+    <EmbeddedResource Include="app\NOTICE" />
+    <EmbeddedResource Include="app\README.md" />
+    <EmbeddedResource Include="app\THIRDPARTY" />
+    <EmbeddedResource Include="app\node_modules\iopa-core\dest\NOTICE" />
+    <EmbeddedResource Include="app\node_modules\iopa-core\LICENSE" />
+    <EmbeddedResource Include="app\node_modules\iopa-core\package.json" />
+    <EmbeddedResource Include="app\node_modules\iopa-core\README.md" />
+    <EmbeddedResource Include="app\renderer\lib\font-awesome\fonts\fontawesome-webfont.eot" />
+    <EmbeddedResource Include="app\renderer\lib\font-awesome\fonts\fontawesome-webfont.ttf" />
+    <EmbeddedResource Include="app\renderer\lib\font-awesome\fonts\fontawesome-webfont.woff" />
+    <EmbeddedResource Include="app\views\home.hbs" />
+    <EmbeddedResource Include="app\views\layouts\main.hbs" />
+    <EmbeddedResource Include="app\views\partials\page\footer.hbs" />
+    <EmbeddedResource Include="app\views\partials\page\header.hbs" />
+    <EmbeddedResource Include="app\views\partials\page\maincontent-chat.hbs" />
+    <EmbeddedResource Include="app\views\partials\page\mainsidebar-left.hbs" />
+    <EmbeddedResource Include="app\views\partials\page\mainsidebar-right.hbs" />
+    <EmbeddedResource Include="app\views\partials\page\nav.hbs" />
+    <EmbeddedResource Include="app\views\partials\page\scripts.hbs" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -104,7 +124,34 @@
     <None Include="nodekit-sample_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="app\index.js" />
+    <EmbeddedResource Include="app\node_modules\iopa-core\dest\iopa-core.js" />
+    <EmbeddedResource Include="app\renderer\app\chat-channel.js" />
+    <EmbeddedResource Include="app\renderer\app\chat-ui.js" />
+    <EmbeddedResource Include="app\renderer\app\index.js" />
+    <EmbeddedResource Include="app\renderer\img\avatar-peer01.svg" />
+    <EmbeddedResource Include="app\renderer\img\avatar-peer02.svg" />
+    <EmbeddedResource Include="app\renderer\img\avatar-peer03.svg" />
+    <EmbeddedResource Include="app\renderer\img\avatar-peer04.svg" />
+    <EmbeddedResource Include="app\renderer\img\avatar-peer05.svg" />
+    <EmbeddedResource Include="app\renderer\img\avatar-peer06.svg" />
+    <EmbeddedResource Include="app\renderer\img\avatar-you.svg" />
+    <EmbeddedResource Include="app\renderer\img\loading.gif" />
+    <EmbeddedResource Include="app\renderer\lib\bootstrap\css\bootstrap.min.css" />
+    <EmbeddedResource Include="app\renderer\lib\bootstrap\js\bootstrap.min.js" />
+    <EmbeddedResource Include="app\renderer\lib\fastclick\fastclick.min.js" />
+    <EmbeddedResource Include="app\renderer\lib\firechat\firebase.js" />
+    <EmbeddedResource Include="app\renderer\lib\firechat\firechat.js" />
+    <EmbeddedResource Include="app\renderer\lib\firechat\shims.js" />
+    <EmbeddedResource Include="app\renderer\lib\firechat\underscore.min.js" />
+    <EmbeddedResource Include="app\renderer\lib\font-awesome\css\font-awesome.min.css" />
+    <EmbeddedResource Include="app\renderer\lib\jQuery\jQuery-2.1.4.min.js" />
+    <EmbeddedResource Include="app\renderer\lib\shims.js" />
+    <EmbeddedResource Include="app\renderer\lib\slimScroll\jquery.slimscroll.min.js" />
+    <EmbeddedResource Include="app\renderer\theme\css\nkchat.css" />
+    <EmbeddedResource Include="app\renderer\theme\css\skins\skin-red.min.css" />
+    <EmbeddedResource Include="app\renderer\theme\css\theme.min.css" />
+    <EmbeddedResource Include="app\renderer\theme\js\app.min.js" />
+    <EmbeddedResource Include="app\server\index.js" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -143,6 +190,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="app\package.json" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -63,7 +63,7 @@ namespace io.nodekit.NKCore
 
         public async Task<Dictionary<string, object>> stat(string path)
         {
-
+     
             if (appResources.exists(path))
                 return appResources.stat(path);
 
@@ -72,14 +72,17 @@ namespace io.nodekit.NKCore
 
             Dictionary<string, object> storageItem = new Dictionary<string, object>();
 
+            NKLogging.log("Stat Not Found " + path);
+            return storageItem;
+
             var foldername = System.IO.Path.GetDirectoryName(path);
             var filename = System.IO.Path.GetFileName(path);
 
-            var folder = await StorageFolder.GetFolderFromPathAsync(foldername);
-
-            var item = await folder.TryGetItemAsync(filename);
-            if (item != null)
+            try
             {
+
+                var folder = await StorageFolder.GetFolderFromPathAsync(foldername);
+                var item = await folder.GetItemAsync(filename);
                 storageItem["birthtime"] = item.DateCreated;
                 storageItem["path"] = item.Path;
 
@@ -96,9 +99,13 @@ namespace io.nodekit.NKCore
                     storageItem["size"] = properties.Size;
                     storageItem["filetype"] = "File";
                 }
+                return storageItem;
             }
-
-            return storageItem;
+            catch
+            {
+                NKLogging.log("Stat Not Found " + path);
+                return storageItem;
+            }
         }
 
         public async Task<bool> exists(string path)
@@ -125,6 +132,8 @@ namespace io.nodekit.NKCore
 
             if (localResources.exists(path))
                 return localResources.getDirectory(path);
+
+            return null;
 
             var folder = await StorageFolder.GetFolderFromPathAsync(path);
             var items = await folder.GetFilesAsync();

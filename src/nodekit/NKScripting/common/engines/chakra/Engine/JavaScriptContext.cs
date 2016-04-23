@@ -217,8 +217,9 @@
         /// <returns>The result of the script, if any.</returns>
         public static JavaScriptValue RunScript(string script, JavaScriptSourceContext sourceContext, string sourceName)
         {
+            NKLogging.log(script);
             JavaScriptValue result;
-            Native.ThrowIfError(Native.JsRunScript(script, sourceContext, sourceName, out result));
+            Native.ThrowIfError(  Native.JsRunScript(script, sourceContext, sourceName, out result));
             return result;
         }
 

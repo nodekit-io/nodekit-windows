@@ -26,10 +26,9 @@ namespace io.nodekit.NKCore
         public NKC_FileStorageManifestResources(Type t1)
         {
             assembly = t1.GetTypeInfo().Assembly;
-             ns = t1.Namespace;
+            ns = t1.Namespace;
             resources = assembly.GetManifestResourceNames();
-
-            var version = new System.Version( assembly.FullName.Split(',')[1].Split('=')[1]  );
+            var version = new System.Version(assembly.FullName.Split(',')[1].Split('=')[1]);
 
             compiledOn = new DateTime(
                version.Build * TimeSpan.TicksPerDay + version.Revision * TimeSpan.TicksPerSecond * 2
@@ -38,12 +37,21 @@ namespace io.nodekit.NKCore
 
         public bool exists(string path)
         {
-           return resources.Any(t => t.StartsWith(_getResourcePath(path)));
+            var comparePath = _getResourcePath(path);
+            if (resources.Any(t => t.StartsWith(comparePath)))
+                   return true;
+
+            var compareFolder = _getResourceFolder(path);
+            if (compareFolder.Equals(comparePath))
+                return false;
+
+            return resources.Any(t => t.StartsWith(compareFolder));
         }
 
         private bool fileExists(string path)
         {
-            return resources.Any(t => t.Equals(_getResourcePath(path)));
+            var comparePath = _getResourcePath(path);
+            return resources.Any(t => t.Equals(comparePath));
         }
 
         public async Task<string> getContent(string path)
@@ -56,7 +64,7 @@ namespace io.nodekit.NKCore
                 {
                     source = await streamReader.ReadToEndAsync();
                 }
-            }        
+            }
 
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(source);
             return System.Convert.ToBase64String(plainTextBytes);
@@ -77,9 +85,11 @@ namespace io.nodekit.NKCore
             storageItem["path"] = path;
             storageItem["mtime"] = compiledOn;
 
+            var resourcename = isFile ? _getResourcePath(path) : _getResourceFolder(path);
+
             if (isFile)
             {
-                using (var stream = assembly.GetManifestResourceStream(_getResourcePath(path)))
+                using (var stream = assembly.GetManifestResourceStream(resourcename))
                 {
                     storageItem["size"] = stream.Length;
                 }
@@ -111,7 +121,26 @@ namespace io.nodekit.NKCore
         // private helpers
         private string _getResourcePath(string path)
         {
-            return ns + "." + path.Replace(@"\", ".").Replace("/", ".").Replace("-","_");
+            var foldername = System.IO.Path.GetDirectoryName(path);
+            var filename = System.IO.Path.GetFileName(path);
+            if (foldername == @"\" || foldername == "/")
+                return ns + "." + filename;
+            else if (foldername != null)
+                return ns + "." + foldername.Replace(@"\", ".").Replace("/", ".").Replace("-", "_").Trim('.') + "." + filename;
+            else if (filename != "")
+                return ns + "." + filename;
+            else
+                return ns;
+        }
+
+        private string _getResourceFolder(string path)
+        {
+           if (path == @"\" || path == "/")
+                return ns;
+            else if (path != null)
+                return ns + "." + path.Replace(@"\", ".").Replace("/", ".").Replace("-", "_").Trim('.');
+            else
+                return ns;
         }
     }
 }

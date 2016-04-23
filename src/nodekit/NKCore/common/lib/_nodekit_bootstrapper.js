@@ -29,17 +29,19 @@ var Startup = function Startup() {
     
     BootstrapModule.loadNodeSource(process.binding('natives'));
     
- //   console.log = native.console.log;
+    var consolelog = console.log;
+    var consoleerror = console.error;
     
     // run vanilla node.js startup
     BootstrapModule.bootstrap('lib/node.js');
     
     global.setImmediate = function(fn){ process.nextTick(fn.bind.apply(fn, arguments)) }
         
-  //  console.log = native.console.log;
-  //  console.warn = console.log;
-  //  native.console.error = BootstrapModule.error;
-   try
+    console.log = consolelog;
+    console.warn = console.log;
+    console.error = consoleerror;
+
+    try
     {
        process._tickCallback();
     }

@@ -27,7 +27,7 @@ var electro = {
     'MenuItem': io.nodekit.electro.MenuItem,
     'powerMonitor': "not implemented",
     'powerSaveBlocker': "not implemented",
-    'protocol': io.nodekit.electro.protocol,
+    'protocol': io.nodekit.electro.protocol || {},
     'session': "not implemented",
     'WebContents': io.nodekit.electro.WebContents,
     'Tray': "not implemented"

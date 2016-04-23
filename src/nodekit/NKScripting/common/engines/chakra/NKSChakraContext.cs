@@ -133,7 +133,9 @@ namespace io.nodekit.NKScripting.Engines.Chakra
             }
             catch (Exception e)
             {
-                throw e;
+                // throw e;
+                NKLogging.log(e.Message);
+                return null;
             }
             return Marshal.PtrToStringUni(returnValue);
         }

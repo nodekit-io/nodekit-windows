@@ -35,7 +35,7 @@ namespace io.nodekit.NKCore
             return context.NKloadPlugin(typeof(NKC_Timer), null, options);
         }
 
-        private static string defaultNamespace { get { return "io.nodekit.platform.timer"; } }
+        private static string defaultNamespace { get { return "io.nodekit.platform.Timer"; } }
 
         private static string rewriteGeneratedStub(string stub, string forKey)
         {
@@ -81,7 +81,7 @@ namespace io.nodekit.NKCore
             return _handler;
         }
 
-        public void setOnTimeOut(NKScriptValue handler)
+        public void setOnTimeout(NKScriptValue handler)
         {
             _handler = handler;
         }
